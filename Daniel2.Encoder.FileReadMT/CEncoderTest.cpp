@@ -17,25 +17,22 @@ CEncoderTest::~CEncoderTest()
 }
 
 //---------------------------------------------------------------
-int		CEncoderTest::Create(const ENCODER_PARAMS *par)
+int		CEncoderTest::AssignParameters(const ENCODER_PARAMS &par)
 //---------------------------------------------------------------
 {
-	if (!par)
-		return E_POINTER;
-
-	m_pEncoder = par->pEncoder;
-	if (!m_pEncoder)
+	if (!par.pEncoder)
 		return E_INVALIDARG;
 
+	m_pEncoder = par.pEncoder;
 	m_evCancel = CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	for(int i = 0; i < par->QueueSize; i++)
+	for(int i = 0; i < par.QueueSize; i++)
 	{ 
 		m_BufferVacantEvents.push_back(CreateEvent(NULL, FALSE, TRUE , NULL));
 		m_BufferFilledEvents.push_back(CreateEvent(NULL, FALSE, FALSE, NULL));
 	}
 
-	m_EncPar = *par;
+	m_EncPar = par;
 
 	return S_OK;
 }
@@ -122,14 +119,14 @@ DWORD	WINAPI	CEncoderTest::reading_thread_proc(void *p)
 DWORD 	CEncoderTest::ReadingThreadProc()
 //---------------------------------------------------------------
 {
-  fprintf(stderr, "Thread %d is started", GetCurrentThreadId());
+  fprintf(stderr, "Reading thread %d is started\n", GetCurrentThreadId());
 
   HANDLE hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL);
 
   if(hFile == INVALID_HANDLE_VALUE)
-    return fprintf(stderr, "Thread %d: error %08xh opening the file", GetCurrentThreadId(), HRESULT_FROM_WIN32(GetLastError())), HRESULT_FROM_WIN32(GetLastError());
-  
-  for(;;)
+	;//return fprintf(stderr, "Thread %d: error %08xh opening the file\n", GetCurrentThreadId(), HRESULT_FROM_WIN32(GetLastError())), HRESULT_FROM_WIN32(GetLastError());
+
+  else for(;;)
   {
   	int frame_no = InterlockedExchangeAdd(&m_Stats.NumFramesRead, 1);
   	int buffer_id = frame_no % m_EncPar.QueueSize;
@@ -159,13 +156,13 @@ DWORD 	CEncoderTest::ReadingThreadProc()
   
   if(FAILED(hr))
   {
-    fprintf(stderr, "Thread %d: error %08x", GetCurrentThreadId(), hr);
+    fprintf(stderr, "Reading thread %d: error %08x\n", GetCurrentThreadId(), hr);
     SetEvent(m_evCancel);
   }
 
   CloseHandle(hFile);
 
-  fprintf(stderr, "Thread %d is done", GetCurrentThreadId());
+  fprintf(stderr, "Reading thread %d is done\n", GetCurrentThreadId());
 
   return hr;
 }
@@ -183,7 +180,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 {
   HRESULT hr = S_OK;
 
-  fprintf(stderr, "Encoding thread %d is started", GetCurrentThreadId());
+  fprintf(stderr, "Encoding thread %d is started\n", GetCurrentThreadId());
 
   for(int frame_no = 0; ; frame_no++)
   {
@@ -219,7 +216,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 	  break;
   }
 
-  fprintf(stderr, "Encoding thread %d is done", GetCurrentThreadId());
+  fprintf(stderr, "Encoding thread %d is done\n", GetCurrentThreadId());
 
   return hr;
 }

@@ -70,7 +70,18 @@ int _tmain(int argc, TCHAR *argv[])
 	if(FAILED(hr = pEncoder->Init(pSettings)))
 		return print_error(hr, "Encoder initialization error");
 
+	ENCODER_PARAMS par = {};
+	par.pEncoder       = pEncoder;
+	par.InputFileName  = argv[1];
+	par.OutputFileName = argv[2];
+	par.ColorFormat    = CCF_V210;
+	par.NumReadThreads = 4;
+	par.QueueSize      = 16;
+
 	CEncoderTest Test;
+	Test.AssignParameters(par);
+
+	Test.Run();
 
     return 0;
 }
