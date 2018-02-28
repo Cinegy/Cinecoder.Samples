@@ -6,10 +6,12 @@
 #pragma once
 
 #include "targetver.h"
+#include <windows.h>
+#include <atlbase.h>
 
 #include <stdio.h>
 #include <tchar.h>
 
-
-
 // TODO: reference additional headers your program requires here
+#include <cinecoder_h.h>
+#include "..\common\comptr.h"

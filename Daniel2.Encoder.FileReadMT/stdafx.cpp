@@ -1,5 +1,5 @@
 // stdafx.cpp : source file that includes just the standard includes
-// Cinecoder.Samples.pch will be the pre-compiled header
+// Daniel2.Encoder.FileReadMT.pch will be the pre-compiled header
 // stdafx.obj will contain the pre-compiled type information
 
 #include "stdafx.h"

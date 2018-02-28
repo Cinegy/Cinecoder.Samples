@@ -1,27 +1,27 @@
 ========================================================================
-    CONSOLE APPLICATION : Cinecoder.Samples Project Overview
+    CONSOLE APPLICATION : Daniel2.Encoder.FileReadMT Project Overview
 ========================================================================
 
-AppWizard has created this Cinecoder.Samples application for you.
+AppWizard has created this Daniel2.Encoder.FileReadMT application for you.
 
 This file contains a summary of what you will find in each of the files that
-make up your Cinecoder.Samples application.
+make up your Daniel2.Encoder.FileReadMT application.
 
 
-Cinecoder.Samples.vcxproj
+Daniel2.Encoder.FileReadMT.vcxproj
     This is the main project file for VC++ projects generated using an Application Wizard.
     It contains information about the version of Visual C++ that generated the file, and
     information about the platforms, configurations, and project features selected with the
     Application Wizard.
 
-Cinecoder.Samples.vcxproj.filters
+Daniel2.Encoder.FileReadMT.vcxproj.filters
     This is the filters file for VC++ projects generated using an Application Wizard. 
     It contains information about the association between the files in your project 
     and the filters. This association is used in the IDE to show grouping of files with
     similar extensions under a specific node (for e.g. ".cpp" files are associated with the
     "Source Files" filter).
 
-Cinecoder.Samples.cpp
+Daniel2.Encoder.FileReadMT.cpp
     This is the main application source file.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -29,7 +29,7 @@ Other standard files:
 
 StdAfx.h, StdAfx.cpp
     These files are used to build a precompiled header (PCH) file
-    named Cinecoder.Samples.pch and a precompiled types file named StdAfx.obj.
+    named Daniel2.Encoder.FileReadMT.pch and a precompiled types file named StdAfx.obj.
 
 /////////////////////////////////////////////////////////////////////////////
 Other notes:
