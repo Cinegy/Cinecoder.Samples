@@ -24,18 +24,18 @@ namespace Daniel2NativeTests
 
 			CComPtr<ICC_ClassFactory> pFactory;
 			if (FAILED(hr = Cinecoder_CreateClassFactory(&pFactory)))
-				Assert::Fail(); // "Cinecoder factory creation error"));
+				Assert::Fail(L"Cinecoder factory creation error", LINE_INFO()); 
 
 			if (FAILED(hr = pFactory->AssignLicense(COMPANYNAME, LICENSEKEY)))
-				Assert::Fail(); //  "AssignLicense error");
+				Assert::Fail(L"AssignLicense error", LINE_INFO());
 
 			CComPtr<ICC_VideoEncoder> pEncoder;
 			if (FAILED(hr = pFactory->CreateInstance(CLSID_CC_DanielVideoEncoder_CUDA, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder)))
-				Assert::Fail(); // "Encoder creation error");
+				Assert::Fail(L"Encoder creation error", LINE_INFO());
 
 			CComPtr<ICC_DanielVideoEncoderSettings_CUDA> pSettings;
 			if (FAILED(hr = pFactory->CreateInstance(CLSID_CC_DanielVideoEncoderSettings_CUDA, IID_ICC_DanielVideoEncoderSettings_CUDA, (IUnknown**)&pSettings)))
-				Assert::Fail(); //  "Encoder settings creation error");
+				Assert::Fail(L"Encoder settings creation error", LINE_INFO());
 
 			pSettings->put_FrameSize(MK_SIZE(7680, 4320));
 			pSettings->put_FrameRate(MK_RATIONAL(60000, 1001));
@@ -52,7 +52,7 @@ namespace Daniel2NativeTests
 			pSettings->put_NumSingleEncoders(4);
 
 			if (FAILED(hr = pEncoder->Init(pSettings)))
-				Assert::Fail(); // "Encoder initialization error");
+				Assert::Fail(L"Encoder initialization error", LINE_INFO());
 
 			ENCODER_PARAMS par = {};
 			par.pEncoder = pEncoder;
@@ -64,7 +64,7 @@ namespace Daniel2NativeTests
 
 			CEncoderTest Test;
 			if (FAILED(hr = Test.AssignParameters(par)))
-				Assert::Fail(); // "EncoderTest.AssignParameters error");
+				Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
 
 			LARGE_INTEGER t0, freq;
 			QueryPerformanceFrequency(&freq);
