@@ -14,4 +14,3 @@
 
 // TODO: reference additional headers your program requires here
 #include <cinecoder_h.h>
-#include "..\common\comptr.h"

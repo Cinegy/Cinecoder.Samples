@@ -67,21 +67,56 @@ int _tmain(int argc, TCHAR *argv[])
 	pSettings->put_DeviceID(0);
 	pSettings->put_NumSingleEncoders(4);
 
-	if(FAILED(hr = pEncoder->Init(pSettings)))
+	if (FAILED(hr = pEncoder->Init(pSettings)))
 		return print_error(hr, "Encoder initialization error");
 
 	ENCODER_PARAMS par = {};
-	par.pEncoder       = pEncoder;
-	par.InputFileName  = argv[1];
+	par.pEncoder = pEncoder;
+	par.InputFileName = argv[1];
 	par.OutputFileName = argv[2];
-	par.ColorFormat    = CCF_V210;
+	par.ColorFormat = CCF_V210;
 	par.NumReadThreads = 4;
-	par.QueueSize      = 16;
+	par.QueueSize = 16;
 
 	CEncoderTest Test;
-	Test.AssignParameters(par);
+	if (FAILED(hr = Test.AssignParameters(par)))
+		return print_error(hr, "EncoderTest.AssignParameters error");
+
+	LARGE_INTEGER t0, freq;
+	QueryPerformanceFrequency(&freq);
+	QueryPerformanceCounter(&t0);
+
+	ENCODER_STATS s0 = {};
 
 	Test.Run();
+	printf("\n");
+
+	for (;;)
+	{
+		Sleep(1000);
+
+		LARGE_INTEGER t1;
+		QueryPerformanceCounter(&t1);
+		
+		ENCODER_STATS s1 = {};
+		Test.GetCurrentEncodingStats(&s1);
+
+		double dT = double(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+
+		double Rspeed = (s1.NumBytesRead     - s0.NumBytesRead    ) / (1024.0*1024.0*1024.0) / dT;
+		double Wspeed = (s1.NumBytesWritten  - s0.NumBytesWritten ) / (1024.0*1024.0*1024.0) / dT;
+		double Rfps   = (s1.NumFramesRead    - s0.NumFramesRead   ) / dT;
+		double Wfps   = (s1.NumFramesWritten - s0.NumFramesWritten) / dT;
+		int queue_fill_level = s1.NumFramesRead - s1.NumFramesWritten;
+
+		printf("\rdT = %.0f ms, R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps), Q=%d  ",
+			dT * 1000,
+			Rspeed, Rfps,
+			Wspeed, Wfps,
+			queue_fill_level);
+
+		t0 = t1; s0 = s1;
+	}
 
     return 0;
 }

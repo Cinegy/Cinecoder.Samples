@@ -33,6 +33,7 @@ int		CEncoderTest::AssignParameters(const ENCODER_PARAMS &par)
 	}
 
 	m_EncPar = par;
+	memset((void*)&m_Stats, 0, sizeof(m_Stats));
 
 	return S_OK;
 }
