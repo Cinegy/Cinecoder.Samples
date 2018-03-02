@@ -8,3 +8,7 @@ before_build:
 build:
   project: Cinecoder.Samples.sln
   verbosity: minimal
+after_build:
+- cmd: >-
+    7z a TsAnalyser-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\cinecoder-samples\x64\Release
+    appveyor PushArtifact TsAnalyser-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
