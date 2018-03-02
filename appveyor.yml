@@ -10,5 +10,6 @@ build:
   verbosity: minimal
 after_build:
 - cmd: >-
-    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\cinecoder-samples\x64\Release
+    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\x64\Release
+    
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
