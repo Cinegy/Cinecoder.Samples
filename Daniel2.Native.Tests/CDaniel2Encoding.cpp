@@ -68,76 +68,76 @@ namespace Daniel2NativeTests
 
 		}
 
-		TEST_METHOD(InitEncoder)
-		{
-			HRESULT hr;
+		//TEST_METHOD(InitEncoder)
+		//{
+		//	HRESULT hr;
 
-			CreateSettings();
+		//	CreateSettings();
 
-			pSettings->put_FrameSize(MK_SIZE(7680, 4320));
-			pSettings->put_FrameRate(MK_RATIONAL(60000, 1001));
-			pSettings->put_InputColorFormat(CCF_V210);
+		//	pSettings->put_FrameSize(MK_SIZE(7680, 4320));
+		//	pSettings->put_FrameRate(MK_RATIONAL(60000, 1001));
+		//	pSettings->put_InputColorFormat(CCF_V210);
 
-			pSettings->put_ChromaFormat(CC_CHROMA_422);
-			pSettings->put_BitDepth(10);
+		//	pSettings->put_ChromaFormat(CC_CHROMA_422);
+		//	pSettings->put_BitDepth(10);
 
-			pSettings->put_RateMode(CC_CBR);
-			pSettings->put_BitRate(1000000000);
-			pSettings->put_CodingMethod(CC_D2_METHOD_DEFAULT);
+		//	pSettings->put_RateMode(CC_CBR);
+		//	pSettings->put_BitRate(1000000000);
+		//	pSettings->put_CodingMethod(CC_D2_METHOD_DEFAULT);
 
-			pSettings->put_DeviceID(0);
-			pSettings->put_NumSingleEncoders(4);
+		//	pSettings->put_DeviceID(0);
+		//	pSettings->put_NumSingleEncoders(4);
 
-			if (FAILED(hr = pEncoder->Init(pSettings)))
-				Assert::Fail(L"Encoder initialization error", LINE_INFO());
+		//	if (FAILED(hr = pEncoder->Init(pSettings)))
+		//		Assert::Fail(L"Encoder initialization error", LINE_INFO());
 
-			ENCODER_PARAMS par = {};
-			par.pEncoder = pEncoder;
-			//par.InputFileName = argv[1];
-			//par.OutputFileName = argv[2];
-			par.ColorFormat = CCF_V210;
-			par.NumReadThreads = 4;
-			par.QueueSize = 16;
+		//	ENCODER_PARAMS par = {};
+		//	par.pEncoder = pEncoder;
+		//	//par.InputFileName = argv[1];
+		//	//par.OutputFileName = argv[2];
+		//	par.ColorFormat = CCF_V210;
+		//	par.NumReadThreads = 4;
+		//	par.QueueSize = 16;
 
-			CEncoderTest Test;
-			if (FAILED(hr = Test.AssignParameters(par)))
-				Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
+		//	CEncoderTest Test;
+		//	if (FAILED(hr = Test.AssignParameters(par)))
+		//		Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
 
-			LARGE_INTEGER t0, freq;
-			QueryPerformanceFrequency(&freq);
-			QueryPerformanceCounter(&t0);
+		//	LARGE_INTEGER t0, freq;
+		//	QueryPerformanceFrequency(&freq);
+		//	QueryPerformanceCounter(&t0);
 
-			//ENCODER_STATS s0 = {};
+		//	//ENCODER_STATS s0 = {};
 
-			//Test.Run();
-		}
+		//	//Test.Run();
+		//}
 
-		TEST_METHOD(AssignEncoderParameters)
-		{
-			HRESULT hr;
+		//TEST_METHOD(AssignEncoderParameters)
+		//{
+		//	HRESULT hr;
 
-			InitEncoder();
+		//	InitEncoder();
 
-			ENCODER_PARAMS par = {};
-			par.pEncoder = pEncoder;
-			//par.InputFileName = argv[1];
-			//par.OutputFileName = argv[2];
-			par.ColorFormat = CCF_V210;
-			par.NumReadThreads = 4;
-			par.QueueSize = 16;
+		//	ENCODER_PARAMS par = {};
+		//	par.pEncoder = pEncoder;
+		//	//par.InputFileName = argv[1];
+		//	//par.OutputFileName = argv[2];
+		//	par.ColorFormat = CCF_V210;
+		//	par.NumReadThreads = 4;
+		//	par.QueueSize = 16;
 
-			CEncoderTest Test;
-			if (FAILED(hr = Test.AssignParameters(par)))
-				Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
+		//	CEncoderTest Test;
+		//	if (FAILED(hr = Test.AssignParameters(par)))
+		//		Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
 
-			LARGE_INTEGER t0, freq;
-			QueryPerformanceFrequency(&freq);
-			QueryPerformanceCounter(&t0);
+		//	LARGE_INTEGER t0, freq;
+		//	QueryPerformanceFrequency(&freq);
+		//	QueryPerformanceCounter(&t0);
 
-			//ENCODER_STATS s0 = {};
+		//	//ENCODER_STATS s0 = {};
 
-			//Test.Run();
-		}
+		//	//Test.Run();
+		//}
 	};
 
 }
