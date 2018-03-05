@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Encoder.FileReadMT"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Native.Tests", "Daniel2.Native.Tests\Daniel2.Native.Tests.vcxproj", "{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.Managed.Tests", "Daniel2.Managed.Tests\Daniel2.Managed.Tests.csproj", "{A5261207-79B9-471A-8F20-D3D2EAECCC5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,18 @@ Global
 		{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}.Release|x64.Build.0 = Release|x64
 		{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}.Release|x86.ActiveCfg = Release|Win32
 		{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}.Release|x86.Build.0 = Release|Win32
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|x64.Build.0 = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Debug|x86.Build.0 = Debug|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|x64.ActiveCfg = Release|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|x64.Build.0 = Release|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A5261207-79B9-471A-8F20-D3D2EAECCC5E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
