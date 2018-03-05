@@ -10,6 +10,8 @@ build:
   verbosity: minimal
 test_script:
 - ps: >-
+    nunit3-console Daniel2.Managed.Tests\bin\Release\x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
+
     x64\Release\Daniel2.Native.Tests.exe --gtest_output=xml:tests.xml
 
     $wc = New-Object 'System.Net.WebClient'
