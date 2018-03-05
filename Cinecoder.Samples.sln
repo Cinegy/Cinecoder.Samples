@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Encoder.FileReadMT", "Daniel2.Encoder.FileReadMT\Daniel2.Encoder.FileReadMT.vcxproj", "{51658988-3725-4D7C-B7FB-7926F76E0229}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Google.Tests", "Daniel2.Google.Tests\Daniel2.Google.Tests.vcxproj", "{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Native.Tests", "Daniel2.Native.Tests\Daniel2.Native.Tests.vcxproj", "{599A18CC-94CF-45DA-904A-2E4C40FDB4F3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.Managed.Tests", "Daniel2.Managed.Tests\Daniel2.Managed.Tests.csproj", "{A5261207-79B9-471A-8F20-D3D2EAECCC5E}"
 EndProject
