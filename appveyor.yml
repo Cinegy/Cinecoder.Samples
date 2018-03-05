@@ -9,7 +9,12 @@ build:
   project: Cinecoder.Samples.sln
   verbosity: minimal
 test_script:
-- cmd: vstest.console /logger:Appveyor x64\Release\Daniel2.Google.Tests.dll /platform:x64
+- ps: >-
+    x64\Release\Daniel2.Google.Tests.exe --gtest_output=xml:tests.xml
+
+    $wc = New-Object 'System.Net.WebClient'
+
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/xunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\tests.xml))
 after_build:
 - cmd: >-
     7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\x64\Release
