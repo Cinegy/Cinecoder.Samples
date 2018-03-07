@@ -1,10 +1,6 @@
 ﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Cinecoder.Interop;
 
@@ -13,10 +9,6 @@ namespace Daniel2.Managed.Tests
     [TestFixture]
     public class CinecoderInstancing
     {
-
-        private const string COMPANYNAME = "cinegy";
-        private const string LICENSEKEY = "R5H6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG";
-
         [DllImport("Cinecoder", PreserveSig = true)]
         private static extern int Cinecoder_CreateClassFactory([MarshalAs(UnmanagedType.Interface)] out ICC_ClassFactory f);
 
@@ -32,18 +24,15 @@ namespace Daniel2.Managed.Tests
         
         [DllImport("Cinecoder", PreserveSig = false)]
         [return: MarshalAs(UnmanagedType.LPStr)]
-        public static extern string Cinecoder_GetErrorString(int Error);
+        public static extern string Cinecoder_GetErrorString(int error);
+        
+        private const string Companyname = "cinegy";
+        private const string Licensekey = "R5H6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG";
 
         private ICC_ClassFactory _factory;
-        private object _settings;
-        private object _encoder;
+        private ICC_Settings _settings;
+        private ICC_VideoEncoder _encoder;
         
-        //TEST(Daniel2, CheckCinecoderVersion)
-        //{
-        //    CC_VERSION_INFO ver = Cinecoder_GetVersion();
-        //    printf("Cinecoder version %d.%02d.%02d\n", ver.VersionHi, ver.VersionLo, ver.EditionNo);
-
-        //}
         [Test]
         public void CheckCinecoderVersion()
         {
@@ -58,15 +47,6 @@ namespace Daniel2.Managed.Tests
             }
         }
 
-
-
-
-        //TEST(Daniel2, CreateCinecoderFactory)
-        //{
-        //    HRESULT hr;
-        //    EXPECT_FALSE(FAILED(hr = Cinecoder_CreateClassFactory(&pFactory)));
-        //    //Assert::Fail(L"Cinecoder factory creation error", LINE_INFO());
-        //}
         [Test]
         public void CreateCinecoderFactory()
         {
@@ -86,16 +66,9 @@ namespace Daniel2.Managed.Tests
             }
         }
 
-        //TEST(Daniel2, AssignCinecoderLicense)
-        //{
-        //    HRESULT hr;
-
-        //    EXPECT_FALSE(FAILED(hr = pFactory->AssignLicense(COMPANYNAME, LICENSEKEY)));
-        //    //	Assert::Fail(L"AssignLicense error", LINE_INFO());
-        //}
-
-        [TestCase(new object[] {COMPANYNAME, LICENSEKEY})] //all correct sizes will pass, even if not valid
-        [TestCase(new object[] { "FAKECOMPANY", "WRONGSIZEKEY"})]
+      
+        [TestCase(Companyname, Licensekey)] //all correct sizes will pass, even if not valid
+        [TestCase("FAKECOMPANY", "WRONGSIZEKEY")]
         public void AssignCinecoderLicense(string companyName, string licenseKey)
         {
             try
@@ -130,22 +103,12 @@ namespace Daniel2.Managed.Tests
                 }
             }
         }
-
-
-
-        //TEST(Daniel2, CreateEncoder)
-        //{
-        //    HRESULT hr;
-
-        //    EXPECT_FALSE(FAILED(hr = pFactory->CreateInstance(CLSID_CC_DanielVideoEncoder, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder)));
-        //    //Assert::Fail(L"Encoder creation error", LINE_INFO());
-
-        //}
-        [TestCase(new object[] { COMPANYNAME, LICENSEKEY, "DanielVideoEncoder" }, ExpectedResult = true)] //should correctly create object
-        [TestCase(new object[] { COMPANYNAME, LICENSEKEY, "DanielVideoEncoder_CUDA" }, ExpectedResult = true)] //should correctly create object
-        [TestCase(new object[] { COMPANYNAME, LICENSEKEY, "DanielVideoEncoder_FAKE" }, ExpectedResult = false)] //should fail by invalid name
-        [TestCase(new object[] { "FAKECOMPANY", LICENSEKEY, "DanielVideoEncoder" },ExpectedResult = false)] //wrong company name should fail to create object
-        [TestCase(new object[] { COMPANYNAME, "AAA6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG", "DanielVideoEncoder" }, ExpectedResult = false)] //invalid key should fail to create object
+        
+        [TestCase(Companyname, Licensekey, "DanielVideoEncoder", ExpectedResult = true)] //should correctly create object
+        [TestCase(Companyname, Licensekey, "DanielVideoEncoder_CUDA", ExpectedResult = true)] //should correctly create object
+        [TestCase(Companyname, Licensekey, "DanielVideoEncoder_FAKE", ExpectedResult = false)] //should fail by invalid name
+        [TestCase("FAKECOMPANY", Licensekey, "DanielVideoEncoder",ExpectedResult = false)] //wrong company name should fail to create object
+        [TestCase(Companyname, "AAA6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG", "DanielVideoEncoder", ExpectedResult = false)] //invalid key should fail to create object
         public bool CreateEncoder(string companyName, string licenseKey, string instanceTypeName)
         {
             try
@@ -165,22 +128,13 @@ namespace Daniel2.Managed.Tests
             return true;
         }
 
-        //TEST(Daniel2, CreateSettings)
-        //{
-        //    HRESULT hr;
-
-        //    EXPECT_FALSE(FAILED(hr = pFactory->CreateInstance(CLSID_CC_DanielVideoEncoderSettings, IID_ICC_DanielVideoEncoderSettings, (IUnknown**)&pSettings)));
-        //    //Assert::Fail(L"Encoder settings creation error", LINE_INFO());
-
-        //}
-
-        [TestCase(new object[] {"DanielVideoEncoder" ,"DanielVideoEncoderSettings"})]
-        [TestCase(new object[] { "DanielVideoEncoder_CUDA", "DanielVideoEncoderSettings_CUDA" })]
+        [TestCase("DanielVideoEncoder" ,"DanielVideoEncoderSettings")]
+        [TestCase("DanielVideoEncoder_CUDA", "DanielVideoEncoderSettings_CUDA")]
         public void CreateSettings(string instanceTypeName, string settingsTypeName)
         {
             try
             {
-                CreateEncoder(COMPANYNAME,LICENSEKEY, instanceTypeName);
+                CreateEncoder(Companyname,Licensekey, instanceTypeName);
 
                 _settings = _factory.CreateInstanceByName(settingsTypeName);
                 Assert.IsNotNull(_settings, "Returned settings instance is null");
@@ -190,68 +144,30 @@ namespace Daniel2.Managed.Tests
                 Assert.Fail($"Exception creating Cinecoder Settings: {ex.Message}");
             }
         }
-
-
-        //TEST_METHOD(InitEncoder)
-        //{
-        //	HRESULT hr;
-        //
-        //	CreateSettings();
-        //
-        //	pSettings->put_FrameSize(MK_SIZE(7680, 4320));
-        //	pSettings->put_FrameRate(MK_RATIONAL(60000, 1001));
-        //	pSettings->put_InputColorFormat(CCF_V210);
-        //
-        //	pSettings->put_ChromaFormat(CC_CHROMA_422);
-        //	pSettings->put_BitDepth(10);
-        //
-        //	pSettings->put_RateMode(CC_CBR);
-        //	pSettings->put_BitRate(1000000000);
-        //	pSettings->put_CodingMethod(CC_D2_METHOD_DEFAULT);
-        //
-        //	pSettings->put_DeviceID(0);
-        //	pSettings->put_NumSingleEncoders(4);
-        //
-        //	if (FAILED(hr = pEncoder->Init(pSettings)))
-        //		Assert::Fail(L"Encoder initialization error", LINE_INFO());
-        //
-        //	ENCODER_PARAMS par = {};
-        //	par.pEncoder = pEncoder;
-        //	//par.InputFileName = argv[1];
-        //	//par.OutputFileName = argv[2];
-        //	par.ColorFormat = CCF_V210;
-        //	par.NumReadThreads = 4;
-        //	par.QueueSize = 16;
-        //
-        //	CEncoderTest Test;
-        //	if (FAILED(hr = Test.AssignParameters(par)))
-        //		Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
-        //
-        //	LARGE_INTEGER t0, freq;
-        //	QueryPerformanceFrequency(&freq);
-        //	QueryPerformanceCounter(&t0);
-        //
-        //	//ENCODER_STATS s0 = {};
-        //
-        //	//Test.Run();
-        //}
-
-        [TestCase(new object[] { "DanielVideoEncoder", "DanielVideoEncoderSettings" })]
-       // [TestCase(new object[] { "DanielVideoEncoder_CUDA", "DanielVideoEncoderSettings_CUDA" })]
+        
+        [TestCase("DanielVideoEncoder", "DanielVideoEncoderSettings")]
+        [TestCase("DanielVideoEncoder_CUDA", "DanielVideoEncoderSettings_CUDA")]
         public void InitEncoder(string instanceTypeName, string settingsTypeName)
         {
             try
             {
-                CreateSettings(instanceTypeName,settingsTypeName);
+                if (instanceTypeName.Contains("CUDA"))
+                {
+                    //really bad test for nvidia availability - but it works
+                    if (!Directory.Exists("C:\\Program Files\\NVIDIA Corporation"))
+                        Assert.Ignore(
+                            "Skipping CUDA tests - could not find folder C:\\Program Files\\NVIDIA Corporation.");
+                }
+
+                CreateSettings(instanceTypeName, settingsTypeName);
                 var settings = _settings as ICC_DanielVideoEncoderSettings;
-                var encoder = _encoder as ICC_DanielVideoEncoder;
-                
-                Assert.IsNotNull(settings,"Returned settings object is null");
-                Assert.IsNotNull(encoder, "Returned encoder object is null");
+
+                Assert.IsNotNull(settings, "Cast settings object is null");
+                Assert.IsNotNull(_encoder, "Encoder object is null");
 
                 // ReSharper disable once PossibleNullReferenceException
-                settings.FrameSize = new tagSIZE { cx = 7680, cy= 4320 };
-                settings.FrameRate = new CC_RATIONAL { denom = 1001, num = 60000};
+                settings.FrameSize = new tagSIZE {cx = 7680, cy = 4320};
+                settings.FrameRate = new CC_RATIONAL {denom = 1001, num = 60000};
                 settings.InputColorFormat = CC_COLOR_FMT.CCF_V210;
                 settings.ChromaFormat = CC_CHROMA_FORMAT.CC_CHROMA_422;
                 settings.BitDepth = 10;
@@ -261,7 +177,7 @@ namespace Daniel2.Managed.Tests
                 //pSettings->put_DeviceID(0);
                 settings.NumSingleEncoders = 4;
 
-                encoder?.Init(settings);
+                _encoder?.Init(settings);
 
                 //
                 //	if (FAILED(hr = pEncoder->Init(pSettings)))
@@ -278,7 +194,11 @@ namespace Daniel2.Managed.Tests
                 //	CEncoderTest Test;
                 //	if (FAILED(hr = Test.AssignParameters(par)))
                 //		Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
-               
+
+            }
+            catch (IgnoreException)
+            {
+                throw;
             }
             catch (Exception ex)
             {

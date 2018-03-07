@@ -10,39 +10,39 @@ CComPtr<ICC_ClassFactory> p_factory;
 CComPtr<ICC_VideoEncoder> p_encoder;
 CComPtr<ICC_DanielVideoEncoderSettings> p_settings;
 
-TEST(Daniel2,CheckCinecoderVersion)
+TEST(Daniel2Native,CheckCinecoderVersion)
 {
 	const auto ver = Cinecoder_GetVersion();
 	printf("Cinecoder version %d.%02d.%02d\n", ver.VersionHi, ver.VersionLo, ver.EditionNo);
 
 }
 
-TEST(Daniel2,CreateCinecoderFactory)
+TEST(Daniel2Native,CreateCinecoderFactory)
 {
 	const auto hr = Cinecoder_CreateClassFactory(&p_factory);
 	ASSERT_HRESULT_SUCCEEDED(hr) << "Cinecoder factory creation error";
 }
 
 
-TEST(Daniel2,AssignCinecoderLicense)
+TEST(Daniel2Native,AssignCinecoderLicense)
 {
 	const auto hr = p_factory->AssignLicense(COMPANYNAME, LICENSEKEY);
 	ASSERT_HRESULT_SUCCEEDED(hr) << "AssignLicense error";
 }
 
-TEST(Daniel2,CreateEncoder)
+TEST(Daniel2Native,CreateEncoder)
 {
 	const auto hr = p_factory->CreateInstance(CLSID_CC_DanielVideoEncoder, IID_ICC_VideoEncoder, reinterpret_cast<IUnknown**>(&p_encoder));
 	ASSERT_HRESULT_SUCCEEDED(hr) << "Encoder creation error";
 }
 
-TEST(Daniel2,CreateSettings)
+TEST(Daniel2Native,CreateSettings)
 {
 	const auto hr = p_factory->CreateInstance(CLSID_CC_DanielVideoEncoderSettings, IID_ICC_DanielVideoEncoderSettings, reinterpret_cast<IUnknown**>(&p_settings));
 	ASSERT_HRESULT_SUCCEEDED(hr) << "Encoder settings creation error";
 }
 
-TEST(Daniel2, InitEncoder)
+TEST(Daniel2Native, InitEncoder)
 {	
 	p_settings->put_FrameSize(MK_SIZE(7680, 4320));
 	p_settings->put_FrameRate(MK_RATIONAL(60000, 1001));
@@ -59,7 +59,7 @@ TEST(Daniel2, InitEncoder)
 	ASSERT_HRESULT_SUCCEEDED(hr) << "Encoder initialization error";
 }
 
-TEST(Daniel2, AssignEncoderParameters)
+TEST(Daniel2Native, AssignEncoderParameters)
 {		
 	ENCODER_PARAMS par = {};
 	par.pEncoder = p_encoder;
