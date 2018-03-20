@@ -5,22 +5,40 @@
 
 #include "cinecoder_h.h"
 
-struct ENCODER_PARAMS
+struct TEST_PARAMS
 {
-	ICC_VideoEncoder* pEncoder;
-	LPCTSTR		InputFileName;
-	CC_COLOR_FMT ColorFormat;
-	int			NumReadThreads;
-	int			QueueSize;
-	LPCTSTR		OutputFileName;
+	LPCSTR						CompanyName;
+	LPCSTR						LicenseKey;
+
+	LPCTSTR						InputFileName;
+	LPCTSTR						OutputFileName;
+
+	int							Width, Height;
+	int							FrameRateN, FrameRateD;
+	CC_COLOR_FMT				InputColorFormat;
+	int							StartFrameNum, StopFrameNum;
+	bool						Looped;
+
+	int							NumReadThreads;
+	int							QueueSize;
+	bool						UseCache;
+
+	CC_DANIEL2_CODING_METHOD	CodingMethod;
+	CC_CHROMA_FORMAT			ChromaFormat;
+	int							BitDepth;
+	CC_BITRATE_MODE				BitrateMode;
+	CC_BITRATE					Bitrate;
+	FLOAT						QuantScale;
+	int							NumSingleEncoders;
+	int							DeviceId;
 };
 
 struct	ENCODER_STATS
 {
-	LONG		NumFramesRead;
-	LONG		NumFramesWritten;
-	LONGLONG	NumBytesRead;
-	LONGLONG	NumBytesWritten;
+	LONG						NumFramesRead;
+	LONG						NumFramesWritten;
+	LONGLONG					NumBytesRead;
+	LONGLONG					NumBytesWritten;
 };
 
 //---------------------------------------------------------------
@@ -31,21 +49,30 @@ public:
 	CEncoderTest();
 	~CEncoderTest();
 
-	int		AssignParameters(const ENCODER_PARAMS&);
+	int		AssignParameters(const TEST_PARAMS&);
 	int		Close();
 
 	int		Run();
 	int		Cancel();
+	bool	IsActive() const;
+	HRESULT	GetResult() const;
 
 	int		GetCurrentEncodingStats(ENCODER_STATS*);
 
 private:
-	BOOL	m_bRunning;
+	int		CheckParameters(const TEST_PARAMS &par);
 
-	ENCODER_PARAMS	m_EncPar;
-	DWORD	m_FrameSizeInBytes;
+	int		CreateEncoder(const TEST_PARAMS&);
 
+	TEST_PARAMS	m_EncPar;
 	CComPtr<ICC_VideoEncoder> m_pEncoder;
+	DWORD m_FrameSizeInBytes;
+
+	BOOL m_bRunning;
+	HRESULT	m_hrResult;
+
+	volatile LONG m_NumActiveThreads;
+	volatile LONG m_ReadFrameCounter;
 
 	std::vector<HANDLE>	m_hReadingThreads;
 	DWORD	ReadingThreadProc();
@@ -56,9 +83,15 @@ private:
 	static	DWORD	WINAPI	encoding_thread_proc(void *p);
 
 	HANDLE	m_evCancel;
-	std::vector<HANDLE>	m_BufferVacantEvents;
-	std::vector<HANDLE>	m_BufferFilledEvents;
-	std::vector<LPBYTE> m_Buffers;
+
+	struct BufferDescr
+	{
+		LPBYTE	pBuffer;
+		HANDLE	evVacant;
+		HANDLE	evFilled;
+		HRESULT	hrReadStatus;
+	};
+	std::vector<BufferDescr> m_Queue;
 
 	volatile ENCODER_STATS	m_Stats;
 };
