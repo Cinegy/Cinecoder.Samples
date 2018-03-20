@@ -8,4 +8,4 @@ We auto-build this using AppVeyor - here is how we are doing right now:
 
 You can check out the latest compiled binary from the master or pre-master code here:
 
-[AppVeyor Cinecoder.Samples Project Builder] (https://ci.appveyor.com/project/cinegy/cinecoder-samples)
+[AppVeyor Cinecoder.Samples Project Builder](https://ci.appveyor.com/project/cinegy/cinecoder-samples)
