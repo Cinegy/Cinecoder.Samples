@@ -26,8 +26,8 @@ namespace Daniel2.Managed.Tests
         [return: MarshalAs(UnmanagedType.LPStr)]
         public static extern string Cinecoder_GetErrorString(int error);
         
-        private const string Companyname = "cinegy";
-        private const string Licensekey = "R5H6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG";
+        private const string Companyname = "Cinegy";
+        private const string Licensekey = "TUHSDY56CL4LUT3K5S4BFJF6643S52DE8RALW0ZKB06J54CTA1Z2MB08EDCM5U8P";
 
         private ICC_ClassFactory _factory;
         private ICC_Settings _settings;

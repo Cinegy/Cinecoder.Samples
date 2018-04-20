@@ -2,7 +2,7 @@
 #include "CEncoderTest.h"
 #include <Cinecoder_i.c>
 
-#define COMPANYNAME "cinegy"
+#define COMPANYNAME "Cinegy"
 #define LICENSEKEY "R5H6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG"
 
 
