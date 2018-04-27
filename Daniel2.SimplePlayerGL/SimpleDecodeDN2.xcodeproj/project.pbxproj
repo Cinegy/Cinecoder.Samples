@@ -37,12 +37,10 @@
 		96D13B48206CE65C00102F82 /* Block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Block.cpp; sourceTree = "<group>"; };
 		96D13B49206CE65C00102F82 /* Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Block.h; sourceTree = "<group>"; };
 		96D13B4A206CE65C00102F82 /* DecodeDaniel2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DecodeDaniel2.cpp; sourceTree = "<group>"; };
-		96D13B4B206CE65C00102F82 /* helper_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = helper_string.h; sourceTree = "<group>"; };
 		96D13B4D206CE65D00102F82 /* DecodeDaniel2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DecodeDaniel2.h; sourceTree = "<group>"; };
 		96D13B4E206CE65D00102F82 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		96D13B4F206CE65D00102F82 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
 		96D13B50206CE65D00102F82 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stdafx.cpp; sourceTree = "<group>"; };
-		96D13B51206CE65D00102F82 /* DecodeDaniel2Simple.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DecodeDaniel2Simple.h; sourceTree = "<group>"; };
 		96D13B59206CE66E00102F82 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		96D13B5B206CE67B00102F82 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		96D13B5D206CE68300102F82 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
@@ -86,8 +84,6 @@
 				96D13B49206CE65C00102F82 /* Block.h */,
 				96D13B4A206CE65C00102F82 /* DecodeDaniel2.cpp */,
 				96D13B4D206CE65D00102F82 /* DecodeDaniel2.h */,
-				96D13B51206CE65D00102F82 /* DecodeDaniel2Simple.h */,
-				96D13B4B206CE65C00102F82 /* helper_string.h */,
 				96D13B44206CE65C00102F82 /* ReadFileDN2.cpp */,
 				96D13B46206CE65C00102F82 /* ReadFileDN2.h */,
 				96D13B47206CE65C00102F82 /* SimpleDecodeDN2.cpp */,
