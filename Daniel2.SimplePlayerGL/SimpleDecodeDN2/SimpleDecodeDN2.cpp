@@ -6,7 +6,6 @@
 #include <string>
 
 #if defined (WIN32) || defined (_WIN32 )
-//#include <GL/glew.h>
 #include <GL/freeglut.h>
 #endif
 
