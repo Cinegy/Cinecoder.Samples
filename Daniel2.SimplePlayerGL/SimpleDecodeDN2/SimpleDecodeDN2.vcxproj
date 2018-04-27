@@ -170,7 +170,6 @@
     <ClInclude Include="Block.h" />
     <ClInclude Include="DecodeDaniel2.h" />
     <ClInclude Include="DecodeDaniel2Simple.h" />
-    <ClInclude Include="helper_string.h" />
     <ClInclude Include="ReadFileDN2.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Timer.h" />

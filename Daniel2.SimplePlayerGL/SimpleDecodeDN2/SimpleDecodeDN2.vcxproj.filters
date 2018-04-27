@@ -33,9 +33,6 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="helper_string.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Toolkits\Utils\HMTSTDUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>

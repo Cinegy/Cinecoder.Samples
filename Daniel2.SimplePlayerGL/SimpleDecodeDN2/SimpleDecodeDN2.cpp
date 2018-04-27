@@ -21,11 +21,65 @@
 
 #include "Timer.h"
 #include "DecodeDaniel2.h"
-//#include "DecodeDaniel2Simple.h"
 
 ///////////////////////////////////////////////////////
 
-#include "helper_string.h"
+inline bool checkCmdLineArg(const int argc, const char **argv, const char *str_ref)
+{
+	bool bFound = false;
+
+	for (int i = 1; i < argc; i++)
+	{
+		const char *str_argv = argv[i];
+
+		int shift = 0;
+
+		while (str_argv[shift] == '-') shift++;
+
+		if (shift < (int)strlen(str_argv) - 1)
+			str_argv += shift;
+
+		if (strcmp(str_argv, str_ref) == 0)
+		{
+			bFound = true;
+			break;
+		}
+	}
+
+	return bFound;
+}
+
+inline bool getCmdLineArgStr(const int argc, const char **argv, const char *str_ref, char **str_ret)
+{
+	bool bFound = false;
+
+	for (int i = 1; i < argc; i++)
+	{
+		char *str_argv = (char *)argv[i];
+
+		int shift = 0;
+
+		while (str_argv[shift] == '-') shift++;
+
+		if (shift < (int)strlen(str_argv) - 1)
+			str_argv += shift;
+
+		if (strcmp(str_argv, str_ref) == 0)
+		{
+			if ((i + 1) < argc)
+			{
+				*str_ret = (char *)argv[i + 1];
+				bFound = true;
+			}
+			break;
+		}
+	}
+
+	if (!bFound)
+		*str_ret = nullptr;
+
+	return bFound;
+}
 
 inline bool CheckErrorGL(const char *file, const int line)
 {
@@ -124,7 +178,6 @@ C_Timer timer;
 ///////////////////////////////////////////////////////
 
 std::shared_ptr<DecodeDaniel2> decodeD2; // Wrapper class which demonstration decoding Daniel2 format
-//std::shared_ptr<DecodeDaniel2Simple> decodeD2; // Wrapper class which demonstration decoding Daniel2 format
 
 ///////////////////////////////////////////////////////
 
@@ -795,14 +848,13 @@ void printHelp(void)
 	printf("Usage: SimpleDecodeDN2 [OPTION]...\n");
 	printf("Test the decode DANILE2 format file (DN2) using OpenGL(GLUT)\n");
 	printf("\n");
-	printf("Command line example: <SimpleDecodeDN2.exe> <file_path> --decoders=2 --vsync --rotate_frame\n");
+	printf("Command line example: <SimpleDecodeDN2.exe> <file_path> -decoders 2 -vsync -rotate_frame\n");
 	printf("\n");
 	printf("Options:\n");
-	printf("--help              display this help menu\n");
-	printf("--file=<path>       input path to file DN2\n");
-	printf("--decoders=<N>      max count of decoders (default: 2)\n");
-	printf("--vsync             enable vertical synchronisation (default - disable)\n");
-	printf("--rotate_frame      enable rotate frame (default - disable)\n");
+	printf("-help              display this help menu\n");
+	printf("-decoders <N>      max count of decoders [1..4] (default: 2)\n");
+	printf("-vsync             enable vertical synchronisation (default - disable)\n");
+	printf("-rotate_frame      enable rotate frame (default - disable)\n");
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
@@ -820,8 +872,8 @@ void printHelp(void)
 int main(int argc, char **argv)
 {
 	// Process command line args
-	if (checkCmdLineFlag(argc, (const char **)argv, "help") ||
-		checkCmdLineFlag(argc, (const char **)argv, "h") ||
+	if (checkCmdLineArg(argc, (const char **)argv, "help") ||
+		checkCmdLineArg(argc, (const char **)argv, "h") ||
 		argc == 1)
 	{
 		printHelp();
@@ -829,44 +881,24 @@ int main(int argc, char **argv)
 	}
 
 	std::string filename;
-	/*
-#if defined (WIN32) || defined (_WIN32 )
-	//std::string filename = "D:\\Earth4x4K_q4_rgba.dn2";
-	//std::string filename = "D:\\phfx_8k_q4_422.dn2";
-	std::string filename = "C:\\DN2\\FF-4K-rgba-8bit-5994.dn2";
-	//std::string filename = "C:\\DN2\\FF-4K-rgba-10bit-5994.dn2";
-	//std::string filename = "C:\\Afterglow 1920x1080\\Afterglow_1920x1080_rgba_8bit.dn2";
-	//std::string filename = "C:\\Afterglow 1920x1080\\Afterglow_1920x1080_rgba_10bit.dn2";
-	//std::string filename = "C:\\Afterglow 1920x1080\\Afterglow_1920x1080_422_8bit.dn2";
-#elif defined(__APPLE__)
-	std::string filename = "/Users/cinegydev_01/Documents/hello/hello_world/DN2 files/FF-4K-rgba-8bit-5994.dn2";
-	//std::string filename = "/Users/cinegydev_01/Documents/hello/hello_world/DN2 files/FF-4K-rgba-10bit-5994.dn2";
-	//std::string filename = "/Users/cinegydev_01/Documents/hello/hello_world/DN2 files/Afterglow_1920x1080_rgba_8bit.dn2";
-	//std::string filename = "/Users/cinegydev_01/Documents/hello/hello_world/DN2 files/Afterglow_1920x1080_422_8bit.dn2";
-#endif
-	*/
+
 	size_t iMaxCountDecoders = 2;
 	
 	char *str = nullptr;
 
-	//if (getCmdLineArgumentString(argc, (const char **)argv, "file", &str))
-	//{
-	//	filename = str;
-	//}
-
 	filename = argv[1];
 
-	if (getCmdLineArgumentString(argc, (const char **)argv, "decoders", &str))
+	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
 		iMaxCountDecoders = atoi(str);
 	}
 
-	if (checkCmdLineFlag(argc, (const char **)argv, "vsync"))
+	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
 	{
 		g_bVSync = true;
 	}
 
-	if (checkCmdLineFlag(argc, (const char **)argv, "rotate_frame"))
+	if (checkCmdLineArg(argc, (const char **)argv, "rotate_frame"))
 	{
 		g_bRotate = true;
 	}
@@ -874,7 +906,6 @@ int main(int argc, char **argv)
 	int res = 0;
 
 	decodeD2 = std::make_shared<DecodeDaniel2>();
-	//decodeD2 = std::make_shared<DecodeDaniel2Simple>();
 
 	if (!decodeD2)
 	{
