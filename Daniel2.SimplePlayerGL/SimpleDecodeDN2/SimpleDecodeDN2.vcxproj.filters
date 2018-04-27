@@ -42,9 +42,6 @@
     <ClInclude Include="DecodeDaniel2.h">
       <Filter>Decode DN2</Filter>
     </ClInclude>
-    <ClInclude Include="DecodeDaniel2Simple.h">
-      <Filter>Decode DN2</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
