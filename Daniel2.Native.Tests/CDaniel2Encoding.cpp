@@ -45,6 +45,10 @@ TEST(Daniel2Native,CreateSettings)
 TEST(Daniel2Native, InitEncoder)
 {	
 	p_settings->put_FrameSize(MK_SIZE(7680, 4320));
+#ifdef _WIN32 //32-bit can't handle more than 4K - literally not enough room...
+	p_settings->put_FrameSize(MK_SIZE(4096, 2160));
+#endif
+
 	p_settings->put_FrameRate(MK_RATIONAL(60000, 1001));
 	p_settings->put_InputColorFormat(CCF_V210);
 	p_settings->put_ChromaFormat(CC_CHROMA_422);
