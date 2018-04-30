@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Native.Tests", "Dan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.Managed.Tests", "Daniel2.Managed.Tests\Daniel2.Managed.Tests.csproj", "{A5261207-79B9-471A-8F20-D3D2EAECCC5E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.SimplePlayerGL.Win", "Daniel2.SimplePlayerGL.Win\SimpleDecodeDN2.vcxproj", "{3B333D09-2C9F-43DB-824F-ABFE628302EB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.SimplePlayerGL", "Daniel2.SimplePlayerGL\Daniel2.SimplePlayerGL.vcxproj", "{3B333D09-2C9F-43DB-824F-ABFE628302EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

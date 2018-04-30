@@ -33,14 +33,14 @@
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Toolkits\Utils\HMTSTDUtil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Toolkits\Utils\comptr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DecodeDaniel2.h">
       <Filter>Decode DN2</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\comptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\HMTSTDUtil.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

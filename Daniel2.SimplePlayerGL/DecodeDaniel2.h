@@ -15,7 +15,7 @@
 #include <Cinecoder_h.h>
 
 // Cinegy utils
-#include <comptr.h>
+#include "utils/comptr.h"
 
 // License
 #define COMPANYNAME "cinegy"
@@ -25,7 +25,7 @@
 
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_RGB30 };
 
-class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
+class DecodeDaniel2 : public cinegy::threading_std::C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
 {
 private:
 	std::wstring m_filename;
