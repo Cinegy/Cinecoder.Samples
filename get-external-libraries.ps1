@@ -5,10 +5,14 @@ $FreeGlut_Package_url = "https://www.transmissionzero.co.uk/files/software/devel
 
 $FreeGlutPackageName =  Split-Path -Path $FreeGlut_Package_url -Leaf
 
-Write-Host "Downloading ZIP with FreeGlut package... please be patient"
-
-#$ProgressPreference = 'SilentlyContinue'
-md -Force ./_toolkits/freeglut
-
-iwr -ContentType "application/octet-stream" -Uri $FreeGlut_Package_url -OutFile ./_toolkits/freeglut/$FreeGlutPackageName
-Expand-Archive ./_toolkits/freeglut/$FreeGlutPackageName ./_toolkits/ -force
+if (Test-Path "./_toolkits/freeglut/include/GL/freeglut.h") { 
+	Write-Host "Toolkit for FreeGlut already exists"
+	exit 
+}
+else
+{
+	Write-Host "Downloading ZIP with FreeGlut package... please be patient"
+	md -Force ./_toolkits/freeglut
+	iwr -ContentType "application/octet-stream" -Uri $FreeGlut_Package_url -OutFile ./_toolkits/freeglut/$FreeGlutPackageName
+	Expand-Archive ./_toolkits/freeglut/$FreeGlutPackageName ./_toolkits/ -force
+}
