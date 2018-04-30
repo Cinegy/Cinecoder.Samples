@@ -25,10 +25,7 @@ namespace Daniel2.Managed.Tests
         [DllImport("Cinecoder", PreserveSig = false)]
         [return: MarshalAs(UnmanagedType.LPStr)]
         public static extern string Cinecoder_GetErrorString(int error);
-        
-        private const string Companyname = "Cinegy";
-        private const string Licensekey = "TUHSDY56CL4LUT3K5S4BFJF6643S52DE8RALW0ZKB06J54CTA1Z2MB08EDCM5U8P";
-
+      
         private ICC_ClassFactory _factory;
         private ICC_Settings _settings;
         private ICC_VideoEncoder _encoder;
@@ -43,7 +40,7 @@ namespace Daniel2.Managed.Tests
             }
             catch (Exception ex)
             {
-                    Assert.Fail($"Probem getting cinecoder versio: {ex.Message}");
+                    Assert.Fail($"Probem getting cinecoder version: {ex.Message}");
             }
         }
 
@@ -67,7 +64,7 @@ namespace Daniel2.Managed.Tests
         }
 
       
-        [TestCase(Companyname, Licensekey)] //all correct sizes will pass, even if not valid
+        [TestCase(License.Companyname, License.Licensekey)] //all correct sizes will pass, even if not valid
         [TestCase("FAKECOMPANY", "WRONGSIZEKEY")]
         public void AssignCinecoderLicense(string companyName, string licenseKey)
         {
@@ -104,11 +101,11 @@ namespace Daniel2.Managed.Tests
             }
         }
         
-        [TestCase(Companyname, Licensekey, "DanielVideoEncoder", ExpectedResult = true)] //should correctly create object
-        [TestCase(Companyname, Licensekey, "DanielVideoEncoder_CUDA", ExpectedResult = true)] //should correctly create object
-        [TestCase(Companyname, Licensekey, "DanielVideoEncoder_FAKE", ExpectedResult = false)] //should fail by invalid name
-        [TestCase("FAKECOMPANY", Licensekey, "DanielVideoEncoder",ExpectedResult = false)] //wrong company name should fail to create object
-        [TestCase(Companyname, "AAA6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG", "DanielVideoEncoder", ExpectedResult = false)] //invalid key should fail to create object
+        [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder", ExpectedResult = true)] //should correctly create object
+        [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder_CUDA", ExpectedResult = true)] //should correctly create object
+        [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder_FAKE", ExpectedResult = false)] //should fail by invalid name
+        [TestCase("FAKECOMPANY", License.Licensekey, "DanielVideoEncoder",ExpectedResult = false)] //wrong company name should fail to create object
+        [TestCase(License.Companyname, "AAA6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG", "DanielVideoEncoder", ExpectedResult = false)] //invalid key should fail to create object
         public bool CreateEncoder(string companyName, string licenseKey, string instanceTypeName)
         {
             try
@@ -134,8 +131,7 @@ namespace Daniel2.Managed.Tests
         {
             try
             {
-                CreateEncoder(Companyname,Licensekey, instanceTypeName);
-
+                CreateEncoder(License.Companyname, License.Licensekey, instanceTypeName);
                 _settings = _factory.CreateInstanceByName(settingsTypeName);
                 Assert.IsNotNull(_settings, "Returned settings instance is null");
             }
@@ -178,23 +174,6 @@ namespace Daniel2.Managed.Tests
                 settings.NumSingleEncoders = 4;
 
                 _encoder?.Init(settings);
-
-                //
-                //	if (FAILED(hr = pEncoder->Init(pSettings)))
-                //		Assert::Fail(L"Encoder initialization error", LINE_INFO());
-                //
-                //	ENCODER_PARAMS par = {};
-                //	par.pEncoder = pEncoder;
-                //	//par.InputFileName = argv[1];
-                //	//par.OutputFileName = argv[2];
-                //	par.ColorFormat = CCF_V210;
-                //	par.NumReadThreads = 4;
-                //	par.QueueSize = 16;
-                //
-                //	CEncoderTest Test;
-                //	if (FAILED(hr = Test.AssignParameters(par)))
-                //		Assert::Fail(L"EncoderTest.AssignParameters error", LINE_INFO());
-
             }
             catch (IgnoreException)
             {
