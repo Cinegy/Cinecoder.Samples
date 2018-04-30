@@ -18,14 +18,13 @@
 #include "utils/comptr.h"
 
 // License
-#define COMPANYNAME "cinegy"
-#define LICENSEKEY "X9S1C220USC51ZST6HG05EN6U4ZC1MLJ6LSK5S9SGBCMC773M6MNF2EHUG9GFENC"
+#include "../cinecoder_license_string.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_RGB30 };
 
-class DecodeDaniel2 : public cinegy::threading_std::C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
+class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
 {
 private:
 	std::wstring m_filename;

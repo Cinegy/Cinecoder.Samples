@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="CinecoderInstancing.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\cinecoder_license_string.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

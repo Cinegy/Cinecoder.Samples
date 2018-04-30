@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "CEncoderTest.h"
 #include <Cinecoder_i.c>
-
-#define COMPANYNAME "Cinegy"
-#define LICENSEKEY "TUHSDY56CL4LUT3K5S4BFJF6643S52DE8RALW0ZKB06J54CTA1Z2MB08EDCM5U8P"
-
+#include "../cinecoder_license_string.h"
 
 CComPtr<ICC_ClassFactory> p_factory;
 CComPtr<ICC_VideoEncoder> p_encoder;
