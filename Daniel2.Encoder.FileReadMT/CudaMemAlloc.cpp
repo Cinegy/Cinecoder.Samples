@@ -8,7 +8,7 @@ void *cuda_alloc_pinned(size_t size)
 	{
 		if(FARPROC pProc = GetProcAddress(hInstLib, "cudaMallocHost"))
 		{
-			typedef int (STDAPICALLTYPE *cudaMallocHostFunc)(void **ptr, int size);
+			typedef int (STDAPICALLTYPE *cudaMallocHostFunc)(void **ptr, size_t size);
 			(cudaMallocHostFunc(pProc))(&ptr, size);
 		}
 	
