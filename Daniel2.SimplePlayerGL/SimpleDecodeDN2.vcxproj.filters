@@ -60,4 +60,7 @@
       <Filter>Decode DN2</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>
