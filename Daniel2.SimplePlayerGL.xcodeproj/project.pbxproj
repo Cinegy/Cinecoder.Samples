@@ -283,7 +283,7 @@
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
 					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/Daniel2.SimplePlayerGL/winclude,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release";
 				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release/libCinecoder.dylib";
@@ -298,7 +298,7 @@
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;				
 				HEADER_SEARCH_PATHS = (
 					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/Daniel2.SimplePlayerGL/winclude,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release";
 				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release/libCinecoder.dylib";
