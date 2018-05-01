@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -106,7 +106,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-	<PreBuildEvent>
+    <PreBuildEvent>
       <Command>cd $(SolutionDir)
 call get-external-libraries.bat</Command>
     </PreBuildEvent>
@@ -126,7 +126,7 @@ call get-external-libraries.bat</Command>
       <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-	<PreBuildEvent>
+    <PreBuildEvent>
       <Command>cd $(SolutionDir)
 call get-external-libraries.bat</Command>
     </PreBuildEvent>
@@ -149,8 +149,8 @@ call get-external-libraries.bat</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>    
-	<PreBuildEvent>
+    </Link>
+    <PreBuildEvent>
       <Command>cd $(SolutionDir)
 call get-external-libraries.bat</Command>
     </PreBuildEvent>
@@ -208,25 +208,25 @@ call get-external-libraries.bat</Command>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.2.14531\build\Cinecoder.targets'))" />
-  </Target>
   <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\freeglut.dll"/>
+      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\freeglut.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="Copy FreeGlut binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'">
     <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\x64\freeglut.dll"/>
+      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\x64\freeglut.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.2.14697\build\Cinecoder.targets'))" />
   </Target>
 </Project>
