@@ -157,6 +157,10 @@ int print_help()
 		"  /device=#  - the number of NVidia card for encoding ([0],-1=CPU)\n"
 	);
 
+	printf("\n\nPress Enter to Exit\n");
+	char ch;
+	scanf_s("%c", &ch);
+	
 	return 0;
 }
 

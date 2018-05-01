@@ -245,3 +245,6 @@ ModelManifest.xml
 
 #downloaded toolkits
 _toolkits/
+
+#Mac OS stuff
+.DS_Store
