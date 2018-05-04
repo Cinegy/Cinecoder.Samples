@@ -876,6 +876,10 @@ int main(int argc, char **argv)
 		argc == 1)
 	{
 		printHelp();
+		
+		printf("\n\nPress Enter to Exit\n");
+		char ch;
+		scanf_s("%c",&ch);
 		return 0;
 	}
 
