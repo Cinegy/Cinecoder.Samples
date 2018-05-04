@@ -2,7 +2,7 @@
 #will require PS5 to unzip - if it fails, you can just unzip by hand to the toolkit directory
 
 $FreeGlut_Package_url = "https://www.transmissionzero.co.uk/files/software/development/GLUT/freeglut-MSVC.zip"
-$Cinecoder_Package_url = "https://www.nuget.org/api/v2/package/Cinecoder/3.31.2.14697"
+$Cinecoder_Package_url = "https://www.nuget.org/api/v2/package/Cinecoder/3.31.3.14724"
 
 $FreeGlutPackageName =  Split-Path -Path $FreeGlut_Package_url -Leaf
 $CinecoderPackageName = "Cinecoder-" + (Split-Path -Path $Cinecoder_Package_url -Leaf) + ".zip"
@@ -26,6 +26,7 @@ if($($PSVersionTable.OS).StartsWith("Darwin"))
 	}
 	else
 	{
+		Remove-Item -Path ./_toolkits/cinecoder -Force -Recurse
 		Write-Host "Downloading ZIP with Cinecoder package... please be patient"
 		New-Item -Path ./_toolkits/cinecoder -ItemType Directory -Force
 		Invoke-WebRequest -ContentType "application/octet-stream" -Uri $Cinecoder_Package_url -OutFile ./_toolkits/cinecoder/$CinecoderPackageName
