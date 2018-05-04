@@ -285,8 +285,8 @@
 					$PROJECT_DIR/_toolkits/cinecoder/sources,
 					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release/libCinecoder.dylib";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -300,8 +300,8 @@
 					$PROJECT_DIR/_toolkits/cinecoder/sources,
 					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/MacOS/lib/release/libCinecoder.dylib";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
