@@ -1,0 +1,333 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		47ACEE1920976C52003E1326 /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0C20976C50003E1326 /* Block.cpp */; };
+		47ACEE1A20976C52003E1326 /* SimpleDecodeDN2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */; };
+		47ACEE1B20976C52003E1326 /* DecodeDaniel2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */; };
+		47ACEE1C20976C52003E1326 /* ReadFileDN2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */; };
+		47ACEE1D20976C52003E1326 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1620976C51003E1326 /* stdafx.cpp */; };
+		96D13B5A206CE66E00102F82 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B59206CE66E00102F82 /* OpenGL.framework */; };
+		96D13B5C206CE67B00102F82 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5B206CE67B00102F82 /* CoreGraphics.framework */; };
+		96D13B5E206CE68300102F82 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5D206CE68300102F82 /* GLUT.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		96D13B38206CE5A700102F82 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		47ACEE0C20976C50003E1326 /* Block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Block.cpp; path = Daniel2.SimplePlayerGL/Block.cpp; sourceTree = "<group>"; };
+		47ACEE0D20976C50003E1326 /* Daniel2.SimplePlayerGL.vcxproj.filters */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Daniel2.SimplePlayerGL.vcxproj.filters; path = Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.vcxproj.filters; sourceTree = "<group>"; };
+		47ACEE0E20976C50003E1326 /* DecodeDaniel2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DecodeDaniel2.h; path = Daniel2.SimplePlayerGL/DecodeDaniel2.h; sourceTree = "<group>"; };
+		47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleDecodeDN2.cpp; path = Daniel2.SimplePlayerGL/SimpleDecodeDN2.cpp; sourceTree = "<group>"; };
+		47ACEE1020976C50003E1326 /* Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Block.h; path = Daniel2.SimplePlayerGL/Block.h; sourceTree = "<group>"; };
+		47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DecodeDaniel2.cpp; path = Daniel2.SimplePlayerGL/DecodeDaniel2.cpp; sourceTree = "<group>"; };
+		47ACEE1220976C51003E1326 /* Daniel2.SimplePlayerGL.vcxproj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Daniel2.SimplePlayerGL.vcxproj; path = Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.vcxproj; sourceTree = "<group>"; };
+		47ACEE1320976C51003E1326 /* packages.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = packages.config; path = Daniel2.SimplePlayerGL/packages.config; sourceTree = "<group>"; };
+		47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReadFileDN2.cpp; path = Daniel2.SimplePlayerGL/ReadFileDN2.cpp; sourceTree = "<group>"; };
+		47ACEE1520976C51003E1326 /* ReadFileDN2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReadFileDN2.h; path = Daniel2.SimplePlayerGL/ReadFileDN2.h; sourceTree = "<group>"; };
+		47ACEE1620976C51003E1326 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stdafx.cpp; path = Daniel2.SimplePlayerGL/stdafx.cpp; sourceTree = "<group>"; };
+		47ACEE1720976C51003E1326 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = Daniel2.SimplePlayerGL/stdafx.h; sourceTree = "<group>"; };
+		47ACEE1820976C51003E1326 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timer.h; path = Daniel2.SimplePlayerGL/Timer.h; sourceTree = "<group>"; };
+		47ACEE2220977416003E1326 /* utils */ = {isa = PBXFileReference; lastKnownFileType = folder; name = utils; path = Daniel2.SimplePlayerGL/utils; sourceTree = "<group>"; };
+		96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SimpleDecodeDN2; sourceTree = BUILT_PRODUCTS_DIR; };
+		96D13B59206CE66E00102F82 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		96D13B5B206CE67B00102F82 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		96D13B5D206CE68300102F82 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		96D13B37206CE5A700102F82 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				96D13B5E206CE68300102F82 /* GLUT.framework in Frameworks */,
+				96D13B5C206CE67B00102F82 /* CoreGraphics.framework in Frameworks */,
+				96D13B5A206CE66E00102F82 /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		96D13B31206CE5A700102F82 = {
+			isa = PBXGroup;
+			children = (
+				47ACEE2220977416003E1326 /* utils */,
+				47ACEE0C20976C50003E1326 /* Block.cpp */,
+				47ACEE1020976C50003E1326 /* Block.h */,
+				47ACEE1220976C51003E1326 /* Daniel2.SimplePlayerGL.vcxproj */,
+				47ACEE0D20976C50003E1326 /* Daniel2.SimplePlayerGL.vcxproj.filters */,
+				47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */,
+				47ACEE0E20976C50003E1326 /* DecodeDaniel2.h */,
+				47ACEE1320976C51003E1326 /* packages.config */,
+				47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */,
+				47ACEE1520976C51003E1326 /* ReadFileDN2.h */,
+				47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */,
+				47ACEE1620976C51003E1326 /* stdafx.cpp */,
+				47ACEE1720976C51003E1326 /* stdafx.h */,
+				47ACEE1820976C51003E1326 /* Timer.h */,
+				96D13B3B206CE5A700102F82 /* Products */,
+				96D13B58206CE66D00102F82 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		96D13B3B206CE5A700102F82 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		96D13B58206CE66D00102F82 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				96D13B5D206CE68300102F82 /* GLUT.framework */,
+				96D13B5B206CE67B00102F82 /* CoreGraphics.framework */,
+				96D13B59206CE66E00102F82 /* OpenGL.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		96D13B39206CE5A700102F82 /* SimpleDecodeDN2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 96D13B41206CE5A700102F82 /* Build configuration list for PBXNativeTarget "SimpleDecodeDN2" */;
+			buildPhases = (
+				96D13B36206CE5A700102F82 /* Sources */,
+				96D13B37206CE5A700102F82 /* Frameworks */,
+				96D13B38206CE5A700102F82 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SimpleDecodeDN2;
+			productName = SimpleDecodeDN2;
+			productReference = 96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		96D13B32206CE5A700102F82 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = Cinegy;
+				TargetAttributes = {
+					96D13B39206CE5A700102F82 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 96D13B35206CE5A700102F82 /* Build configuration list for PBXProject "Daniel2.SimplePlayerGL" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 96D13B31206CE5A700102F82;
+			productRefGroup = 96D13B3B206CE5A700102F82 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				96D13B39206CE5A700102F82 /* SimpleDecodeDN2 */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		96D13B36206CE5A700102F82 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47ACEE1A20976C52003E1326 /* SimpleDecodeDN2.cpp in Sources */,
+				47ACEE1920976C52003E1326 /* Block.cpp in Sources */,
+				47ACEE1B20976C52003E1326 /* DecodeDaniel2.cpp in Sources */,
+				47ACEE1C20976C52003E1326 /* ReadFileDN2.cpp in Sources */,
+				47ACEE1D20976C52003E1326 /* stdafx.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		96D13B3F206CE5A700102F82 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		96D13B40206CE5A700102F82 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		96D13B42206CE5A700102F82 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/_toolkits/cinecoder/sources,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		96D13B43206CE5A700102F82 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;				
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/_toolkits/cinecoder/sources,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		96D13B35206CE5A700102F82 /* Build configuration list for PBXProject "Daniel2.SimplePlayerGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96D13B3F206CE5A700102F82 /* Debug */,
+				96D13B40206CE5A700102F82 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		96D13B41206CE5A700102F82 /* Build configuration list for PBXNativeTarget "SimpleDecodeDN2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96D13B42206CE5A700102F82 /* Debug */,
+				96D13B43206CE5A700102F82 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 96D13B32206CE5A700102F82 /* Project object */;
+}

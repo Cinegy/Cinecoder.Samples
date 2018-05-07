@@ -6,8 +6,7 @@
 
 #include <cinecoder_i.c>
 
-#define COMPANYNAME "Cinegy"
-#define LICENSEKEY "TUHSDY56CL4LUT3K5S4BFJF6643S52DE8RALW0ZKB06J54CTA1Z2MB08EDCM5U8P"
+#include "../cinecoder_license_string.h"
 
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *args);
 int print_help();
@@ -158,6 +157,10 @@ int print_help()
 		"  /device=#  - the number of NVidia card for encoding ([0],-1=CPU)\n"
 	);
 
+	printf("\n\nPress Enter to Exit\n");
+	char ch;
+	scanf_s("%c", &ch);
+	
 	return 0;
 }
 
