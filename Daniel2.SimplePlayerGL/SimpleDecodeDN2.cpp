@@ -878,8 +878,7 @@ int main(int argc, char **argv)
 		printHelp(); // Print start info
 		
 		printf("\n\nPress Enter to Exit\n");
-		char ch;
-		scanf_s("%c",&ch);
+		std::cin.get();
 		return 0;
 	}
 
