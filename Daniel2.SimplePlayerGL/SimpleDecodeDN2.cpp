@@ -875,7 +875,7 @@ int main(int argc, char **argv)
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
 		argc == 1)
 	{
-		printHelp();
+		printHelp(); // Print start info
 		
 		printf("\n\nPress Enter to Exit\n");
 		char ch;
@@ -908,7 +908,7 @@ int main(int argc, char **argv)
 
 	int res = 0;
 
-	decodeD2 = std::make_shared<DecodeDaniel2>();
+	decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
 
 	if (!decodeD2)
 	{
@@ -916,7 +916,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders);
+	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders); // Open input DN2 file
 
 	if (res != 0)
 	{
@@ -927,7 +927,7 @@ int main(int argc, char **argv)
 	image_width = (unsigned int)decodeD2->GetImageWidth();	// Get image width
 	image_height = (unsigned int)decodeD2->GetImageHeight(); // Get image height
 
-	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames();
+	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames(); // Get count of frames
 
 	gpu_initGLUT(&argc, argv); // Init GLUT
 
