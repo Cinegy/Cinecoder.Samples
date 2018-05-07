@@ -864,6 +864,9 @@ void printHelp(void)
 	printf("'d':                on/off decoder\n");
 	printf("'HOME':             seek to first frame\n");
 	printf("'END':              seek to last frame\n");
+
+	printf("\n\nPress Enter to Exit\n");
+	std::cin.get();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -875,10 +878,7 @@ int main(int argc, char **argv)
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
 		argc == 1)
 	{
-		printHelp(); // Print start info
-		
-		printf("\n\nPress Enter to Exit\n");
-		std::cin.get();
+		printHelp(); // Print help info
 		return 0;
 	}
 
