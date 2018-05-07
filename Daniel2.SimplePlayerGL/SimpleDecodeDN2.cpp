@@ -675,6 +675,16 @@ void SpecialKeyboard(int key, int x, int y)
 		SeekToFrame(iAllFrames - 1);
 		break;
 	}
+	case GLUT_KEY_RIGHT:
+	{
+		SeekToFrame(iCurPlayFrameNumber + 1);
+		break;
+	}
+	case GLUT_KEY_LEFT:
+	{
+		SeekToFrame(iCurPlayFrameNumber - 1);
+		break;
+	}
 	default:
 		break;
 	}
@@ -862,6 +872,8 @@ void printHelp(void)
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'d':                on/off decoder\n");
+	printf("'J'/'K'/'L':        change direction video or pause\n");
+	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");
 	printf("'HOME':             seek to first frame\n");
 	printf("'END':              seek to last frame\n");
 
@@ -876,7 +888,7 @@ int main(int argc, char **argv)
 	// Process command line args
 	if (checkCmdLineArg(argc, (const char **)argv, "help") ||
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
-		argc == 1)
+		argc == 0)
 	{
 		printHelp(); // Print help info
 		return 0;
@@ -888,7 +900,8 @@ int main(int argc, char **argv)
 	
 	char *str = nullptr;
 
-	filename = argv[1];
+	//filename = argv[1];
+	filename = "C:\\DN2\\Afterglow 1920x1080\\Afterglow_1920x1080_rgba_8bit.dn2";
 
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
