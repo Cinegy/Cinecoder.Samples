@@ -893,17 +893,17 @@ int main(int argc, char **argv)
 
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
-		iMaxCountDecoders = atoi(str);
+		iMaxCountDecoders = atoi(str); // max count of decoders [1..4] (default: 2)
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
 	{
-		g_bVSync = true;
+		g_bVSync = true; // on/off vertical synchronisation
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "rotate_frame"))
 	{
-		g_bRotate = true;
+		g_bRotate = true; // on/off rotate image
 	}
 
 	int res = 0;
