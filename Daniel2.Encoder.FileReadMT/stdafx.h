@@ -6,13 +6,14 @@
 #pragma once
 
 #include "targetver.h"
-#include <windows.h>
+#include <Windows.h>
 #include <atlbase.h>
 
 #include <stdio.h>
 #include <tchar.h>
 #include <conio.h>
 
-// TODO: reference additional headers your program requires here
-#include <cinecoder_h.h>
+#include <Cinecoder_h.h>
+#include <iostream>
+
 int print_error(int err, const char *str = 0);

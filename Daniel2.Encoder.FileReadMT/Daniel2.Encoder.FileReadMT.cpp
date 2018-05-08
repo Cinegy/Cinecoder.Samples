@@ -158,8 +158,7 @@ int print_help()
 	);
 
 	printf("\n\nPress Enter to Exit\n");
-	char ch;
-	scanf_s("%c", &ch);
+	std::cin.get();
 	
 	return 0;
 }
