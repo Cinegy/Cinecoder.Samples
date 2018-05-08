@@ -735,6 +735,7 @@ void OnMouseMove(int x, int y)
 		if (g_mouse_state == GLUT_DOWN && g_mouse_button == GLUT_LEFT_BUTTON)
 		{
 			SeekToFrame(x, y);
+			Display(); // update frame
 		}
 
 		g_bShowTicker = true;
