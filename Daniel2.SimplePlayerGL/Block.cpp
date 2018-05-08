@@ -28,7 +28,7 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride)
 	iPitch = _iStride;
 	iSizeFrame = iPitch * iHeight;
 
-	frame_buffer.resize(iSizeFrame);
+	frame_buffer.resize(iSizeFrame); // allocating memory for current frame buffer
 
 	if (frame_buffer.size() != iSizeFrame)
 		return -1;
