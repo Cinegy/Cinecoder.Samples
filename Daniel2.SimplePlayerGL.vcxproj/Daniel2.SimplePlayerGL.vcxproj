@@ -183,20 +183,20 @@ call get-external-libraries.bat</Command>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utils\comptr.h" />
-    <ClInclude Include="utils\HMTSTDUtil.h" />
-    <ClInclude Include="Block.h" />
-    <ClInclude Include="DecodeDaniel2.h" />
-    <ClInclude Include="ReadFileDN2.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\Block.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\Timer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Block.cpp" />
-    <ClCompile Include="DecodeDaniel2.cpp" />
-    <ClCompile Include="ReadFileDN2.cpp" />
-    <ClCompile Include="SimpleDecodeDN2.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\SimpleDecodeDN2.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
