@@ -87,7 +87,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		if (SUCCEEDED(hr)) 
 			hr = m_pVideoDec->Break(CC_TRUE); // break decoder and flush data from decoder (call DataReady)
 
-		if (!m_eventInitDecoder.Wait(10000)) // wait 10 second for init decode
+		if (!m_eventInitDecoder.Wait(10000) || !m_bInitDecoder) // wait 10 second for init decode
 		{
 			printf("Init decode - failed!\n");
 			return -1; // if could not decode the 0-frame until 10 second, return an error
@@ -352,32 +352,30 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 		//CC_COLOR_FMT fmt = BitDepth == 8 ? CCF_RGB32 : CCF_RGB64;
 
+		//if (BitDepth == 10)
+		//	fmt = CCF_RGB30;
+
 		CC_COLOR_FMT fmt = CCF_RGB30; // set output format
 
-		DWORD iStride = 0;
-		pVideoProducer->GetStride(fmt, &iStride); // get stride
-		m_stride = (size_t)iStride;
-
-		/*if (BitDepth == 10)
+		CC_BOOL bRes = CC_FALSE;
+		pVideoProducer->IsFormatSupported(fmt, &bRes);
+		if (bRes)
 		{
-			CC_BOOL bRes = CC_FALSE;
-			pVideoProducer->IsFormatSupported(CCF_RGB30, &bRes);
-			if (bRes)
-			{
-				fmt = CCF_RGB30;
-				pVideoProducer->GetStride(fmt, &iStride); // get stride
-				m_stride = (size_t)iStride;
-			}
-		}*/
+			DWORD iStride = 0;
+			pVideoProducer->GetStride(fmt, &iStride); // get stride
+			m_stride = (size_t)iStride;
 
-		m_fmt = fmt;
+			m_fmt = fmt;
 
-		m_outputImageFormat = BitDepth == 8 ? IMAGE_FORMAT_RGBA8BIT : IMAGE_FORMAT_RGBA16BIT;
+			if (m_fmt == CCF_RGB32)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+			else if (m_fmt == CCF_RGB64)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			else if (m_fmt == CCF_RGB30)
+				m_outputImageFormat = IMAGE_FORMAT_RGB30;
 
-		if (m_fmt == CCF_RGB30)
-			m_outputImageFormat = IMAGE_FORMAT_RGB30;
-
-		m_bInitDecoder = true;
+			m_bInitDecoder = true; // set init decoder value
+		}
 
 		m_eventInitDecoder.Set(); // set event about decoder was initialized
 	}
