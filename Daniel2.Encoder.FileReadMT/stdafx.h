@@ -9,11 +9,11 @@
 #include <Windows.h>
 #include <atlbase.h>
 
-#include <stdio.h>
+#include <cstdio>
 #include <tchar.h>
 #include <conio.h>
 
 #include <Cinecoder_h.h>
 #include <iostream>
 
-int print_error(int err, const char *str = 0);
+int print_error(int err, const char *str = nullptr);

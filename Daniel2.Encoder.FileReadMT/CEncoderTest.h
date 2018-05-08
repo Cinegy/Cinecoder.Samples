@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <vector>
 
-#include "cinecoder_h.h"
+#include "Cinecoder_h.h"
 
 struct TEST_PARAMS
 {
@@ -60,29 +60,29 @@ public:
 	int		GetCurrentEncodingStats(ENCODER_STATS*);
 
 private:
-	int		CheckParameters(const TEST_PARAMS &par);
+	static int		CheckParameters(const TEST_PARAMS &par);
 
 	int		CreateEncoder(const TEST_PARAMS&);
 
-	TEST_PARAMS	m_EncPar;
+	TEST_PARAMS	m_EncPar{};
 	CComPtr<ICC_VideoEncoder> m_pEncoder;
-	DWORD m_FrameSizeInBytes;
+	DWORD m_FrameSizeInBytes{};
 
 	BOOL m_bRunning;
-	HRESULT	m_hrResult;
+	HRESULT	m_hrResult{};
 
 	volatile LONG m_NumActiveThreads;
-	volatile LONG m_ReadFrameCounter;
+	volatile LONG m_ReadFrameCounter{};
 
 	std::vector<HANDLE>	m_hReadingThreads;
 	DWORD	ReadingThreadProc();
 	static	DWORD	WINAPI	reading_thread_proc(void *p);
 
-	HANDLE	m_hEncodingThread;
+	HANDLE	m_hEncodingThread{};
 	DWORD	EncodingThreadProc();
 	static	DWORD	WINAPI	encoding_thread_proc(void *p);
 
-	HANDLE	m_evCancel;
+	HANDLE	m_evCancel{};
 
 	struct BufferDescr
 	{
@@ -93,5 +93,5 @@ private:
 	};
 	std::vector<BufferDescr> m_Queue;
 
-	volatile ENCODER_STATS	m_Stats;
+	volatile ENCODER_STATS	m_Stats{};
 };

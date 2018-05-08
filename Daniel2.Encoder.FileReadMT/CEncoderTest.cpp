@@ -276,7 +276,7 @@ DWORD	WINAPI	CEncoderTest::reading_thread_proc(void *p)
 DWORD 	CEncoderTest::ReadingThreadProc()
 //---------------------------------------------------------------
 {
-    fprintf(stderr, "Reading thread %d is started\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %lu is started\n", GetCurrentThreadId());
 
     HANDLE hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
 
@@ -341,14 +341,14 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 
     if(FAILED(hr))
     {
-      fprintf(stderr, "Reading thread %d: error %08x\n", GetCurrentThreadId(), hr);
+      fprintf(stderr, "Reading thread %lu: error %08lx\n", GetCurrentThreadId(), hr);
       SetEvent(m_evCancel);
     }
 
     CloseHandle(hFile);
     InterlockedDecrement(&m_NumActiveThreads);
 
-    fprintf(stderr, "Reading thread %d is done\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %lu is done\n", GetCurrentThreadId());
 
     return hr;
 }
@@ -366,17 +366,17 @@ DWORD	CEncoderTest::EncodingThreadProc()
 {
 	HRESULT hr = S_OK;
 
-	fprintf(stderr, "Encoding thread %d is started\n", GetCurrentThreadId());
+	fprintf(stderr, "Encoding thread %lu is started\n", GetCurrentThreadId());
 
 	for(int frame_no = 0; ; frame_no++)
 	{
-		int buffer_id = frame_no % m_EncPar.QueueSize;
+		const int buffer_id = frame_no % m_EncPar.QueueSize;
 
-		DWORD t0 = GetTickCount();
+		const DWORD t0 = GetTickCount();
 
 		HANDLE hh[2] = { m_evCancel, m_Queue[buffer_id].evFilled };
 
-		DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
+		const DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
 		if (wait_result == WAIT_OBJECT_0)
 		{
 			m_hrResult = S_FALSE;// E_ABORT;
@@ -398,7 +398,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 				m_FrameSizeInBytes,
 				&frame_descr,
 				CComPtr<IUnknown>(),
-				NULL);
+				nullptr);
 		}
 		else
 		{
@@ -424,7 +424,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 	}
 
 	InterlockedDecrement(&m_NumActiveThreads);
-	fprintf(stderr, "Encoding thread %d is done\n", GetCurrentThreadId());
+	fprintf(stderr, "Encoding thread %lu is done\n", GetCurrentThreadId());
 
 	return hr;
 }

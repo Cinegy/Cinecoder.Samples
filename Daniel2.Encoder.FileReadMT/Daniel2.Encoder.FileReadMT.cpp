@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "CEncoderTest.h"
 
-#include <cinecoder_i.c>
+#include <Cinecoder_i.c>
 
 #include "../cinecoder_license_string.h"
 
@@ -84,12 +84,12 @@ int _tmain(int argc, TCHAR *argv[])
 
 	if (FAILED(hr))
 	{
-		printf("Test failed, code = %08xh\n", Test.GetResult());
+		printf("Test failed, code = %08lxh\n", Test.GetResult());
 	}
 	else
 	{
 		Test.GetCurrentEncodingStats(&s0);
-		printf("\nDone.\nFrames processed: %d\n", s0.NumFramesWritten);
+		printf("\nDone.\nFrames processed: %ld\n", s0.NumFramesWritten);
 	}
 	
 	return hr;
@@ -105,7 +105,7 @@ int print_error(int err, const char *str)
 	{
 		fprintf(stderr, "code=%08xh\n", err);
 	}
-	else if(LPCSTR errstr = Cinecoder_GetErrorString(err))
+	else if(const LPCSTR errstr = Cinecoder_GetErrorString(err))
 	{
 		fprintf(stderr, "code=%08xh (%s)", err, errstr);
 	}
