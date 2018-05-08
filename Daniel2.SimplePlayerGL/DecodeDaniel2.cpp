@@ -87,7 +87,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		if (SUCCEEDED(hr)) 
 			hr = m_pVideoDec->Break(CC_TRUE); // break decoder and flush data from decoder (call DataReady)
 
-		if (!m_eventInitDecoder.Wait(10000)) // wait 10 second for init decode
+		if (!m_eventInitDecoder.Wait(10000) || !m_bInitDecoder) // wait 10 second for init decode
 		{
 			printf("Init decode - failed!\n");
 			return -1; // if could not decode the 0-frame until 10 second, return an error
@@ -99,7 +99,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 	if (res == 0)
 		m_file.StartPipe(); // if initialize was successful, starting pipeline for reading DN2 file
 	
-	if (res == 0)
+	if (res == 0) // printing parameters such as: filename, size of frame, format image
 	{
 		printf("-------------------------------------\n");
 		printf("filename: %s\n", filename);
@@ -123,7 +123,7 @@ int DecodeDaniel2::StartDecode()
 	if (!m_bInitDecoder)
 		return -1;
 
-	Create();
+	Create(); // creating thread <ThreadProc>
 
 	return 0;
 }
@@ -136,7 +136,7 @@ int DecodeDaniel2::StopDecode()
 
 	m_hExitEvent.Set();
 
-	Close();
+	Close(); // closing thread <ThreadProc>
 
 	return 0;
 }
@@ -145,7 +145,7 @@ C_Block* DecodeDaniel2::MapFrame()
 {
 	C_Block *pBlock = nullptr;
 
-	m_queueFrames.Get(&pBlock, m_hExitEvent);
+	m_queueFrames.Get(&pBlock, m_hExitEvent); // receiving a block (C_Block) from a queue of finished decoded frames
 
 	return pBlock;
 }
@@ -154,7 +154,7 @@ void DecodeDaniel2::UnmapFrame(C_Block* pBlock)
 {
 	if (pBlock)
 	{
-		m_queueFrames_free.Queue(pBlock);
+		m_queueFrames_free.Queue(pBlock); // adding a block (C_Block) to the queue for processing (free frame queue)
 	}
 }
 
@@ -164,13 +164,13 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
 
 	com_ptr<ICC_ClassFactory> piFactory;
 
-	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&piFactory);
+	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&piFactory); // get Factory
 	if (FAILED(hr)) return hr;
 
 	hr = piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
 	if (FAILED(hr)) return hr;
 
-	CC_VERSION_INFO version = Cinecoder_GetVersion();
+	CC_VERSION_INFO version = Cinecoder_GetVersion(); // get version of Cinecoder
 
 	std::string strCinecoderVersion;
 
@@ -183,7 +183,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
 	strCinecoderVersion += ".";
 	strCinecoderVersion += std::to_string((long long)version.RevisionNo);
 
-	printf("%s\n", strCinecoderVersion.c_str());
+	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
 
 	hr = piFactory->CreateInstance(CLSID_CC_DanielVideoDecoder, IID_ICC_DanielVideoDecoder, (IUnknown**)&m_pVideoDec); // create CPU decoder
 	
@@ -233,7 +233,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
 int DecodeDaniel2::DestroyDecoder()
 {
 	if (m_pVideoDec != nullptr)
-		m_pVideoDec->Done(CC_FALSE);
+		m_pVideoDec->Done(CC_FALSE); // call done for decoder with param CC_FALSE (without flush data to DataReady)
 
 	m_pVideoDec = nullptr;
 
@@ -246,7 +246,7 @@ int DecodeDaniel2::InitValues()
 
 	int res = 0;
 
-	for (size_t i = 0; i < iCountBlocks; i++)
+	for (size_t i = 0; i < iCountBlocks; i++) // allocating memory of list of blocks (C_Block)
 	{
 		m_listBlocks.push_back(C_Block());
 
@@ -266,6 +266,8 @@ int DecodeDaniel2::InitValues()
 
 int DecodeDaniel2::DestroyValues()
 {
+	// clear all queues and lists
+
 	m_queueFrames.Free();
 	m_queueFrames_free.Free();
 
@@ -280,9 +282,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	
 	com_ptr<ICC_VideoProducer> pVideoProducer;
 
-	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_VideoProducer, (void**)&pVideoProducer)))
+	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_VideoProducer, (void**)&pVideoProducer))) // get Producer
 		return hr;
 
+	///////////////////////////////////////////////
+	// getting information about the decoded frame
 	///////////////////////////////////////////////
 
 	com_ptr<ICC_VideoFrameInfo> pCCFrameInfo;
@@ -334,46 +338,44 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			DWORD cb = 0;
 
-			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb);
+			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 
-			pBlock->iFrameNumber = static_cast<size_t>(PTS);
+			pBlock->iFrameNumber = static_cast<size_t>(PTS); // save PTS (in our case this is the frame number)
 
 			m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 		}
 	}
 	else if (!m_bInitDecoder) // init values after first decoding frame
 	{
-		m_width = FrameSize.cx;
-		m_height = FrameSize.cy;
+		m_width = FrameSize.cx; // get width
+		m_height = FrameSize.cy; // get height
 
 		//CC_COLOR_FMT fmt = BitDepth == 8 ? CCF_RGB32 : CCF_RGB64;
 
-		CC_COLOR_FMT fmt = CCF_RGB30;
+		//if (BitDepth == 10)
+		//	fmt = CCF_RGB30;
 
-		DWORD iStride = 0;
-		pVideoProducer->GetStride(fmt, &iStride); // get stride
-		m_stride = (size_t)iStride;
+		CC_COLOR_FMT fmt = CCF_RGB30; // set output format
 
-		/*if (BitDepth == 10)
+		CC_BOOL bRes = CC_FALSE;
+		pVideoProducer->IsFormatSupported(fmt, &bRes);
+		if (bRes)
 		{
-			CC_BOOL bRes = CC_FALSE;
-			pVideoProducer->IsFormatSupported(CCF_RGB30, &bRes);
-			if (bRes)
-			{
-				fmt = CCF_RGB30;
-				pVideoProducer->GetStride(fmt, &iStride); // get stride
-				m_stride = (size_t)iStride;
-			}
-		}*/
+			DWORD iStride = 0;
+			pVideoProducer->GetStride(fmt, &iStride); // get stride
+			m_stride = (size_t)iStride;
 
-		m_fmt = fmt;
+			m_fmt = fmt;
 
-		m_outputImageFormat = BitDepth == 8 ? IMAGE_FORMAT_RGBA8BIT : IMAGE_FORMAT_RGBA16BIT;
+			if (m_fmt == CCF_RGB32)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+			else if (m_fmt == CCF_RGB64)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			else if (m_fmt == CCF_RGB30)
+				m_outputImageFormat = IMAGE_FORMAT_RGB30;
 
-		if (m_fmt == CCF_RGB30)
-			m_outputImageFormat = IMAGE_FORMAT_RGB30;
-
-		m_bInitDecoder = true;
+			m_bInitDecoder = true; // set init decoder value
+		}
 
 		m_eventInitDecoder.Set(); // set event about decoder was initialized
 	}
@@ -410,7 +412,7 @@ long DecodeDaniel2::ThreadProc()
 
 					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p", hr, coded_frame_size, coded_frame);
 
-					m_pVideoDec->Break(CC_FALSE); // break decoder
+					m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
 				}
 
 				m_file.UnmapFrame(frame); // add to queue free pointer for reading coded frame
@@ -429,7 +431,7 @@ long DecodeDaniel2::ThreadProc()
 		}
 	}
 
-	m_pVideoDec->Break(CC_FALSE); // break decoder
+	m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
 
 	m_file.StopPipe(); // stop pipeline for reading DN2 file
 
