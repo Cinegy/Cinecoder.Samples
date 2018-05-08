@@ -10,7 +10,6 @@
 #endif
 
 #if defined(__APPLE__)
-//#include <GL/freeglut.h> // Other Linker Flags: /usr/local/Cellar/freeglut/3.0.0/lib/libglut.3.10.0.dylib
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
@@ -113,7 +112,6 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 #endif
 
 #define GL_CLAMP_TO_EDGE 0x812F
-//#define GL_UNSIGNED_INT_2_10_10_10_REV 0x8368
 #define GL_UNSIGNED_INT_10_10_10_2 0x8036
 
 ///////////////////////////////////////////////////////
@@ -132,8 +130,8 @@ bool g_bFullScreen = false;
 
 bool g_bShowTicker = false;
 
-int window_width = 1280;
-int window_height = 720;
+int window_width = 1280; // start value for window width
+int window_height = 720; // start value for window height
 
 int iGLUTWindowHandle = 0; // Handle to the GLUT window
 
@@ -156,17 +154,16 @@ float sizeSquare2 = sizeSquare / 2;
 int g_mouse_state = -1;
 int g_mouse_button = -1;
 
-C_CritSec g_mutex;
+C_CritSec g_mutex; // global mutex
 
 ///////////////////////////////////////////////////////
 
 GLuint tex_result;  // Where we will copy result
 
-unsigned int image_width = 1280;
-unsigned int image_height = 720;
+unsigned int image_width = 1280; // start value for image width
+unsigned int image_height = 720; // start value for image height
 
 GLint g_internalFormat = GL_RGBA;
-//GLenum g_format = GL_RGBA;
 GLenum g_format = GL_BGRA_EXT;
 GLenum g_type = GL_UNSIGNED_BYTE;
 
@@ -213,10 +210,8 @@ bool gpu_initGLUT(int *argc, char **argv)
 	int iWinH = (int)monitorHeight;
 #endif
 
-	//iWinW = glutGet(GLUT_SCREEN_WIDTH);
-	//iWinH = glutGet(GLUT_SCREEN_HEIGHT);
-
 	float fKoeffDiv = (float)image_width / ((float)iWinW / 3.f);
+
 	// Correction start of window size using global height of monitor
 	while (window_height >= iWinH)
 		fKoeffDiv *= 1.5f;
@@ -273,7 +268,7 @@ void gpu_initGLBuffers()
 		g_internalFormat = GL_RGBA;
 		g_type = GL_UNSIGNED_BYTE;
 	}
-	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30)
+	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30) // R10G10B10A2 fromat
 	{
 		g_internalFormat = GL_RGB10;
 		g_format = GL_RGBA;
@@ -320,7 +315,7 @@ void gpu_UpdateGLSettings()
 
 int gpu_generateImage(bool & bRotateFrame)
 {
-	if (!decodeD2->isProcess() || decodeD2->isPause())
+	if (!decodeD2->isProcess() || decodeD2->isPause()) // check for pause or process
 		return 1;
 
 	C_Block *pBlock = decodeD2->MapFrame(); // Get poiter to picture after decoding
@@ -330,14 +325,14 @@ int gpu_generateImage(bool & bRotateFrame)
 
 	if (g_bCopyToTexture)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr());
+		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
 	}
 
 	bRotateFrame = pBlock->GetRotate() ? !bRotateFrame : bRotateFrame; // Rotate frame
 
-	g_bLastRotate = pBlock->GetRotate();
+	g_bLastRotate = pBlock->GetRotate(); // Save frame rotation value
 
-	iCurPlayFrameNumber = pBlock->iFrameNumber;
+	iCurPlayFrameNumber = pBlock->iFrameNumber; // Save currect frame number
 
 	decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
 
@@ -404,10 +399,10 @@ void Display()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 
-	if (g_bShowTicker)
+	if (g_bShowTicker) // draw ticker
 	{
-		GLint w = glutGet(GLUT_WINDOW_WIDTH);
-		GLint h = glutGet(GLUT_WINDOW_HEIGHT);
+		GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		sizeSquare2 = (float)w / 100;
 		edgeLineY = sizeSquare2 * 4;
@@ -426,11 +421,6 @@ void Display()
 
 		glLineWidth(2);
 		glColor4f(0.f, 1.f, 0.f, 0.5);
-
-		//glBegin(GL_LINES);
-		//glVertex2f(xCoord, yCoord-10);
-		//glVertex2f(xCoord, yCoord+10);
-		//glEnd();
 
 		if ((xCoord - sizeSquare2) > (0 + edgeLineX))
 		{
@@ -466,9 +456,7 @@ void Display()
 		glColor4f(0.f, 0.f, 0.f, 1.0);
 	}
 
-	glutSwapBuffers();
-
-	//glutPostRedisplay();
+	glutSwapBuffers(); // swaps the buffers of the current window if double buffered.
 
 	OGL_CHECK_ERROR_GL();
 
@@ -488,8 +476,8 @@ void ComputeFPS()
 		char cString[256];
 		std::string cTitle;
 
-		GLint w = glutGet(GLUT_WINDOW_WIDTH);
-		GLint h = glutGet(GLUT_WINDOW_HEIGHT);
+		GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		if (g_bPause)
 			sprintf_s(cString, "%s (%d x %d): %.1f fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
@@ -522,7 +510,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 #if defined (WIN32) || defined (_WIN32 )
 		glutLeaveMainLoop();
 #else
-		exit(0);
+		exit(0); // On MacOS we have error <Use of undeclared identifier 'glutLeaveMainLoop'> so we call exit(0)
 #endif
 		break;
 	}
@@ -620,7 +608,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		else
 		{
 			glutPositionWindow(100, 100); // Start position window
-			glutReshapeWindow(window_width, window_height);
+			glutReshapeWindow(window_width, window_height); // requests a change to the size of the current window.
 		}
 
 		if (g_bFullScreen)
@@ -675,6 +663,16 @@ void SpecialKeyboard(int key, int x, int y)
 		SeekToFrame(iAllFrames - 1);
 		break;
 	}
+	case GLUT_KEY_RIGHT:
+	{
+		SeekToFrame(iCurPlayFrameNumber + 1);
+		break;
+	}
+	case GLUT_KEY_LEFT:
+	{
+		SeekToFrame(iCurPlayFrameNumber - 1);
+		break;
+	}
 	default:
 		break;
 	}
@@ -703,7 +701,7 @@ void Reshape(int x, int y)
 void AnimateScene(void)
 {
 	// Force redraw
-	glutPostRedisplay(); //glutPostWindowRedisplay(iGLUTWindowHandle);
+	glutPostRedisplay();
 }
 
 void OnMouseClick(int button, int state, int x, int y)
@@ -726,8 +724,8 @@ void OnMouseClick(int button, int state, int x, int y)
 
 void OnMouseMove(int x, int y)
 {
-	GLint w = glutGet(GLUT_WINDOW_WIDTH);
-	GLint h = glutGet(GLUT_WINDOW_HEIGHT);
+	GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+	GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 	float fStartY = (float)h - (edgeLineY * 2.f);
 	float fStopY = (float)h;
@@ -737,6 +735,7 @@ void OnMouseMove(int x, int y)
 		if (g_mouse_state == GLUT_DOWN && g_mouse_button == GLUT_LEFT_BUTTON)
 		{
 			SeekToFrame(x, y);
+			Display(); // update frame to improve performance of scrubbing
 		}
 
 		g_bShowTicker = true;
@@ -759,8 +758,6 @@ void SetPause(bool bPause)
 
 void SetVerticalSync(bool bVerticalSync)
 {
-	// https://stackoverflow.com/questions/2083912/how-to-enable-vsync-in-opengl
-
 #if defined (WIN32) || defined (_WIN32 )
 	if (!g_wglSwapInterval)
 	{
@@ -784,30 +781,30 @@ void SeekToFrame(size_t iFrame)
 {
 	C_AutoLock lock(&g_mutex);
 
-	decodeD2->GetReaderPtr()->SeekFrame(iFrame);
+	decodeD2->GetReaderPtr()->SeekFrame(iFrame); // Setting the reading of the input file from the expected frame (from frame number <iFrame>)
 
 	size_t nReadFrame = 0;
 	C_Block *pBlock = nullptr;
 
 	for (size_t i = 0; i < 15; i++)
 	{
-		pBlock = decodeD2->MapFrame();
-		nReadFrame = pBlock->iFrameNumber;
-		if (nReadFrame == iFrame)
+		pBlock = decodeD2->MapFrame(); // Get poiter to picture after decoding
+		nReadFrame = pBlock->iFrameNumber; // Get currect frame number
+		if (nReadFrame == iFrame) // Search for the expected frame
 		{
 			if (g_bCopyToTexture)
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr());
+				glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
 			}
-			iCurPlayFrameNumber = iFrame;
-			decodeD2->UnmapFrame(pBlock);
-			SetPause(true);
+			iCurPlayFrameNumber = iFrame; // Save currect frame number
+			decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
+			SetPause(true); // Set pause enable
 			printf("seek to frame %zu\n", iFrame);
 			break;
 		}
-		decodeD2->UnmapFrame(pBlock);
+		decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
 	}
-	if (nReadFrame != iFrame)
+	if (nReadFrame != iFrame) // The expected frame was not found
 	{
 		printf("Cannot seek to frame %zu\n", iFrame);
 	}
@@ -815,8 +812,8 @@ void SeekToFrame(size_t iFrame)
 
 void SeekToFrame(int x, int y)
 {
-	GLint w = glutGet(GLUT_WINDOW_WIDTH);
-	GLint h = glutGet(GLUT_WINDOW_HEIGHT);
+	GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+	GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 	sizeSquare2 = (float)w / 100;
 	edgeLineY = sizeSquare2 * 4;
@@ -830,11 +827,11 @@ void SeekToFrame(int x, int y)
 	x -= (int)edgeLineX;
 
 	if ((x >= iStartX) && (x <= iStopX) &&
-		(y >= iStartY) && (y <= iStopY))
+		(y >= iStartY) && (y <= iStopY)) // Get the frame number based on the coordinates (x,y)
 	{
 		size_t iFrame = (size_t)(((float)x * (float)iAllFrames) / ((float)w - (2.f * edgeLineX)));
 
-		SeekToFrame(iFrame);
+		SeekToFrame(iFrame); // Seek to frame number <iFrame>
 	}
 }
 
@@ -862,8 +859,13 @@ void printHelp(void)
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'d':                on/off decoder\n");
+	printf("'J'/'K'/'L':        change direction video or pause\n");
+	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");
 	printf("'HOME':             seek to first frame\n");
 	printf("'END':              seek to last frame\n");
+
+	printf("\n\nPress Enter to Exit\n");
+	std::cin.get();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -875,11 +877,7 @@ int main(int argc, char **argv)
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
 		argc == 1)
 	{
-		printHelp();
-		
-		printf("\n\nPress Enter to Exit\n");
-		char ch;
-		scanf_s("%c",&ch);
+		printHelp(); // Print help info
 		return 0;
 	}
 
@@ -893,22 +891,22 @@ int main(int argc, char **argv)
 
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
-		iMaxCountDecoders = atoi(str);
+		iMaxCountDecoders = atoi(str); // max count of decoders [1..4] (default: 2)
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
 	{
-		g_bVSync = true;
+		g_bVSync = true; // on/off vertical synchronisation
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "rotate_frame"))
 	{
-		g_bRotate = true;
+		g_bRotate = true; // on/off rotate image
 	}
 
 	int res = 0;
 
-	decodeD2 = std::make_shared<DecodeDaniel2>();
+	decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
 
 	if (!decodeD2)
 	{
@@ -916,7 +914,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders);
+	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders); // Open input DN2 file
 
 	if (res != 0)
 	{
@@ -927,7 +925,7 @@ int main(int argc, char **argv)
 	image_width = (unsigned int)decodeD2->GetImageWidth();	// Get image width
 	image_height = (unsigned int)decodeD2->GetImageHeight(); // Get image height
 
-	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames();
+	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames(); // Get count of frames
 
 	gpu_initGLUT(&argc, argv); // Init GLUT
 
