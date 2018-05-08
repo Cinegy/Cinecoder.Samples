@@ -735,7 +735,7 @@ void OnMouseMove(int x, int y)
 		if (g_mouse_state == GLUT_DOWN && g_mouse_button == GLUT_LEFT_BUTTON)
 		{
 			SeekToFrame(x, y);
-			Display(); // update frame
+			Display(); // update frame to improve performance of scrubbing
 		}
 
 		g_bShowTicker = true;
