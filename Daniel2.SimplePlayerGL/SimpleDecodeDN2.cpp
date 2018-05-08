@@ -666,11 +666,13 @@ void SpecialKeyboard(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 	{
 		SeekToFrame(iCurPlayFrameNumber + 1);
+		Display();
 		break;
 	}
 	case GLUT_KEY_LEFT:
 	{
 		SeekToFrame(iCurPlayFrameNumber - 1);
+		Display();
 		break;
 	}
 	default:
