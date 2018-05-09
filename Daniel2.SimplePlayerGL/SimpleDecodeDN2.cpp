@@ -493,6 +493,9 @@ void ComputeFPS()
 		default: break;
 		}
 
+		cTitle += " cur_frm=";
+		cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
+
 		glutSetWindowTitle(cTitle.c_str());
 
 		fpsCount = 0;
@@ -666,18 +669,18 @@ void SpecialKeyboard(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 	{
 		SeekToFrame(iCurPlayFrameNumber + 1);
-		Display();
 		break;
 	}
 	case GLUT_KEY_LEFT:
 	{
 		SeekToFrame(iCurPlayFrameNumber - 1);
-		Display();
 		break;
 	}
 	default:
 		break;
 	}
+
+	Display(); // update frame
 }
 
 void Cleanup()
