@@ -112,6 +112,7 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 #endif
 
 #define GL_CLAMP_TO_EDGE 0x812F
+#define GL_UNSIGNED_INT_2_10_10_10_REV 0x8368
 #define GL_UNSIGNED_INT_10_10_10_2 0x8036
 
 ///////////////////////////////////////////////////////
@@ -267,12 +268,15 @@ void gpu_initGLBuffers()
 	{
 		g_internalFormat = GL_RGBA;
 		g_type = GL_UNSIGNED_BYTE;
+		//g_format = GL_BGRA_EXT;
+		g_format = GL_RGBA;      // this one is 2x faster
 	}
 	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30) // R10G10B10A2 fromat
 	{
 		g_internalFormat = GL_RGB10;
 		g_format = GL_RGBA;
-		g_type = GL_UNSIGNED_INT_10_10_10_2;
+		//g_type = GL_UNSIGNED_INT_10_10_10_2;
+		g_type = GL_UNSIGNED_INT_2_10_10_10_REV;	// this one is 2x faster
 	}
 	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT) // RGBA 16 bit
 	{

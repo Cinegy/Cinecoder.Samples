@@ -355,7 +355,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		//if (BitDepth == 10)
 		//	fmt = CCF_RGB30;
 
-		CC_COLOR_FMT fmt = CCF_RGB30; // set output format
+		CC_COLOR_FMT fmt = CCF_BGR32;//CCF_RGB30; // set output format
 
 		CC_BOOL bRes = CC_FALSE;
 		pVideoProducer->IsFormatSupported(fmt, &bRes);
@@ -367,7 +367,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			m_fmt = fmt;
 
-			if (m_fmt == CCF_RGB32)
+			if (m_fmt == CCF_RGB32 || m_fmt == CCF_BGR32)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_RGB64)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
