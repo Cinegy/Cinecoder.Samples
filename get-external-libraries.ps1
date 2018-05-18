@@ -26,7 +26,9 @@ if ($PSVersionTable.PSEdition -eq "Core" -And $($PSVersionTable.OS).StartsWith("
 	}
 	else
 	{
-		Remove-Item -Path ./_toolkits/cinecoder -Force -Recurse
+		try { Remove-Item -Path ./_toolkits/cinecoder -Force -Recurse }
+		catch{}
+
 		Write-Host "Downloading ZIP with Cinecoder package... please be patient"
 		New-Item -Path ./_toolkits/cinecoder -ItemType Directory -Force
 		Invoke-WebRequest -ContentType "application/octet-stream" -Uri $Cinecoder_Package_url -OutFile ./_toolkits/cinecoder/$CinecoderPackageName
