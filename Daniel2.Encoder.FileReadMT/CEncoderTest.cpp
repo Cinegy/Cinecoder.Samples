@@ -71,7 +71,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 
 	if (FAILED(hr = pFileWriter->Create(CComBSTR(par.OutputFileName))))
 		return print_error(hr, "Output file creation error");
-#if 1
+#if 0
 	if (FAILED(hr = pEncoder->put_OutputCallback(pFileWriter)))
 		return print_error(hr, "Encoder cb assignment error");
 #else
@@ -96,7 +96,13 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = pIndexWriter->put_IndexCallback(pDataWriterEx)))
 		return print_error(hr, "Index writer cb 2 assignment error");
 
-	if (FAILED(hr = pIndexFileWriter->Create(CComBSTR(CString(par.OutputFileName) ))))
+	// making a proper filename for the video index
+	TCHAR drive[MAX_PATH], dir[MAX_PATH], name[MAX_PATH], ext[MAX_PATH];
+	_tsplitpath(par.OutputFileName, drive, dir, name, ext);
+	TCHAR mvx_name[MAX_PATH];
+	_tmakepath(mvx_name, drive, dir, name, _T(".mvx"));
+
+	if (FAILED(hr = pIndexFileWriter->Create(CComBSTR(mvx_name))))
 		return print_error(hr, "Output file creation error");
 #endif
 	m_pEncoder = pEncoder;
