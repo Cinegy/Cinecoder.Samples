@@ -323,7 +323,7 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 		SetFilePointer(hFile, (LONG)offset, ((LONG*)&offset)+1, FILE_BEGIN);
 
 		DWORD r;
-		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, m_FrameSizeInBytes, &r, NULL))
+		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r, NULL))
 		{
 			bufdescr.hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
 			SetEvent(bufdescr.evFilled);
