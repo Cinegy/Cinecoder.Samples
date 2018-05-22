@@ -7,6 +7,7 @@
 #include <Cinecoder_i.c>
 
 #include "../cinecoder_license_string.h"
+#include "../cinecoder_error_handler.h"
 
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *args);
 int print_help();
@@ -19,6 +20,8 @@ int _tmain(int argc, TCHAR *argv[])
 
     if(argc < 3)
     	return print_help();
+
+	Cinecoder_SetErrorHandler(&g_ErrorHandler);
 
 	CC_VERSION_INFO ver = Cinecoder_GetVersion();
 	printf("The Cinecoder version is %d.%02d.%02d.%d\n", ver.VersionHi, ver.VersionLo, ver.EditionNo, ver.RevisionNo);
