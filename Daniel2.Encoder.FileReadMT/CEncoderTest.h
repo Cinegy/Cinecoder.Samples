@@ -11,11 +11,17 @@ struct TEST_PARAMS
 	LPCSTR						LicenseKey;
 
 	LPCTSTR						InputFileName;
+	BOOL						SetOfFiles;
+	int							FileSize;
+	int							DataOffset;		
+
 	LPCTSTR						OutputFileName;
 
 	int							Width, Height;
 	int							FrameRateN, FrameRateD;
 	CC_COLOR_FMT				InputColorFormat;
+	int							InputPitch;
+	CC_PICTURE_ORIENTATION		PictureOrientation;
 	int							StartFrameNum, StopFrameNum;
 	bool						Looped;
 

@@ -53,6 +53,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 
 	pSettings->put_ChromaFormat(par.ChromaFormat);
 	pSettings->put_BitDepth(par.BitDepth);
+	pSettings->put_PictureOrientation(par.PictureOrientation);
 
 	pSettings->put_RateMode(par.BitrateMode);
 	pSettings->put_BitRate(par.Bitrate);
@@ -124,18 +125,28 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 
 	m_FrameSizeInBytes = 0;// par.ReadBlockSize;
 
-	switch (par.InputColorFormat)
+	if(par.SetOfFiles)
+	{
+		m_FrameSizeInBytes = par.FileSize;
+	}
+	else switch (par.InputColorFormat)
 	{
 	case CCF_UYVY:
 	case CCF_YUY2:
 		m_FrameSizeInBytes = par.Height * par.Width * 2;
 		break;
+	
 	case CCF_V210:
 		m_FrameSizeInBytes = par.Height * ((par.Width + 47) / 48) * 128;
 		break;
+
 	case CCF_RGB30:
 		m_FrameSizeInBytes = par.Height * par.Width * 4;
+
+	case CCF_RGB48:
+		m_FrameSizeInBytes = par.Height * par.Width * 6;
 		break;
+
 	default:
 		return print_error(E_INVALIDARG, "The color format is not supported by test app"), E_INVALIDARG;
 	}
@@ -284,7 +295,10 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 {
     fprintf(stderr, "Reading thread %lu is started\n", GetCurrentThreadId());
 
-    HANDLE hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+
+    if(!m_EncPar.SetOfFiles)
+	    hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
 
     //if(hFile == INVALID_HANDLE_VALUE)
     //	return fprintf(stderr, "Thread %d: error %08xh opening the file\n", GetCurrentThreadId(), HRESULT_FROM_WIN32(GetLastError())), HRESULT_FROM_WIN32(GetLastError());
@@ -319,8 +333,18 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 				frame_no = m_EncPar.StopFrameNum - frame_no % (1-num_frames_in_range);
 		}
 
-		LONGLONG offset = frame_no * LONGLONG(m_FrameSizeInBytes);
-		SetFilePointer(hFile, (LONG)offset, ((LONG*)&offset)+1, FILE_BEGIN);
+	    if(m_EncPar.SetOfFiles)
+	    {
+	    	TCHAR filename[MAX_PATH];
+	    	_stprintf(filename, m_EncPar.InputFileName, frame_no);
+	        hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
+
+	    }
+	    else
+	    {
+			LONGLONG offset = frame_no * LONGLONG(m_FrameSizeInBytes);
+			SetFilePointer(hFile, (LONG)offset, ((LONG*)&offset)+1, FILE_BEGIN);
+		}
 
 		DWORD r;
 		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r, NULL))
@@ -336,6 +360,12 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 			SetEvent(bufdescr.evFilled);
 			break;
 		}
+
+	    if(m_EncPar.SetOfFiles)
+	    {
+	    	CloseHandle(hFile);
+	    	hFile = INVALID_HANDLE_VALUE;
+	    }
 
 		InterlockedIncrement(&m_Stats.NumFramesRead);
 		InterlockedAdd64(&m_Stats.NumBytesRead, m_FrameSizeInBytes);
@@ -395,13 +425,15 @@ DWORD	CEncoderTest::EncodingThreadProc()
 			break;
 		}
 
-		CC_VIDEO_FRAME_DESCR frame_descr = { m_EncPar.InputColorFormat };
+		CC_VIDEO_FRAME_DESCR frame_descr = {};
+		frame_descr.cFormat = m_EncPar.InputColorFormat;
+		frame_descr.iStride = m_EncPar.InputPitch;
 
 		if (CComQIPtr<ICC_VideoConsumerExtAsync> pEncAsync = m_pEncoder)
 		{
 			hr = pEncAsync->AddScaleFrameAsync(
-				m_Queue[buffer_id].pBuffer,
-				m_FrameSizeInBytes,
+				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				CComPtr<IUnknown>(),
 				nullptr);
@@ -409,8 +441,8 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		else
 		{
 			hr = m_pEncoder->AddScaleFrame(
-				m_Queue[buffer_id].pBuffer,
-				m_FrameSizeInBytes,
+				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				NULL);
 		}
