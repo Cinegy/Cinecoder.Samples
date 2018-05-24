@@ -38,7 +38,7 @@ DecodeDaniel2::~DecodeDaniel2()
 	m_file.CloseFile(); // close reading DN2 file
 }
 
-int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders)
+int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
 { 
 	m_bInitDecoder = false;
 
@@ -47,7 +47,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 	iMaxCountDecoders = std::max((size_t)1, std::min(iMaxCountDecoders, (size_t)4)); // 1..4
 	
 	if (res == 0)
-		res = CreateDecoder(iMaxCountDecoders); // create decoders
+		res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
 
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
@@ -158,7 +158,7 @@ void DecodeDaniel2::UnmapFrame(C_Block* pBlock)
 	}
 }
 
-int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
+int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 {
 	HRESULT hr = S_OK;
 
@@ -185,12 +185,32 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
 
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
 
-	hr = piFactory->CreateInstance(CLSID_CC_DanielVideoDecoder, IID_ICC_DanielVideoDecoder, (IUnknown**)&m_pVideoDec); // create CPU decoder
+	if(useCuda)
+	{
+		hr = piFactory->CreateInstance(CLSID_CC_DanielVideoDecoder_CUDA, IID_ICC_DanielVideoDecoder_CUDA, (IUnknown**)&m_pVideoDec); // create GPU decoder
+	}
+	else
+	{
+		hr = piFactory->CreateInstance(CLSID_CC_DanielVideoDecoder, IID_ICC_DanielVideoDecoder, (IUnknown**)&m_pVideoDec); // create CPU decoder
+	}
+	
 	
 	if (FAILED(hr))
 	{
 		printf("DecodeDaniel2: CreateInstance failed!");
 		return hr;
+	}
+	
+	if (useCuda) //CUDA decoder needs a little extra help getting the color format correct
+	{
+		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
+		m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda);
+
+		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // set count of decoders in carousel of decoders
+		{
+			printf("DecodeDaniel2: put_TargetColorFormat failed!");
+			return hr;
+		}
 	}
 
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
@@ -201,7 +221,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders)
 		printf("DecodeDaniel2: put_ProcessDataPolicy failed!");
 		return hr;
 	}
-
+	
 	com_ptr<ICC_ConcurrencyLevelProp> pConcur;
 	m_pVideoDec->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur);
 

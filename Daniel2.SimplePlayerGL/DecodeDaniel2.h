@@ -57,7 +57,7 @@ public:
 	~DecodeDaniel2();
 
 public:
-	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2);
+	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2,bool useCuda = false);
 	int StartDecode();
 	int StopDecode();
 
@@ -76,7 +76,7 @@ public:
 	ReadFileDN2* GetReaderPtr() { return &m_file; }
 
 private:
-	int CreateDecoder(size_t iMaxCountDecoders);
+	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);
 	int DestroyDecoder();
 
 	int InitValues();

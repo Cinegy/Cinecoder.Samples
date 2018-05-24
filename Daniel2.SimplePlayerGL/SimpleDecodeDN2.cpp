@@ -123,6 +123,7 @@ bool g_bPause = false;
 bool g_bVSync = false;
 bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
+bool g_useCuda = false;
 
 bool g_bCopyToTexture = true;
 bool g_bDecoder = true;
@@ -857,6 +858,9 @@ void printHelp(void)
 	printf("-decoders <N>      max count of decoders [1..4] (default: 2)\n");
 	printf("-vsync             enable vertical synchronisation (default - disable)\n");
 	printf("-rotate_frame      enable rotate frame (default - disable)\n");
+#if defined (WIN32) || defined (_WIN32 )	
+	printf("-cuda		       enable CUDA decoding (default - disable, PC only)\n");
+#endif
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
@@ -910,6 +914,14 @@ int main(int argc, char **argv)
 		g_bRotate = true; // on/off rotate image
 	}
 
+#if defined (WIN32) || defined (_WIN32 )
+	if (checkCmdLineArg(argc, (const char **)argv, "cuda"))
+	{
+		g_useCuda = true; // use CUDA decoder rather than CPU decoder
+
+	}
+#endif
+
 	int res = 0;
 
 	decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
@@ -920,7 +932,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders); // Open input DN2 file
+	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda); // Open input DN2 file
 
 	if (res != 0)
 	{
