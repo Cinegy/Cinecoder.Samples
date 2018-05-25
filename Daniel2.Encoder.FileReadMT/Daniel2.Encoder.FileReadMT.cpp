@@ -168,7 +168,7 @@ int print_help()
 		"\n"
 		"Sample usage (raw dile):\n"
 		"> Daniel2.DPXEncoder.exe old_town_cross_2160p50.yuy2 test.dn2 /raw=V210:3840x2160 /bits=10 /fps=60 /method=0 /chroma=422 /cbr=600\n"
-		"Set of DPX files:"
+		"Set of DPX files:\n"
 		"> Daniel2.DPXEncoder.exe Animation_#####.dpx test.dn2 /start=0 /stop=9999 /bits=12 /fps=60 /method=2 /chroma=RGBA /cq=16 /nread=8\n"
 	);
 
