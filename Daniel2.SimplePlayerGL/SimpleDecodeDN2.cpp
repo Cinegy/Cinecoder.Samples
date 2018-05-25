@@ -22,22 +22,27 @@
 
 ///////////////////////////////////////////////////////
 
+inline const char * getRefStrArgShift(const char *argv, char ch)
+{
+	const char *str_argv = argv;
+
+	size_t shift = 0;
+
+	while (str_argv[shift] == ch) shift++;
+
+	if (shift < strlen(str_argv))
+		str_argv += shift;
+
+	return str_argv;
+}
+
 inline bool checkCmdLineArg(const int argc, const char **argv, const char *str_ref)
 {
 	bool bFound = false;
 
 	for (int i = 1; i < argc; i++)
 	{
-		const char *str_argv = argv[i];
-
-		int shift = 0;
-
-		while (str_argv[shift] == '-') shift++;
-
-		if (shift < (int)strlen(str_argv) - 1)
-			str_argv += shift;
-
-		if (strcmp(str_argv, str_ref) == 0)
+		if (strcmp(getRefStrArgShift(argv[i], '-'), str_ref) == 0)
 		{
 			bFound = true;
 			break;
@@ -53,16 +58,7 @@ inline bool getCmdLineArgStr(const int argc, const char **argv, const char *str_
 
 	for (int i = 1; i < argc; i++)
 	{
-		char *str_argv = (char *)argv[i];
-
-		int shift = 0;
-
-		while (str_argv[shift] == '-') shift++;
-
-		if (shift < (int)strlen(str_argv) - 1)
-			str_argv += shift;
-
-		if (strcmp(str_argv, str_ref) == 0)
+		if (strcmp(getRefStrArgShift(argv[i], '-'), str_ref) == 0)
 		{
 			if ((i + 1) < argc)
 			{
@@ -498,6 +494,9 @@ void ComputeFPS()
 		default: break;
 		}
 
+		cTitle += " cur_frm=";
+		cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
+
 		glutSetWindowTitle(cTitle.c_str());
 
 		fpsCount = 0;
@@ -671,18 +670,18 @@ void SpecialKeyboard(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 	{
 		SeekToFrame(iCurPlayFrameNumber + 1);
-		Display();
 		break;
 	}
 	case GLUT_KEY_LEFT:
 	{
 		SeekToFrame(iCurPlayFrameNumber - 1);
-		Display();
 		break;
 	}
 	default:
 		break;
 	}
+
+	Display(); // update frame
 }
 
 void Cleanup()
