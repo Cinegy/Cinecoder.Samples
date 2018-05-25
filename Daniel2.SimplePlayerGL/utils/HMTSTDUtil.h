@@ -235,7 +235,7 @@ namespace cinegy
 				for (;;)
 				{
 					if (this->SoftGet(ppBlock, remove)) return true;
-					if (hExitEvent.Check() && m_evMySignal.Check()) break;
+					if (hExitEvent.Wait(1) && m_evMySignal.Wait(1)) break;
 				}
 
 				return false;
