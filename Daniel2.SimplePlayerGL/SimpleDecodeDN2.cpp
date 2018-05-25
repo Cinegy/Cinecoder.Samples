@@ -720,6 +720,7 @@ void OnMouseClick(int button, int state, int x, int y)
 			SetPause(!g_bPause);
 		}
 	}
+	Display(); // update frame to improve performance of scrubbing
 }
 
 void OnMouseMove(int x, int y)
