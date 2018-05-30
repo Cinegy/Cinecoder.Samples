@@ -98,6 +98,12 @@ public:
 	{
 		return m_iSpeed;
 	}
+	CC_ELEMENTARY_STREAM_TYPE GetStreamType()
+	{
+		CC_ELEMENTARY_STREAM_TYPE type;
+		m_fileMvx->get_StreamType(&type);
+		return type;
+	}
 
 public:
 	CodedFrame* MapFrame();

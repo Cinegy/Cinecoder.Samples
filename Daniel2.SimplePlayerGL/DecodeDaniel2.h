@@ -34,6 +34,7 @@ private:
 	size_t m_stride;
 	IMAGE_FORMAT m_outputImageFormat;
 	CC_COLOR_FMT m_fmt;
+	const char* m_strStreamType;
 
 	bool m_bProcess;
 	bool m_bPause;
@@ -50,7 +51,7 @@ private:
 
 	std::list<C_Block> m_listBlocks;
 
-	com_ptr<ICC_DanielVideoDecoder> m_pVideoDec;
+	com_ptr<ICC_VideoDecoder> m_pVideoDec;
 
 public:
 	DecodeDaniel2();
