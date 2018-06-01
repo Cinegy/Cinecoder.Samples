@@ -36,6 +36,8 @@ private:
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
 
+	CC_FRAME_RATE m_FrameRate;
+
 	bool m_bProcess;
 	bool m_bPause;
 	bool m_bInitDecoder;
@@ -75,6 +77,8 @@ public:
 	void SetPause(bool bPause) { m_bPause = bPause; }
 
 	ReadFileDN2* GetReaderPtr() { return &m_file; }
+
+	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
 
 private:
 	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);

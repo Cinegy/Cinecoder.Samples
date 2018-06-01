@@ -26,6 +26,8 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_pVideoDec(nullptr),
 	m_strStreamType("Unknown")
 {
+	m_FrameRate.num = 60;
+	m_FrameRate.denom = 1;
 }
 
 DecodeDaniel2::~DecodeDaniel2()
@@ -367,6 +369,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	}
 	else if (!m_bInitDecoder) // init values after first decoding frame
 	{
+		m_FrameRate = FrameRate;
+
 		m_width = FrameSize.cx; // get width
 		m_height = FrameSize.cy; // get height
 

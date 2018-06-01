@@ -120,6 +120,7 @@ bool g_bVSync = false;
 bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
+bool g_bVSyncHand = true;
 
 bool g_bCopyToTexture = true;
 bool g_bDecoder = true;
@@ -168,6 +169,9 @@ GLenum g_type = GL_UNSIGNED_BYTE;
 // Timer
 static int fpsCount = 0;
 C_Timer timer;
+
+C_Timer timerqFPSMode;
+double ValueFPS = 60.0;
 
 ///////////////////////////////////////////////////////
 
@@ -344,6 +348,22 @@ void Display()
 {
 	C_AutoLock lock(&g_mutex);
 
+	if (!g_bVSync && g_bVSyncHand)
+	{
+		double timestep = 1000.0 / ValueFPS;
+
+		double ms_elapsed = timerqFPSMode.GetElapsedTime();
+
+		if (ms_elapsed < timestep)
+		{
+			return;
+		}
+		else
+		{
+			timerqFPSMode.StartTimer();
+		}
+	}
+
 	bool bRotate = g_bRotate;
 
 	int res = 1;
@@ -470,9 +490,9 @@ void ComputeFPS()
 	fpsCount++;
 	double time = timer.GetElapsedTime();
 
-	if (time > 1000.0f)
+	if (time >= 1000.0f)
 	{
-		double fps = (fpsCount / (time / 1000.0f));
+		double fps = (fpsCount / (time / 1000.0));
 
 		char cString[256];
 		std::string cTitle;
@@ -481,9 +501,9 @@ void ComputeFPS()
 		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		if (g_bPause)
-			sprintf_s(cString, "%s (%d x %d): %.1f fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.lf fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.1f fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.lf fps", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)
@@ -918,7 +938,6 @@ int main(int argc, char **argv)
 	if (checkCmdLineArg(argc, (const char **)argv, "cuda"))
 	{
 		g_useCuda = true; // use CUDA decoder rather than CPU decoder
-
 	}
 #endif
 
@@ -945,12 +964,16 @@ int main(int argc, char **argv)
 
 	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames(); // Get count of frames
 
+	ValueFPS = decodeD2->GetFrameRate(); // get frame rate
+
 	gpu_initGLUT(&argc, argv); // Init GLUT
 
 	gpu_initGLBuffers(); // Init GL buffers
 
 	// Start timer
 	timer.StartTimer();
+	
+	timerqFPSMode.StartTimer();
 
 	decodeD2->StartDecode(); // Start decoding
 
