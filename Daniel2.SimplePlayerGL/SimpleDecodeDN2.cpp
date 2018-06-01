@@ -120,6 +120,8 @@ bool g_bVSync = false;
 bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
+
+bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
 
 bool g_bCopyToTexture = true;
@@ -348,7 +350,7 @@ void Display()
 {
 	C_AutoLock lock(&g_mutex);
 
-	if (!g_bVSync && g_bVSyncHand)
+	if (!g_bVSync && !g_bMaxFPS && g_bVSyncHand)
 	{
 		double timestep = 1000.0 / ValueFPS;
 
@@ -598,15 +600,27 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		break;
 	}
 
-	case 'v':
-	{
-		g_bVSync = !g_bVSync;
-		SetVerticalSync(g_bVSync);
+	//case 'v':
+	//{
+	//	g_bVSync = !g_bVSync;
+	//	SetVerticalSync(g_bVSync);
 
-		if (g_bVSync)
-			printf("vertical synchronisation: on\n");
+	//	if (g_bVSync)
+	//		printf("vertical synchronisation: on\n");
+	//	else
+	//		printf("vertical synchronisation: off\n");
+
+	//	break;
+	//}
+
+	case 'm':
+	{
+		g_bMaxFPS = !g_bMaxFPS;
+
+		if (g_bMaxFPS)
+			printf("maximum playing fps: on\n");
 		else
-			printf("vertical synchronisation: off\n");
+			printf("maximum playing fps: off\n");
 
 		break;
 	}
@@ -876,7 +890,8 @@ void printHelp(void)
 	printf("Options:\n");
 	printf("-help              display this help menu\n");
 	printf("-decoders <N>      max count of decoders [1..4] (default: 2)\n");
-	printf("-vsync             enable vertical synchronisation (default - disable)\n");
+	//printf("-vsync             enable vertical synchronisation (default - disable)\n");
+	printf("-fpsmax            enable maximum playing fps (default - disable)\n");
 	printf("-rotate_frame      enable rotate frame (default - disable)\n");
 #if defined (WIN32) || defined (_WIN32 )	
 	printf("-cuda		       enable CUDA decoding (default - disable, PC only)\n");
@@ -884,7 +899,8 @@ void printHelp(void)
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
-	printf("'v':                on/off vertical synchronisation\n");
+	//printf("'v':                on/off vertical synchronisation\n");
+	printf("'m':                on/off maximum playing fps\n");
 	printf("'r':                on/off rotate image\n");
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
@@ -924,9 +940,14 @@ int main(int argc, char **argv)
 		iMaxCountDecoders = atoi(str); // max count of decoders [1..4] (default: 2)
 	}
 
-	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
+	//if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
+	//{
+	//	g_bVSync = true; // on/off vertical synchronisation
+	//}
+
+	if (checkCmdLineArg(argc, (const char **)argv, "fpsmax"))
 	{
-		g_bVSync = true; // on/off vertical synchronisation
+		g_bMaxFPS = true; // on/off maximum playing fps
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "rotate_frame"))
