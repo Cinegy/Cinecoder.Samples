@@ -503,9 +503,9 @@ void ComputeFPS()
 		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		if (g_bPause)
-			sprintf_s(cString, "%s (%d x %d): %.lf fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.2g fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.lf fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.2g fps", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)
