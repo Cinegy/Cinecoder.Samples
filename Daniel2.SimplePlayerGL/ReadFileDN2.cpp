@@ -108,7 +108,7 @@ int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, si
 	if (m_file.is_open())
 	{
 		CC_MVX_ENTRY Idx;
-		if (!SUCCEEDED(m_fileMvx->FindEntry((CC_UINT)frame, &Idx)))
+		if (!SUCCEEDED(m_fileMvx->FindEntryByCodingNumber((CC_UINT)frame, &Idx)))
 			return -1;
 
 		size_t offset = (size_t)Idx.Offset;

@@ -90,7 +90,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		if (SUCCEEDED(hr)) 
 			hr = m_pVideoDec->Break(CC_TRUE); // break decoder and flush data from decoder (call DataReady)
 
-		if (!m_eventInitDecoder.Wait(10000) || !m_bInitDecoder) // wait 10 second for init decode
+		if (!m_eventInitDecoder.Wait(2000) || !m_bInitDecoder) // wait 2 seconds for init decode
 		{
 			printf("Init decode - failed!\n");
 			return -1; // if could not decode the 0-frame until 10 second, return an error
@@ -108,6 +108,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
+		printf("frame rate    : %g\n", (double)m_FrameRate.num / m_FrameRate.denom);
 		printf("output format : ");
 		switch (m_outputImageFormat)
 		{
@@ -199,6 +200,18 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			m_strStreamType = "AVC-Intra";
 			break;
 
+		case CC_ES_TYPE_VIDEO_MPEG2:
+			clsidDecoder = CLSID_CC_MpegVideoDecoder;
+			useCuda = false;
+			m_strStreamType = "MPEG";
+			break;
+
+		case CC_ES_TYPE_VIDEO_H264:
+			clsidDecoder = CLSID_CC_H264VideoDecoder;
+			useCuda = false;
+			m_strStreamType = "H.264";
+			break;
+
 		default:
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
 			m_strStreamType = "Daniel";
@@ -220,21 +233,19 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	}
 
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
-	
-	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
-		return  printf("DecodeDaniel2: Failed to get ICC_ProcessDataPolicyProp interface"), hr;
+	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
+	{
+		if (FAILED(hr = pPolicy->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
+			return printf("DecodeDaniel2: put_ProcessDataPolicy failed!"), hr;
+	}
 
-	if (FAILED(hr = pPolicy->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
-		return printf("DecodeDaniel2: put_ProcessDataPolicy failed!"), hr;
-	
 	com_ptr<ICC_ConcurrencyLevelProp> pConcur;
-	
-	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur)))
-		return  printf("DecodeDaniel2: Failed to get ICC_ConcurrencyLevelProp interface"), hr;
-
-	// set count of decoders in carousel of decoders
-	if (FAILED(hr = pConcur->put_ConcurrencyLevel(static_cast<CC_AMOUNT>(iMaxCountDecoders))))
-		return printf("DecodeDaniel2: put_ConcurrencyLevel failed!"), hr;
+	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur)))
+	{
+		// set count of decoders in carousel of decoders
+		if (FAILED(hr = pConcur->put_ConcurrencyLevel(static_cast<CC_AMOUNT>(iMaxCountDecoders))))
+			return printf("DecodeDaniel2: put_ConcurrencyLevel failed!"), hr;
+	}
 
 	// set output callback
 	if (FAILED(hr = m_pVideoDec->put_OutputCallback((ICC_DataReadyCallback *)this)))
