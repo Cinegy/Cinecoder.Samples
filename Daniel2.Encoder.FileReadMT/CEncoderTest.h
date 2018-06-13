@@ -72,6 +72,10 @@ private:
 
 	TEST_PARAMS	m_EncPar{};
 	CComPtr<ICC_VideoEncoder> m_pEncoder;
+
+	CComPtr<ICC_ClassFactory> m_pFactory;
+	CComPtr<ICC_Multiplexer> m_pMuxer;
+	
 	DWORD m_FrameSizeInBytes{};
 
 	BOOL m_bRunning;

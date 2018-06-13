@@ -21,7 +21,9 @@ class C_CinecoderErrorHandler : public ICC_ErrorHandler
    }
    STDMETHOD(ErrorHandlerFunc)(HRESULT ErrCode, LPCSTR ErrDescription, LPCSTR pFileName, INT LineNo)
    {
-     fprintf(stderr, "Error %08xh (%s) at %s(%d): %s\n", ErrCode, Cinecoder_GetErrorString(ErrCode), pFileName, LineNo, ErrDescription);
+     if(ErrCode != E_ABORT)
+     	fprintf(stderr, "Error %08xh (%s) at %s(%d): %s\n", ErrCode, Cinecoder_GetErrorString(ErrCode), pFileName, LineNo, ErrDescription);
+     
      return 0;
    }
 }

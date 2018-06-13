@@ -14,6 +14,7 @@
 #include <conio.h>
 
 #include <Cinecoder_h.h>
+#include <Cinecoder.Plugin.Multiplexers.h>
 #include <iostream>
 
 int print_error(int err, const char *str = nullptr);

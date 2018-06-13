@@ -5,6 +5,7 @@
 #include "CEncoderTest.h"
 
 #include <Cinecoder_i.c>
+#include <Cinecoder.Plugin.Multiplexers_i.c>
 
 #include "../cinecoder_license_string.h"
 #include "../cinecoder_error_handler.h"
@@ -78,13 +79,13 @@ int _tmain(int argc, TCHAR *argv[])
 		double Wfps = (s1.NumFramesWritten - s0.NumFramesWritten) / dT;
 		int queue_fill_level = s1.NumFramesRead - s1.NumFramesWritten;
 
-		printf("\rdT = %.0f ms, R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps), Q=%d [%-*.*s] ",
-			dT * 1000,
-			Rspeed, Rfps,
-			Wspeed, Wfps,
+		printf("\rframe # %d, Q=%d [%-*.*s], R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps) ",
+			s1.NumFramesRead,
 			queue_fill_level,
 			par.QueueSize, queue_fill_level,
-			"################"
+			"################",
+			Rspeed, Rfps,
+			Wspeed, Wfps
 		);
 
 		t0 = t1; s0 = s1;
@@ -101,7 +102,9 @@ int _tmain(int argc, TCHAR *argv[])
 		Test.GetCurrentEncodingStats(&s0);
 		printf("\nDone.\nFrames processed: %ld\n", s0.NumFramesWritten);
 	}
-	
+
+	Test.Close();
+
 	return hr;
 }
 
