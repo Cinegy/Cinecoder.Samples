@@ -112,7 +112,7 @@ int _tmain(int argc, TCHAR *argv[])
 int print_error(int err, const char *str)
 //---------------------------------------------------------------
 {
-	if(str) fprintf(stderr, "%s, ", str);
+	fprintf(stderr, "Error: %s%s", str?str:"", str?", ":"");
 
 	if(SUCCEEDED(err))
 	{
@@ -120,13 +120,13 @@ int print_error(int err, const char *str)
 	}
 	else if(const LPCSTR errstr = Cinecoder_GetErrorString(err))
 	{
-		fprintf(stderr, "code=%08xh (%s)", err, errstr);
+		fprintf(stderr, "code=%08xh (%s)\n", err, errstr);
 	}
 	else
 	{
 		char buf[1024] = {0};
 		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, buf, sizeof(buf), 0);
-		fprintf(stderr, "code=%08xh (%s)", err, buf);
+		fprintf(stderr, "code=%08xh (%s)\n", err, buf);
 	}
 
 	return err;
@@ -149,7 +149,7 @@ int print_help()
 		"\n"
 		"Where the parameters are:\n"
 		"  inputfile  - a single raw filename or a wildcard for an image sequence\n"
-		"  outputfile - the output filename (can be NUL)\n"
+		"  outputfile - the output filename (.MXF or .DN2)\n"
 		"\n"
 		"  /raw=t:WxH - the color type, can be one of {yuy2,v210}, W=width, H=height\n"
 		"  /fps=#     - the frame rate (i.e. 25, 29.97, [60], etc)\n"
@@ -169,10 +169,10 @@ int print_help()
 		"  /nenc=#    - the number of frame encoders working in a loop ([4])\n"
 		"  /device=#  - the number of NVidia card for encoding ([0],-1=CPU)\n"
 		"\n"
-		"Sample usage (raw dile):\n"
-		"> Daniel2.DPXEncoder.exe old_town_cross_2160p50.yuy2 test.dn2 /raw=V210:3840x2160 /bits=10 /fps=60 /method=0 /chroma=422 /cbr=600\n"
+		"Sample usage (raw file):\n"
+		"> Daniel2.DPXEncoder.exe RawSample_2160.yuy2 test.DN2 /raw=V210:3840x2160 /bits=10 /fps=60 /method=0 /chroma=422 /cbr=600\n"
 		"Set of DPX files:\n"
-		"> Daniel2.DPXEncoder.exe Animation_#####.dpx test.dn2 /start=0 /stop=9999 /bits=12 /fps=60 /method=2 /chroma=RGBA /cq=16 /nread=8\n"
+		"> Daniel2.DPXEncoder.exe Animation_#####.dpx test.MXF /start=0 /stop=9999 /bits=12 /fps=60 /method=2 /chroma=RGBA /cq=16 /nread=8\n"
 	);
 
 	printf("\n\nPress Enter to Exit\n");

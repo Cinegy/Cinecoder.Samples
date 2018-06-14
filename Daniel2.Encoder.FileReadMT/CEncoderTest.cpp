@@ -69,25 +69,30 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pFileWriter)))
 		return print_error(hr, "File writer creation error");
 
+	const TCHAR *pext = _tcsrchr(par.OutputFileName, '.');
+	if(!pext || (_tcsicmp(pext, _T(".DN2")) != 0 && _tcsicmp(pext, _T(".MXF")) != 0))
+		return print_error(E_FAIL, "Unrecognized output file type");
+
 	if (FAILED(hr = pFileWriter->Create(CComBSTR(par.OutputFileName))))
 		return print_error(hr, "Output file creation error");
 
-	const TCHAR *pext = _tcsrchr(par.OutputFileName, '.');
-	bool IsMXF = pext && _tcsicmp(pext, _T(".MXF")) == 0;
-	if (IsMXF)
+	if (_tcsicmp(pext, _T(".MXF")) == 0)
 	{
 		if(FAILED(hr = m_pFactory->LoadPlugin(CComBSTR("Cinecoder.Plugin.Multiplexers.dll"))))
-			return print_error(hr, "Error loading the plugin");
+			return print_error(hr, "Error loading the MXF plugin");
 
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_OP1A_Multiplexer, IID_ICC_Multiplexer, (IUnknown**)&m_pMuxer)))
-		return print_error(hr, "Failed to create MXF OP1A multipexer");
+			return print_error(hr, "Failed to create MXF OP1A multipexer");
 
 		if(FAILED(m_pMuxer->Init(NULL)))
-			return print_error(hr, "Failed to init the multipexer");
+			return print_error(hr, "Failed to init the MXF multipexer");
 
 		CComPtr<ICC_MXF_MultiplexerPinSettings> pMuxPinSettings;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_MultiplexerPinSettings, IID_ICC_MXF_MultiplexerPinSettings, (IUnknown**)&pMuxPinSettings)))
-			return print_error(hr, "Failed to create MXF OP1A multipexer pin settings");
+			return print_error(hr, "Failed to create MXF multipexer pin settings");
+
+		if (par.BitrateMode != CC_CBR)
+			return print_error(E_INVALIDARG, "MXF can only work in CBR mode");
 
 		pMuxPinSettings->put_StreamType(CC_ES_TYPE_VIDEO_DANIEL);
 		pMuxPinSettings->put_BitRate(par.Bitrate);
@@ -95,7 +100,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 
 		CComPtr<ICC_ByteStreamConsumer> pMuxerPin;
 		if(FAILED(hr = m_pMuxer->CreatePin(pMuxPinSettings, &pMuxerPin)))
-			return print_error(hr, "Failed to create MXF multiplexer Daniel2 PIN");
+			return print_error(hr, "Failed to create MXF Multiplexer Daniel2 PIN");
 
 		if (FAILED(hr = pEncoder->put_OutputCallback(pMuxerPin)))
 			return print_error(hr, "Encoder cb assignment error");
