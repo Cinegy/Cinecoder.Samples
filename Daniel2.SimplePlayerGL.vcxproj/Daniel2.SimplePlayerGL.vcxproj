@@ -74,7 +74,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -84,7 +84,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
