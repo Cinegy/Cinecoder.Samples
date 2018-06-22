@@ -200,6 +200,12 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			m_strStreamType = "AVC-Intra";
 			break;
 
+		case CC_ES_TYPE_VIDEO_J2K:
+			clsidDecoder = CLSID_CC_J2K_VideoDecoder;
+			useCuda = false;
+			m_strStreamType = "JPEG-2000";
+			break;
+
 		case CC_ES_TYPE_VIDEO_MPEG2:
 			clsidDecoder = CLSID_CC_MpegVideoDecoder;
 			useCuda = false;
