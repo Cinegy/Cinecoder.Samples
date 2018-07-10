@@ -60,7 +60,7 @@
       <HintPath>..\packages\Cinecoder.3.31.15.15264\lib\net45\Cinecoder.Interop.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Cinecoder.Plugin.Multiplexers.Interop, Version=1.0.151.156, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="Cinecoder.Plugin.Multiplexers.Interop, Version=1.0.151.156, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\lib\net45\x86\Cinecoder.Plugin.Multiplexers.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
