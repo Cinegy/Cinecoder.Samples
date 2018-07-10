@@ -112,7 +112,7 @@ namespace Daniel2.Managed.Tests
             {
                 AssignCinecoderLicense( companyName, licenseKey);
 
-                _encoder = _factory.CreateInstanceByName(instanceTypeName);
+                _encoder = (ICC_VideoEncoder)_factory.CreateInstanceByName(instanceTypeName);
               
                 Assert.IsNotNull(_encoder, "Returned instance is null");
             }
@@ -132,7 +132,7 @@ namespace Daniel2.Managed.Tests
             try
             {
                 CreateEncoder(License.Companyname, License.Licensekey, instanceTypeName);
-                _settings = _factory.CreateInstanceByName(settingsTypeName);
+                _settings = (ICC_Settings)_factory.CreateInstanceByName(settingsTypeName);
                 Assert.IsNotNull(_settings, "Returned settings instance is null");
             }
             catch (Exception ex)
