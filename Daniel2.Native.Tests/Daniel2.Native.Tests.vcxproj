@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -76,7 +76,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.targets')" />
-    <Import Project="..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -149,7 +149,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.151.156\build\Cinecoder.Plugin.Multiplexers.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.14.15242\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets'))" />
   </Target>
 </Project>
