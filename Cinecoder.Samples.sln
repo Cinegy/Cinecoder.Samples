@@ -19,7 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.MXFTranscoder", "Da
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleVideoDecoder", "SimpleVideoDecoder\SimpleVideoDecoder.vcxproj", "{C201C3BF-92A6-45BC-8817-AF82B17442B0}"
 EndProject
-
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleVideoEncoder", "SimpleVideoEncoder\SimpleVideoEncoder.vcxproj", "{BFF5D094-9E92-41B5-8450-F4CA08A90294}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -92,6 +93,14 @@ Global
 		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x64.Build.0 = Release|x64
 		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x86.ActiveCfg = Release|Win32
 		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x86.Build.0 = Release|Win32
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Debug|x64.ActiveCfg = Debug|x64
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Debug|x64.Build.0 = Debug|x64
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Debug|x86.ActiveCfg = Debug|Win32
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Debug|x86.Build.0 = Debug|Win32
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Release|x64.ActiveCfg = Release|x64
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Release|x64.Build.0 = Release|x64
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Release|x86.ActiveCfg = Release|Win32
+		{BFF5D094-9E92-41B5-8450-F4CA08A90294}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
