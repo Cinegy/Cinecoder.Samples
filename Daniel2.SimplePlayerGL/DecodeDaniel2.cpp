@@ -59,6 +59,7 @@ int DecodeDaniel2::OpenAudio(const char* const filename)
 	if (FAILED(hr)) return hr;
 
 	std::string filenameA(filename);
+	//std::string filenameA("G:\\Daniel2 Sample Files\\MERIDIAN_UHD5994_25s20f-Daniel2-CQ-10bit-Q20.mxf");
 	std::wstring filenameW(filenameA.begin(), filenameA.end());
 
 	CC_STRING fileName = SysAllocString(filenameW.c_str());
