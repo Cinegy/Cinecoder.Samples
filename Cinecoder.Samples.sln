@@ -17,6 +17,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleAudioEncoder", "Simpl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.MXFTranscoder", "Daniel2.MXFTranscoder\Daniel2.MXFTranscoder.csproj", "{A44838D9-4B86-465E-B98C-C25DCB560FF8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleVideoDecoder", "SimpleVideoDecoder\SimpleVideoDecoder.vcxproj", "{C201C3BF-92A6-45BC-8817-AF82B17442B0}"
+EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -81,6 +84,14 @@ Global
 		{A44838D9-4B86-465E-B98C-C25DCB560FF8}.Release|x64.Build.0 = Release|x64
 		{A44838D9-4B86-465E-B98C-C25DCB560FF8}.Release|x86.ActiveCfg = Release|Win32
 		{A44838D9-4B86-465E-B98C-C25DCB560FF8}.Release|x86.Build.0 = Release|Win32
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Debug|x64.ActiveCfg = Debug|x64
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Debug|x64.Build.0 = Debug|x64
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Debug|x86.ActiveCfg = Debug|Win32
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Debug|x86.Build.0 = Debug|Win32
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x64.ActiveCfg = Release|x64
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x64.Build.0 = Release|x64
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x86.ActiveCfg = Release|Win32
+		{C201C3BF-92A6-45BC-8817-AF82B17442B0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
