@@ -14,11 +14,13 @@
 // Cinecoder
 #include <Cinecoder_h.h>
 
-// Cinegy utils
-#include "utils/comptr.h"
-
 // License
 #include "../cinecoder_license_string.h"
+
+// Audio
+#if defined(__WIN32__) || defined(_WIN32)
+#include "Audio/SoundDS.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -55,6 +57,15 @@ private:
 
 	com_ptr<ICC_VideoDecoder> m_pVideoDec;
 
+	com_ptr<ICC_MediaReader> m_pMediaReader;
+	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
+
+#if defined(__WIN32__) || defined(_WIN32)
+	std::unique_ptr<C_SoundDS> pSoundDS;
+	std::vector<BYTE> audioChunk;
+	size_t m_iSampleCount;
+#endif
+
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();
@@ -79,6 +90,10 @@ public:
 	ReadFileDN2* GetReaderPtr() { return &m_file; }
 
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
+
+	int OpenAudio(const char* const filename);
+	int PlayAudio(size_t iFrame);
+	int AudioPause(bool bPause);
 
 private:
 	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);

@@ -24,6 +24,7 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_bPause(false),
 	m_bInitDecoder(false),
 	m_pVideoDec(nullptr),
+	m_pMediaReader(nullptr),
 	m_strStreamType("Unknown")
 {
 	m_FrameRate.num = 60;
@@ -39,6 +40,153 @@ DecodeDaniel2::~DecodeDaniel2()
 	DestroyValues(); // destroy values
 
 	m_file.CloseFile(); // close reading DN2 file
+}
+
+int DecodeDaniel2::OpenAudio(const char* const filename)
+{
+#if defined(__WIN32__) || defined(_WIN32)
+	HRESULT hr = S_OK;
+
+	com_ptr<ICC_ClassFactory> piFactory;
+
+	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&piFactory); // get Factory
+	if (FAILED(hr)) return hr;
+
+	hr = piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
+	if (FAILED(hr)) return hr;
+
+	hr = piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
+	if (FAILED(hr)) return hr;
+
+	std::string filenameA(filename);
+	std::wstring filenameW(filenameA.begin(), filenameA.end());
+
+	CC_STRING fileName = SysAllocString(filenameW.c_str());
+
+	hr = m_pMediaReader->Open(fileName);
+	if (FAILED(hr)) return hr;
+
+	CC_INT numAudioTracks = 0;
+	hr = m_pMediaReader->get_NumberOfAudioTracks(&numAudioTracks);
+	if (FAILED(hr)) return hr;
+
+	if (numAudioTracks == 0)
+	{
+		m_pMediaReader = nullptr;
+		return 0;
+	}
+
+	CC_UINT iCurrentAudioTrackNumber = 0;
+
+	hr = m_pMediaReader->put_CurrentAudioTrackNumber(iCurrentAudioTrackNumber);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pMediaReader->get_CurrentAudioTrackInfo((ICC_AudioStreamInfo**)&m_pAudioStreamInfo);
+	if (FAILED(hr)) return hr;
+
+	CC_BITRATE BitRate;
+	CC_UINT BitsPerSample;
+	CC_UINT ChannelMask;
+	CC_FRAME_RATE FrameRate;
+	CC_UINT NumChannels;
+	CC_UINT SampleRate;
+	CC_ELEMENTARY_STREAM_TYPE StreamType;
+
+	m_pAudioStreamInfo->get_BitRate(&BitRate);
+	m_pAudioStreamInfo->get_BitsPerSample(&BitsPerSample);
+	m_pAudioStreamInfo->get_ChannelMask(&ChannelMask);
+	m_pAudioStreamInfo->get_FrameRate(&FrameRate);
+	m_pAudioStreamInfo->get_NumChannels(&NumChannels);
+	m_pAudioStreamInfo->get_SampleRate(&SampleRate);
+	m_pAudioStreamInfo->get_StreamType(&StreamType);
+
+	BitsPerSample = 16; // always play in PCM16
+
+	size_t sizeAudio_1sec = SampleRate * NumChannels * (BitsPerSample >> 3);
+
+	size_t sample_count = (SampleRate / (m_FrameRate.num / m_FrameRate.denom));
+	size_t sample_bytes = sample_count * NumChannels * (BitsPerSample >> 3);
+
+	m_iSampleCount = sample_count;
+
+	audioChunk.resize(sample_bytes);
+
+	pSoundDS = nullptr;
+	pSoundDS = std::make_unique<C_SoundDS>();
+
+	WAVEFORMATEX waveFormat;
+
+	waveFormat.wFormatTag = WAVE_FORMAT_PCM;
+	waveFormat.cbSize = sizeof(WAVEFORMATEX);
+
+	waveFormat.nChannels = (WORD)NumChannels;
+	waveFormat.nSamplesPerSec = SampleRate;
+	waveFormat.wBitsPerSample = (WORD)BitsPerSample;
+	waveFormat.nBlockAlign = (waveFormat.nChannels * waveFormat.wBitsPerSample) / 8;
+	waveFormat.nAvgBytesPerSec = waveFormat.nBlockAlign * waveFormat.nSamplesPerSec;
+
+	pSoundDS->SetWAVEFORMATEX(waveFormat);
+	int res = pSoundDS->Init(1);
+
+	if (res != 0)
+	{
+		m_pMediaReader = nullptr;
+		pSoundDS = nullptr;
+		return res;
+	}
+#endif
+	return 0;
+}
+
+int DecodeDaniel2::PlayAudio(size_t iAudioSample)
+{
+#if defined(__WIN32__) || defined(_WIN32)
+	HRESULT hr = S_OK;
+
+	if (m_pMediaReader && pSoundDS)
+	{
+		DWORD cbRetSize = 0;
+
+		BYTE* pb = audioChunk.data();
+		DWORD cb = static_cast<DWORD>(audioChunk.size());
+
+		hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, iAudioSample * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
+		if (FAILED(hr)) return hr;
+
+		C_SoundSample *sample = new C_SoundSample(reinterpret_cast<short*>(pb), cb);
+		pSoundDS->AddSampleToQueue(0, sample);
+	}
+#endif
+	return 0;
+}
+ 
+int DecodeDaniel2::AudioPause(bool bPause)
+{
+#if defined(__WIN32__) || defined(_WIN32)
+	float db = 0;
+
+	if (bPause)
+	{
+		db = -100;
+	}
+	else
+	{
+		BYTE* pb = audioChunk.data();
+		DWORD cb = static_cast<DWORD>(audioChunk.size());
+
+		memset(pb, 0x00, cb);
+
+		if (pSoundDS)
+		{
+			C_SoundSample *sample = new C_SoundSample(reinterpret_cast<short*>(pb), cb);
+			pSoundDS->AddSampleToQueue(0, sample);
+		}
+	}
+
+	if (pSoundDS)
+		pSoundDS->SetSourceVolume(0, db);
+#endif
+	return 0;
 }
 
 int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
@@ -118,6 +266,17 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		}
 		printf("-------------------------------------\n");
 	}
+
+#if defined(__WIN32__) || defined(_WIN32)
+	res = OpenAudio(filename); // open audio stream
+
+	if (res == 0)
+		printf("Audio track: Yes\n");
+	else 
+		printf("Audio track: No (error = %d)\n", res);
+
+	printf("-------------------------------------\n");
+#endif
 
 	return res;
 }
@@ -396,8 +555,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		//if (BitDepth == 10)
 		//	fmt = CCF_RGB30;
 
+#if defined(__WIN32__) || defined(_WIN32)
 		CC_COLOR_FMT fmt = CCF_BGR32;//CCF_RGB30; // set output format
-
+#else
+		CC_COLOR_FMT fmt = CCF_RGB32;
+#endif
 		CC_BOOL bRes = CC_FALSE;
 		pVideoProducer->IsFormatSupported(fmt, &bRes);
 		if (bRes)

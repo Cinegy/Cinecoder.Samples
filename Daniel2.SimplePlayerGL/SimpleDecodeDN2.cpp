@@ -422,6 +422,8 @@ void Display()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 
+	decodeD2->PlayAudio(iCurPlayFrameNumber); // play audio
+
 	if (g_bShowTicker) // draw ticker
 	{
 		GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
@@ -795,6 +797,8 @@ void SetPause(bool bPause)
 		printf("pause: on\n");
 	else
 		printf("pause: off\n");
+
+	decodeD2->AudioPause(g_bPause);
 }
 
 void SetVerticalSync(bool bVerticalSync)
