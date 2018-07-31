@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" />
-  <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -125,7 +125,7 @@ call get-external-libraries.bat</Command>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -184,6 +184,8 @@ call get-external-libraries.bat</Command>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\Audio\Sound.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\Audio\SoundDS.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Block.h" />
@@ -193,6 +195,8 @@ call get-external-libraries.bat</Command>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Timer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\Audio\Sound.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\Audio\SoundDS.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.cpp" />
@@ -205,12 +209,14 @@ call get-external-libraries.bat</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" />
+    <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" />
   </ImportGroup>
   <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
@@ -228,9 +234,9 @@ call get-external-libraries.bat</Command>
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets'))" />
   </Target>
 </Project>
