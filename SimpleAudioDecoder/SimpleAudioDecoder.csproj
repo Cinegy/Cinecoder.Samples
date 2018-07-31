@@ -74,9 +74,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\cinecoder_error_handler.cs">
+      <Link>cinecoder_error_handler.cs</Link>
+    </Compile>
+    <Compile Include="..\cinecoder_license_string.cs">
+      <Link>cinecoder_license_string.cs</Link>
+    </Compile>
     <Compile Include="AudioWriterCallback.cs" />
-    <Compile Include="cinecoder_error_handler.cs" />
-    <Compile Include="cinecoder_license_string.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
