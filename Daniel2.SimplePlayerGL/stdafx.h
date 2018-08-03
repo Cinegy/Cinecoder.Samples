@@ -5,6 +5,12 @@
 
 #pragma once
 
+#include <algorithm>    // std::max / std::min
+#include <string>
+#include <cassert>
+#include <list>
+#include <vector>
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // Cinegy utils

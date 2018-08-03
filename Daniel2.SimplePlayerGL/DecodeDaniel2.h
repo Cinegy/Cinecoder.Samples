@@ -18,9 +18,7 @@
 #include "../cinecoder_license_string.h"
 
 // Audio
-#if defined(__WIN32__) || defined(_WIN32)
-#include "Audio/SoundDS.h"
-#endif
+#include "AudioSource.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -60,11 +58,7 @@ private:
 	com_ptr<ICC_MediaReader> m_pMediaReader;
 	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
 
-#if defined(__WIN32__) || defined(_WIN32)
-	std::unique_ptr<C_SoundDS> pSoundDS;
-	std::vector<BYTE> audioChunk;
-	size_t m_iSampleCount;
-#endif
+	AudioSource m_audio;
 
 public:
 	DecodeDaniel2();
