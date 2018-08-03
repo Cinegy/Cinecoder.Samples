@@ -140,6 +140,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("-------------------------------------\n");
 	}
 
+#if defined(__WIN32__) || defined(_WIN32)
 	int ret = OpenAudio(filename); // open audio stream
 
 	if (ret == 0)
@@ -148,7 +149,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("Audio track: No (error = 0x%x)\n", ret);
 
 	printf("-------------------------------------\n");
-
+#endif
 	return res;
 }
 

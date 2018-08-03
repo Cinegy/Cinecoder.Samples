@@ -140,8 +140,9 @@ int AudioSource::OpenFile(const char* const filename)
 
 	if (numAudioTracks == 0)
 	{
+		printf("numAudioTracks == 0\n");
 		m_pMediaReader = nullptr;
-		return 0;
+		return -1;
 	}
 
 	CC_UINT iCurrentAudioTrackNumber = 0;
