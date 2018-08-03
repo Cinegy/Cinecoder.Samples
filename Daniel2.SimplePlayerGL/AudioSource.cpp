@@ -18,6 +18,7 @@ static void list_audio_devices(const ALCchar *devices)
 }
 
 AudioSource::AudioSource() :
+	m_bInitialize(false),
 	device(nullptr),
 	context(nullptr),
 	source(0),
@@ -91,6 +92,8 @@ int AudioSource::InitOpenAL()
 
 	alSourcePlay(source); __al
 
+	m_bInitialize = true;
+
 	return 0;
 }
 
@@ -129,6 +132,7 @@ int AudioSource::OpenFile(const char* const filename)
 #endif
 
 	hr = m_pMediaReader->Open(file_name_str);
+	hr = E_FAIL;
 	if (FAILED(hr)) return hr;
 
 	CC_INT numAudioTracks = 0;
@@ -161,13 +165,26 @@ int AudioSource::OpenFile(const char* const filename)
 	CC_UINT SampleRate;
 	CC_ELEMENTARY_STREAM_TYPE StreamType;
 
-	m_pAudioStreamInfo->get_BitRate(&BitRate);
-	m_pAudioStreamInfo->get_BitsPerSample(&BitsPerSample);
-	m_pAudioStreamInfo->get_ChannelMask(&ChannelMask);
-	m_pAudioStreamInfo->get_FrameRate(&FrameRate);
-	m_pAudioStreamInfo->get_NumChannels(&NumChannels);
-	m_pAudioStreamInfo->get_SampleRate(&SampleRate);
-	m_pAudioStreamInfo->get_StreamType(&StreamType);
+	hr = m_pAudioStreamInfo->get_BitRate(&BitRate);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_BitsPerSample(&BitsPerSample);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_ChannelMask(&ChannelMask);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_FrameRate(&FrameRate);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_NumChannels(&NumChannels);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_SampleRate(&SampleRate);
+	if (FAILED(hr)) return hr;
+
+	hr = m_pAudioStreamInfo->get_StreamType(&StreamType);
+	if (FAILED(hr)) return hr;
 
 	BitsPerSample = 16; // always play in PCM16
 
@@ -186,6 +203,9 @@ int AudioSource::OpenFile(const char* const filename)
 
 int AudioSource::PlayFrame(size_t iFrame)
 {
+	if (!m_bInitialize)
+		return -1;
+
 	ALint numProcessed = 0;
 	alGetSourcei(source, AL_BUFFERS_PROCESSED, &numProcessed); __al
 
@@ -228,6 +248,9 @@ int AudioSource::PlayFrame(size_t iFrame)
 
 int AudioSource::Pause(bool bPause)
 {
+	if (!m_bInitialize)
+		return -1;
+
 	m_bAudioPause = bPause;
 
 	if (m_bAudioPause)

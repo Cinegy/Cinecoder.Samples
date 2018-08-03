@@ -32,6 +32,8 @@
 class AudioSource
 {
 private:
+	bool m_bInitialize;
+
 	com_ptr<ICC_MediaReader> m_pMediaReader;
 	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
 
