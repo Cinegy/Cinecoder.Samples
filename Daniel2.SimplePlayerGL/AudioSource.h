@@ -10,8 +10,8 @@
 #include "utils/comptr.h"
 
 #if defined(__WIN32__) || defined(_WIN32)
-#include <al.h>
-#include <alc.h>
+#include <Al/al.h>
+#include <Al/alc.h>
 #else
 #include <OpenAL/OpenAL.h>
 #endif

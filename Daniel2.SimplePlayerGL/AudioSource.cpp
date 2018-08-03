@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "AudioSource.h"
 
-// http://www.david-amador.com/2011/06/playing-sound-using-openal/
-// http://openal.996291.n3.nabble.com/Looping-and-buffer-queuing-td3368.html
-// https://developer.tizen.org/dev-guide/2.4/org.tizen.tutorials/html/native/multimedia/openal_tutorial_n.htm
-
 static void list_audio_devices(const ALCchar *devices)
 {
 	const ALCchar *device = devices, *next = devices + 1;
