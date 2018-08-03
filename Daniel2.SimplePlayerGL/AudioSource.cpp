@@ -132,7 +132,6 @@ int AudioSource::OpenFile(const char* const filename)
 #endif
 
 	hr = m_pMediaReader->Open(file_name_str);
-	hr = E_FAIL;
 	if (FAILED(hr)) return hr;
 
 	CC_INT numAudioTracks = 0;

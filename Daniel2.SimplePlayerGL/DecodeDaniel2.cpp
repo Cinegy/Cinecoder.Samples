@@ -376,7 +376,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	pVideoStreamInfo->get_FrameRate(&FrameRate);
 	pVideoStreamInfo->get_FrameSize(&FrameSize);
 
-	com_ptr<ICC_VideoStreamInfoExt>		pVideoStreamInfoExt;
+	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt;
 	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)))
 		return printf("Failed to get ICC_VideoStreamInfoExt interface"), hr;
 	
