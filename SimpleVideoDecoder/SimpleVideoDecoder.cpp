@@ -9,6 +9,8 @@
 #include "Cinecoder_h.h"	
 #include "Cinecoder_i.c"
 
+#include "cinecoder_errors.h"
+
 #include "../cinecoder_license_string.h"
 #include "../cinecoder_error_handler.h"
 
@@ -92,6 +94,9 @@ int main(int argc, char* argv[])
       if(dwBytesRead != sizeof(buffer))
         break;
     }
+
+	if (hSrcFile)
+		fclose(hSrcFile);
 
 	if(FAILED(hr = spVideoDec->Done(CC_TRUE)))
 	  return hr;
