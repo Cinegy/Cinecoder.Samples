@@ -24,9 +24,4 @@ using namespace cinegy::threading_std;
 #pragma comment(lib, "comsuppw.lib")
 #endif
 
-#if defined(__WIN32__) || defined(_WIN32) // for Direct Sound
-#include <dsound.h>
-#pragma comment(lib, "dsound.lib")
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////

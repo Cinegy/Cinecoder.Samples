@@ -94,6 +94,8 @@ int AudioSource::InitOpenAL()
 
 	m_bInitialize = true;
 
+	PrintVersionAL();
+
 	return 0;
 }
 
@@ -106,6 +108,28 @@ int AudioSource::DestroyOpenAL()
 	alcMakeContextCurrent(NULL); __al
 	alcDestroyContext(context); __al
 	alcCloseDevice(device); __al
+
+	return 0;
+}
+
+int AudioSource::PrintVersionAL()
+{
+	if (!device)
+		return -1;
+
+	static const ALchar alVendor[] = "OpenAL Community";
+	static const ALchar alVersion[] = "1.1 ALSOFT ";
+	static const ALchar alRenderer[] = "OpenAL Soft";
+
+	const ALCchar* _alVendor = alcGetString(device, AL_VENDOR); __al
+	const ALCchar* _alVersion = alcGetString(device, AL_VERSION); __al
+	const ALCchar* _alRenderer = alcGetString(device, AL_RENDERER); __al
+
+	printf("OpenAL vendor : %s\n", _alVendor == nullptr ? alVendor : _alVendor);
+	printf("OpenAL renderer : %s\n", _alVersion == nullptr ? alVersion : _alVersion);
+	printf("OpenAL version : %s\n", _alRenderer == nullptr ? alRenderer : _alRenderer);
+
+	printf("-------------------------------------\n");
 
 	return 0;
 }

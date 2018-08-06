@@ -200,6 +200,31 @@ void SeekToFrame(size_t iFrame);
 
 ///////////////////////////////////////////////////////
 
+void get_versionGLandGLUT()
+{
+	char *versionGL = "\0";
+	GLint versionFreeGlutInt = 0;
+
+	versionGL = (char *)(glGetString(GL_VERSION));
+
+	printf("OpenGL version: %s\n", versionGL);
+
+#if defined(__WIN32__) || defined(_WIN32)
+	versionFreeGlutInt = (glutGet(GLUT_VERSION));
+
+	if (versionFreeGlutInt > 0)
+	{
+		std::string versionFreeGlutString = std::to_string((long long)(versionFreeGlutInt));
+		versionFreeGlutString.insert(1, "."); // transforms 30000 into 3.0000
+		versionFreeGlutString.insert(4, "."); // transforms 3.0000 into 3.00.00
+
+		printf("FreeGLUT version: %s\n", versionFreeGlutString.c_str());
+	}
+#endif
+
+	printf("-------------------------------------\n");	
+}
+
 bool gpu_initGLUT(int *argc, char **argv)
 {
 #if defined(__WIN32__) || defined(_WIN32)
@@ -994,6 +1019,8 @@ int main(int argc, char **argv)
 	gpu_initGLUT(&argc, argv); // Init GLUT
 
 	gpu_initGLBuffers(); // Init GL buffers
+
+	get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
 
 	// Start timer
 	timer.StartTimer();

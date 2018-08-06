@@ -69,5 +69,6 @@ public:
 private:
 	int InitOpenAL();
 	int DestroyOpenAL();
+	int PrintVersionAL();
 };
 
