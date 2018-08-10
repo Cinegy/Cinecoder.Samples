@@ -2,6 +2,8 @@
 
 #include <vector>
 
+typedef void* cudaPtr;
+
 class C_Block
 {
 public:
@@ -26,6 +28,8 @@ public:
 private:
 	std::vector<unsigned char> frame_buffer;
 
+	cudaPtr	pKernelDataOut;
+
 private:
 	void Initialize();
 
@@ -34,7 +38,13 @@ public:
 	int Release() { return 1; }
 
 public:
-	unsigned char* DataPtr() { return frame_buffer.data(); }
+	unsigned char* DataPtr() 
+	{ 
+		if (pKernelDataOut) 
+			return (unsigned char*)pKernelDataOut;
+		else
+			return frame_buffer.data(); 
+	}
 
 	size_t Width() { return iWidth; }
 	size_t Height() { return iHeight; }
@@ -44,7 +54,7 @@ public:
 	void SetRotate(bool bRotate) { bRotateFrame = bRotate; }
 	bool GetRotate() { return bRotateFrame; }
 
-	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride);
+	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCuda = false);
 
 	void Destroy();
 };

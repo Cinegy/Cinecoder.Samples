@@ -160,6 +160,10 @@ C_CritSec g_mutex; // global mutex
 
 ///////////////////////////////////////////////////////
 
+#if defined(__WIN32__) || defined(_WIN32)
+struct cudaGraphicsResource *cuda_tex_result_resource = nullptr;
+#endif
+
 GLuint tex_result;  // Where we will copy result
 
 unsigned int image_width = 1280; // start value for image width
@@ -354,6 +358,19 @@ void gpu_initGLBuffers()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+#if defined(__WIN32__) || defined(_WIN32)
+	// register this textures with CUDA
+
+	cuda_tex_result_resource = nullptr;
+
+	if (g_useCuda)
+	{
+		cudaError cuErr;
+
+		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard); __vrcu
+	}
+#endif
+
 	OGL_CHECK_ERROR_GL();
 }
 
@@ -379,6 +396,27 @@ void gpu_UpdateGLSettings()
 	OGL_CHECK_ERROR_GL();
 }
 
+#if defined(__WIN32__) || defined(_WIN32)
+int gpu_generateCUDAImage(C_Block* pBlock)
+{
+	// We want to copy cuda_dest_resource data to the texture
+	// map buffer objects to get CUDA device pointers
+
+	if (!cuda_tex_result_resource)
+		return -1;
+
+	const cudaPtr cuda_dest_resource = pBlock->DataPtr();
+
+	cudaArray *texture_ptr;
+	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
+	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
+	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), (pBlock->Width() * 4), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
+
+	return 0;
+}
+#endif
+
 int gpu_generateImage(bool & bRotateFrame)
 {
 	if (!decodeD2->isProcess() || decodeD2->isPause()) // check for pause or process
@@ -389,9 +427,18 @@ int gpu_generateImage(bool & bRotateFrame)
 	if (!pBlock)
 		return -1;
 
-	if (g_bCopyToTexture)
+#if defined(__WIN32__) || defined(_WIN32)
+	if (g_useCuda)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+		gpu_generateCUDAImage(pBlock);
+	}
+	else
+#endif
+	{
+		if (g_bCopyToTexture)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+		}
 	}
 
 	bRotateFrame = pBlock->GetRotate() ? !bRotateFrame : bRotateFrame; // Rotate frame
@@ -792,6 +839,12 @@ void Cleanup()
 	// Delete GL texture
 	glDeleteTextures(1, &tex_result);
 
+#if defined(__WIN32__) || defined(_WIN32)
+	if (cuda_tex_result_resource)
+	{
+		cudaGraphicsUnregisterResource(cuda_tex_result_resource); __vrcu
+	}
+#endif
 	OGL_CHECK_ERROR_GL();
 }
 
@@ -901,9 +954,18 @@ void SeekToFrame(size_t iFrame)
 		nReadFrame = pBlock->iFrameNumber; // Get currect frame number
 		if (nReadFrame == iFrame) // Search for the expected frame
 		{
-			if (g_bCopyToTexture)
+#if defined(__WIN32__) || defined(_WIN32)
+			if (g_useCuda)
 			{
-				glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+				gpu_generateCUDAImage(pBlock);
+			}
+			else
+#endif
+			{
+				if (g_bCopyToTexture)
+				{
+					glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+				}
 			}
 			iCurPlayFrameNumber = iFrame; // Save currect frame number
 			decodeD2->UnmapFrame(pBlock); // Add free pointer to queue

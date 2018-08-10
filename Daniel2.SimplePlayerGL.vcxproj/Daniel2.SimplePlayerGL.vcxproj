@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props" Condition="Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props')" />
   <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -215,6 +216,7 @@ call get-external-libraries.bat</Command>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" />
     <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" />
+    <Import Project="..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets" Condition="Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets')" />
   </ImportGroup>
   <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
@@ -228,6 +230,18 @@ call get-external-libraries.bat</Command>
     </ItemGroup>
     <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
+    <Target Name="Copy OpenALSoft binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
+    <ItemGroup>
+      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="Copy OpenALSoft binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'">
+    <ItemGroup>
+      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\x64\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -236,5 +250,7 @@ call get-external-libraries.bat</Command>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props'))" />
+    <Error Condition="!Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets'))" />
   </Target>
 </Project>

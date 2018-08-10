@@ -38,6 +38,7 @@ private:
 	bool m_bProcess;
 	bool m_bPause;
 	bool m_bInitDecoder;
+	bool m_bUseCuda;
 
 	ReadFileDN2 m_file;
 	std::vector<unsigned char> m_buffer;

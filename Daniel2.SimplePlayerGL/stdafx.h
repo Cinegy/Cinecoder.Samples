@@ -24,4 +24,22 @@ using namespace cinegy::threading_std;
 #pragma comment(lib, "comsuppw.lib")
 #endif
 
+#if defined(__WIN32__) || defined(_WIN32) // CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
+
+#pragma comment(lib, "cudart_static.lib")
+
+#define __vrcu \
+{ \
+	cudaError cudaLastError = cudaGetLastError(); \
+	if (cudaLastError != cudaSuccess) \
+	{ \
+		printf("CUDA error %d %s (%s %d)\n", \
+		cudaLastError, cudaGetErrorString(cudaLastError), __FILE__,__LINE__); \
+	} \
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////

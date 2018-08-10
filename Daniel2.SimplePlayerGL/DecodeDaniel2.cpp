@@ -23,6 +23,7 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_bProcess(false),
 	m_bPause(false),
 	m_bInitDecoder(false),
+	m_bUseCuda(false),
 	m_pVideoDec(nullptr),
 	m_pMediaReader(nullptr),
 	m_strStreamType("Unknown")
@@ -45,6 +46,8 @@ DecodeDaniel2::~DecodeDaniel2()
 int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
 { 
 	m_bInitDecoder = false;
+
+	m_bUseCuda = useCuda;
 
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
@@ -285,7 +288,7 @@ int DecodeDaniel2::InitValues()
 	{
 		m_listBlocks.push_back(C_Block());
 
-		m_listBlocks.back().Init(m_width, m_height, m_stride);
+		m_listBlocks.back().Init(m_width, m_height, m_stride, m_bUseCuda);
 
 		if (res != 0)
 		{
@@ -378,7 +381,15 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			DWORD cb = 0;
 
-			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+			if (!m_bUseCuda)
+			{
+				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+			}
+			{
+#if defined(__WIN32__) || defined(_WIN32)
+				cudaMemset(pBlock->DataPtr(), (int)PTS, pBlock->Size());
+#endif
+			}
 
 			pBlock->iFrameNumber = static_cast<size_t>(PTS); // save PTS (in our case this is the frame number)
 
