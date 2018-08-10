@@ -27,7 +27,7 @@
 	#define __al
 #endif
 
-#define NUM_BUFFERS 16
+#define NUM_BUFFERS 6
 
 class AudioSource
 {
@@ -43,6 +43,9 @@ private:
 	size_t m_iSampleRate;
 	size_t m_iSampleBytes;
 	size_t m_iNumChannels;
+	size_t m_iBitsPerSample;
+
+	int m_iSpeed;
 
 	CC_FRAME_RATE m_FrameRate;
 
@@ -62,9 +65,14 @@ public:
 	int Init(CC_FRAME_RATE video_framerate);
 	int OpenFile(const char* const filename);
 	int PlayFrame(size_t iFrame);
-	int Pause(bool bPause);
+	int SetPause(bool bPause);
 
 	bool IsPause() { return m_bAudioPause; }
+
+	void SetSpeed(int iSpeed)
+	{
+		m_iSpeed = iSpeed;
+	}
 
 private:
 	int InitOpenAL();

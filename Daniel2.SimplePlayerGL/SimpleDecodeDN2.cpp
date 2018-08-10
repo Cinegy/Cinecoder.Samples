@@ -19,6 +19,7 @@
 
 #include "Timer.h"
 #include "DecodeDaniel2.h"
+#include "AudioSource.h"
 
 ///////////////////////////////////////////////////////
 
@@ -179,6 +180,40 @@ double ValueFPS = 60.0;
 
 std::shared_ptr<DecodeDaniel2> decodeD2; // Wrapper class which demonstration decoding Daniel2 format
 
+std::shared_ptr<AudioSource> decodeAudio;
+
+///////////////////////////////////////////////////////
+
+int InitAudioTrack(std::string filename, CC_FRAME_RATE frameRate)
+{
+	int res = 0;
+
+	decodeAudio = std::make_shared<AudioSource>(); // Create decoder for audio track
+
+	if (!decodeAudio)
+	{
+		printf("Cannot create create audio decoder!\n");
+		return 0;
+	}
+
+	res = decodeAudio->Init(frameRate); // Init audio decoder
+
+	if (res != 0)
+		return res;
+
+#if defined(__WIN32__) || defined(_WIN32)
+	res = decodeAudio->OpenFile(filename.c_str()); // Open audio stream
+
+	if (res == 0)
+		printf("Audio track: Yes\n");
+	else
+		printf("Audio track: No (error = 0x%x)\n", res);
+
+	printf("-------------------------------------\n");
+#endif
+	return res;
+}
+
 ///////////////////////////////////////////////////////
 
 void Display();
@@ -202,14 +237,13 @@ void SeekToFrame(size_t iFrame);
 
 void get_versionGLandGLUT()
 {
-	char *versionGL = "\0";
-	GLint versionFreeGlutInt = 0;
-
+	char *versionGL = nullptr;
 	versionGL = (char *)(glGetString(GL_VERSION));
 
 	printf("OpenGL version: %s\n", versionGL);
 
 #if defined(__WIN32__) || defined(_WIN32)
+	GLint versionFreeGlutInt = 0;
 	versionFreeGlutInt = (glutGet(GLUT_VERSION));
 
 	if (versionFreeGlutInt > 0)
@@ -447,7 +481,7 @@ void Display()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 
-	decodeD2->PlayAudio(iCurPlayFrameNumber); // play audio
+	decodeAudio->PlayFrame(iCurPlayFrameNumber); // play audio
 
 	if (g_bShowTicker) // draw ticker
 	{
@@ -590,6 +624,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			SetPause(!g_bPause);
 		}
 
+		decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+
 		printf("press J (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
 		break;
 	}
@@ -603,6 +639,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			decodeD2->GetReaderPtr()->SetSpeed(-1);
 
 		SetPause(!g_bPause);
+
+		decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
 
 		printf("press K (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
 		break;
@@ -622,8 +660,9 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			SetPause(!g_bPause);
 		}
 
-		printf("press L (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
+		decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
 
+		printf("press L (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
 		break;
 	}
 
@@ -823,7 +862,7 @@ void SetPause(bool bPause)
 	else
 		printf("pause: off\n");
 
-	decodeD2->AudioPause(g_bPause);
+	decodeAudio->SetPause(g_bPause);
 }
 
 void SetVerticalSync(bool bVerticalSync)
@@ -1015,6 +1054,8 @@ int main(int argc, char **argv)
 	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames(); // Get count of frames
 
 	ValueFPS = decodeD2->GetFrameRate(); // get frame rate
+
+	InitAudioTrack(filename, decodeD2->GetFrameRateValue());
 
 	gpu_initGLUT(&argc, argv); // Init GLUT
 

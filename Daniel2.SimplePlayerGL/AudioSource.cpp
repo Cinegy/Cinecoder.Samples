@@ -1,6 +1,55 @@
 #include "stdafx.h"
 #include "AudioSource.h"
 
+#if defined(__APPLE__)
+typedef char INT8;
+//typedef long long UINT64;
+typedef __int64 UINT64;
+#endif
+
+static void ReverseSamples(BYTE *p, int iSize, int nBlockAlign)
+{
+	long lActual = iSize;
+
+	if (lActual == 0) { assert(0); return; };
+	if (nBlockAlign != 2) { assert(0); return; };
+
+	UINT64 *p_src = (UINT64 *)(p);
+	UINT64 *p_dst = ((UINT64 *)(p + lActual)) - 1;
+	UINT64 temp;
+
+	while (p_src < p_dst)
+	{
+		temp = *p_src;
+		*p_src++ = *p_dst;
+		*p_dst-- = temp;
+	};
+}
+
+static void AliasingSamples(BYTE *p, int iSize, int nBlockAlign, int nChannels)
+{
+	long lActual = iSize;
+
+	const long iMaxValue = 64;
+
+	if (lActual == 0) { assert(0); return; };
+	if (nBlockAlign != 2) { assert(0); return; };
+
+	INT8 *p_Beg = (INT8 *)(p);
+	INT8 *p_End = ((INT8 *)(p + lActual)) - 1;
+	float ftemp;
+
+	for (long i = 0; i <= iMaxValue; i++)
+	{
+		ftemp = ((float)i / (float)iMaxValue);
+		for (long ic = 0; ic < nChannels; ic++)
+		{
+			*p_Beg = (INT8)((float)*p_Beg * ftemp);	p_Beg++;
+			*p_End = (INT8)((float)*p_End * ftemp);	p_End--;
+		}
+	}
+}
+
 static void list_audio_devices(const ALCchar *devices)
 {
 	const ALCchar *device = devices, *next = devices + 1;
@@ -24,7 +73,8 @@ AudioSource::AudioSource() :
 	source(0),
 	buffers{ 0 },
 	m_FrameRate{ 25, 1 },
-	m_bAudioPause(false)
+	m_bAudioPause(false),
+	m_iSpeed(1)
 {
 }
 
@@ -219,6 +269,7 @@ int AudioSource::OpenFile(const char* const filename)
 	m_iSampleRate = SampleRate;
 	m_iSampleBytes = sample_bytes;
 	m_iNumChannels = NumChannels;
+	m_iBitsPerSample = BitsPerSample;
 
 	audioChunk.resize(sample_bytes);
 
@@ -249,12 +300,20 @@ int AudioSource::PlayFrame(size_t iFrame)
 		hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, iFrames * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
 		if (SUCCEEDED(hr) && cbRetSize > 0)
 		{
+			// if we playing in the opposite direction we need reverse audio samples
+			if (m_iSpeed < 0)
+				ReverseSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3));
+
+			// if we playing with speed > 1 we need aliasing our audio samples
+			if (abs(m_iSpeed) > 1)
+				AliasingSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3), (int)m_iNumChannels);
+
 			ALvoid* data = pb;
 			ALsizei size = static_cast<ALsizei>(cbRetSize);
 			ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
 			ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 
-			ALuint buffer = buffers[numProcessed - 1];
+			ALuint buffer;
 
 			alSourceUnqueueBuffers(source, 1, &buffer); __al
 			alBufferData(buffer, format, data, size, frequency); __al
@@ -270,7 +329,7 @@ int AudioSource::PlayFrame(size_t iFrame)
 	return 0;
 }
 
-int AudioSource::Pause(bool bPause)
+int AudioSource::SetPause(bool bPause)
 {
 	if (!m_bInitialize)
 		return -1;

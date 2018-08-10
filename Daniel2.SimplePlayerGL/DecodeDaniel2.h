@@ -17,9 +17,6 @@
 // License
 #include "../cinecoder_license_string.h"
 
-// Audio
-#include "AudioSource.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_RGB30 };
@@ -58,8 +55,6 @@ private:
 	com_ptr<ICC_MediaReader> m_pMediaReader;
 	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
 
-	AudioSource m_audio;
-
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();
@@ -84,10 +79,7 @@ public:
 	ReadFileDN2* GetReaderPtr() { return &m_file; }
 
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
-
-	int OpenAudio(const char* const filename);
-	int PlayAudio(size_t iFrame);
-	int AudioPause(bool bPause);
+	CC_FRAME_RATE GetFrameRateValue() { return m_FrameRate; }
 
 private:
 	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);

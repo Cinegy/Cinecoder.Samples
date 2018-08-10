@@ -42,26 +42,6 @@ DecodeDaniel2::~DecodeDaniel2()
 	m_file.CloseFile(); // close reading DN2 file
 }
 
-int DecodeDaniel2::OpenAudio(const char* const filename)
-{
-	int res = m_audio.Init(m_FrameRate);
-
-	if (res != 0)
-		return res;
-
-	return m_audio.OpenFile(filename);
-}
-
-int DecodeDaniel2::PlayAudio(size_t iFrame)
-{
-	return m_audio.PlayFrame(iFrame);
-}
- 
-int DecodeDaniel2::AudioPause(bool bPause)
-{
-	return m_audio.Pause(bPause);
-}
-
 int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
 { 
 	m_bInitDecoder = false;
@@ -140,16 +120,6 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("-------------------------------------\n");
 	}
 
-#if defined(__WIN32__) || defined(_WIN32)
-	int ret = OpenAudio(filename); // open audio stream
-
-	if (ret == 0)
-		printf("Audio track: Yes\n");
-	else 
-		printf("Audio track: No (error = 0x%x)\n", ret);
-
-	printf("-------------------------------------\n");
-#endif
 	return res;
 }
 
