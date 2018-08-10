@@ -2,9 +2,8 @@
 #include "AudioSource.h"
 
 #if defined(__APPLE__)
-typedef char INT8;
-//typedef long long UINT64;
-typedef __int64 UINT64;
+typedef signed char INT8;
+typedef long long UINT64;
 #endif
 
 static void ReverseSamples(BYTE *p, int iSize, int nBlockAlign)
