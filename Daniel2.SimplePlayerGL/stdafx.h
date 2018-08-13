@@ -25,11 +25,16 @@ using namespace cinegy::threading_std;
 #endif
 
 #if defined(__WIN32__) || defined(_WIN32) // CUDA
+#define CUDA_WRAPPER
+#ifndef CUDA_WRAPPER
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
 #pragma comment(lib, "cudart_static.lib")
+#endif
+
+#include "cudaDefines.h"
 
 #define __vrcu \
 { \

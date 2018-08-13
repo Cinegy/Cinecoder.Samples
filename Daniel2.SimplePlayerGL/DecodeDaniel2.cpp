@@ -8,6 +8,8 @@
 // Cinecoder
 #include <Cinecoder_i.c>
 
+#include "CinecoderErrorHandler.h"
+
 #ifdef max
 #undef max
 #endif
@@ -194,6 +196,8 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	strCinecoderVersion += std::to_string((long long)version.RevisionNo);
 
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
+
+	Cinecoder_SetErrorHandler(&g_ErrorHandler); // set error handler
 
 	CLSID clsidDecoder;
 	switch(m_file.GetStreamType())
@@ -387,7 +391,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			}
 			{
 #if defined(__WIN32__) || defined(_WIN32)
-				cudaMemset(pBlock->DataPtr(), (int)PTS, pBlock->Size());
+				cudaMemset(pBlock->DataPtr(), 255 - (int)PTS % 128, pBlock->Size());
 #endif
 			}
 

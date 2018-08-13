@@ -161,7 +161,7 @@ C_CritSec g_mutex; // global mutex
 ///////////////////////////////////////////////////////
 
 #if defined(__WIN32__) || defined(_WIN32)
-struct cudaGraphicsResource *cuda_tex_result_resource = nullptr;
+cudaGraphicsResource_t cuda_tex_result_resource = nullptr;
 #endif
 
 GLuint tex_result;  // Where we will copy result
@@ -1089,6 +1089,15 @@ int main(int argc, char **argv)
 	if (checkCmdLineArg(argc, (const char **)argv, "cuda"))
 	{
 		g_useCuda = true; // use CUDA decoder rather than CPU decoder
+	}
+
+	if (g_useCuda)
+	{
+		if (initCUDA() != 0)
+		{
+			printf("Error: cannot initialize CUDA! Please check if the %s/%s file exists!\n", CUDART32_FILENAME, CUDART64_FILENAME);
+			return 0;
+		}
 	}
 #endif
 

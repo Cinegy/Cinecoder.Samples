@@ -186,6 +186,8 @@ call get-external-libraries.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\AudioSource.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\cudaDefines.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\CinecoderErrorHandler.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Block.h" />
@@ -230,7 +232,7 @@ call get-external-libraries.bat</Command>
     </ItemGroup>
     <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
-    <Target Name="Copy OpenALSoft binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
+  <Target Name="Copy OpenALSoft binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
       <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\*.dll" />
     </ItemGroup>
