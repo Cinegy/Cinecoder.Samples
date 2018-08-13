@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 
+#if defined(__WIN32__) || defined(_WIN32)
 FTcudaGetLastError FUNC_CUDA(cudaGetLastError) = nullptr;
 FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString) = nullptr;
 
@@ -19,3 +20,4 @@ FTcudaGraphicsUnmapResources FUNC_CUDA(cudaGraphicsUnmapResources) = nullptr;
 
 FTcudaGraphicsSubResourceGetMappedArray FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) = nullptr;
 FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray) = nullptr;
+#endif
