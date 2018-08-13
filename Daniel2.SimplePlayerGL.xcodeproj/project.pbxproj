@@ -58,6 +58,8 @@
 		962900A221145528003F87AE /* AudioSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AudioSource.cpp; path = Daniel2.SimplePlayerGL/AudioSource.cpp; sourceTree = "<group>"; };
 		962900A421145530003F87AE /* AudioSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioSource.h; path = Daniel2.SimplePlayerGL/AudioSource.h; sourceTree = "<group>"; };
 		962DAD802111E40700DE5B63 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		9643B33C2121C3CC0004A7E0 /* cudaDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cudaDefines.h; path = Daniel2.SimplePlayerGL/cudaDefines.h; sourceTree = "<group>"; };
+		9643B33D2121C3D60004A7E0 /* CinecoderErrorHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CinecoderErrorHandler.h; path = Daniel2.SimplePlayerGL/CinecoderErrorHandler.h; sourceTree = "<group>"; };
 		96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SimpleDecodeDN2; sourceTree = BUILT_PRODUCTS_DIR; };
 		96D13B59206CE66E00102F82 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		96D13B5B206CE67B00102F82 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -82,6 +84,8 @@
 		96D13B31206CE5A700102F82 = {
 			isa = PBXGroup;
 			children = (
+				9643B33D2121C3D60004A7E0 /* CinecoderErrorHandler.h */,
+				9643B33C2121C3CC0004A7E0 /* cudaDefines.h */,
 				962900A421145530003F87AE /* AudioSource.h */,
 				962900A221145528003F87AE /* AudioSource.cpp */,
 				47ACEE2220977416003E1326 /* utils */,
