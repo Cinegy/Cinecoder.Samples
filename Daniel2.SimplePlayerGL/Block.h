@@ -40,10 +40,12 @@ public:
 public:
 	unsigned char* DataPtr() 
 	{ 
-		if (pKernelDataOut) 
-			return (unsigned char*)pKernelDataOut;
-		else
-			return frame_buffer.data(); 
+		return frame_buffer.data(); 
+	}
+
+	unsigned char* DataGPUPtr()
+	{
+		return (unsigned char*)pKernelDataOut;
 	}
 
 	size_t Width() { return iWidth; }
@@ -56,6 +58,7 @@ public:
 
 	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCuda = false);
 
+	int CopyToGPU();
 	void Destroy();
 };
 

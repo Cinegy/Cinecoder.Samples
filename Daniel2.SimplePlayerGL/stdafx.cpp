@@ -10,6 +10,7 @@ FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString) = nullptr;
 
 FTcudaMalloc FUNC_CUDA(cudaMalloc) = nullptr;
 FTcudaMemset FUNC_CUDA(cudaMemset) = nullptr;
+FTcudaMemcpy FUNC_CUDA(cudaMemcpy) = nullptr;
 FTcudaFree FUNC_CUDA(cudaFree) = nullptr;
 
 FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage) = nullptr;

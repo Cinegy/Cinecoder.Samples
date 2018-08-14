@@ -30,6 +30,11 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCu
 	iPitch = _iStride;
 	iSizeFrame = iPitch * iHeight;
 
+	frame_buffer.resize(iSizeFrame); // allocating CPU memory for current frame buffer
+
+	if (frame_buffer.size() != iSizeFrame)
+		return -1;
+
 #if defined(__WIN32__) || defined(_WIN32)
 	if (bUseCuda)
 	{
@@ -40,14 +45,7 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCu
 		if (res != cudaSuccess)
 			return -1;
 	}
-	else
 #endif
-	{
-		frame_buffer.resize(iSizeFrame); // allocating CPU memory for current frame buffer
-
-		if (frame_buffer.size() != iSizeFrame)
-			return -1;
-	}
 
 	return 0;
 }
@@ -58,8 +56,26 @@ void C_Block::Destroy()
 
 #if defined(__WIN32__) || defined(_WIN32)
 	if (pKernelDataOut)
+	{
 		cudaFree(pKernelDataOut); __vrcu
+	}
 #endif
 
 	Initialize();
+}
+
+int C_Block::CopyToGPU()
+{
+#if defined(__WIN32__) || defined(_WIN32)
+	if (!pKernelDataOut)
+		return -1;
+
+	cudaError_t res = cudaSuccess;
+	
+	res = cudaMemcpy(DataGPUPtr(), DataPtr(), Size(), cudaMemcpyHostToDevice); __vrcu
+
+	return res;
+#else
+	return 0;
+#endif
 }

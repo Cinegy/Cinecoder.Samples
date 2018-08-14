@@ -405,7 +405,7 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 	if (!cuda_tex_result_resource)
 		return -1;
 
-	const cudaPtr cuda_dest_resource = pBlock->DataPtr();
+	const cudaPtr cuda_dest_resource = pBlock->DataGPUPtr();
 
 	cudaArray *texture_ptr;
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu

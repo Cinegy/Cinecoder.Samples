@@ -294,7 +294,7 @@ int DecodeDaniel2::InitValues()
 	{
 		m_listBlocks.push_back(C_Block());
 
-		m_listBlocks.back().Init(m_width, m_height, m_stride, m_bUseCuda);
+		res = m_listBlocks.back().Init(m_width, m_height, m_stride, m_bUseCuda);
 
 		if (res != 0)
 		{
@@ -387,16 +387,15 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			DWORD cb = 0;
 
-			if (!m_bUseCuda)
-			{
-				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-			}
-			{
-#if defined(__WIN32__) || defined(_WIN32)
-				cudaMemset(pBlock->DataPtr(), 255 - (int)PTS % 128, pBlock->Size());
-#endif
-			}
+			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 
+#if defined(__WIN32__) || defined(_WIN32)
+			if (m_bUseCuda)
+			{
+				pBlock->CopyToGPU(); // copy frame from host to device memory
+				//cudaMemset(pBlock->DataGPUPtr(), 255 - (int)PTS % 128, pBlock->Size()); __vrcu
+			}
+#endif
 			pBlock->iFrameNumber = static_cast<size_t>(PTS); // save PTS (in our case this is the frame number)
 
 			m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
@@ -415,10 +414,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		//	fmt = CCF_RGB30;
 
 #if defined(__WIN32__) || defined(_WIN32)
-		CC_COLOR_FMT fmt = CCF_BGR32;//CCF_RGB30; // set output format
+		CC_COLOR_FMT fmt = CCF_BGR32; // set output format
 #else
-		CC_COLOR_FMT fmt = CCF_RGB32;
+		CC_COLOR_FMT fmt = CCF_RGB32; // set output format
 #endif
+
 		CC_BOOL bRes = CC_FALSE;
 		pVideoProducer->IsFormatSupported(fmt, &bRes);
 		if (bRes)

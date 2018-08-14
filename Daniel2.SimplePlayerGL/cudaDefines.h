@@ -44,6 +44,7 @@ typedef const char*(*FTcudaGetErrorString)(cudaError_t error);
 
 typedef cudaError_t(*FTcudaMalloc)(void **devPtr, size_t size);
 typedef cudaError_t(*FTcudaMemset)(void *devPtr, int value, size_t count);
+typedef cudaError_t(*FTcudaMemcpy)(void* dst, const void* src, size_t count, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaFree)(void *devPtr);
 
 typedef cudaError_t(*FTcudaGraphicsGLRegisterImage)(struct cudaGraphicsResource **resource, unsigned int image, unsigned int target, unsigned int flags);
@@ -52,13 +53,14 @@ typedef cudaError_t(*FTcudaGraphicsMapResources)(int count, cudaGraphicsResource
 typedef cudaError_t(*FTcudaGraphicsUnmapResources)(int count, cudaGraphicsResource_t *resources, cudaStream_t stream);
 
 typedef cudaError_t(*FTcudaGraphicsSubResourceGetMappedArray)(cudaArray_t *array, cudaGraphicsResource_t resource, unsigned int arrayIndex, unsigned int mipLevel);
-typedef cudaError_t(*FTcudaMemcpy2DToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, enum cudaMemcpyKind kind);
+typedef cudaError_t(*FTcudaMemcpy2DToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
 
 extern FTcudaGetLastError FUNC_CUDA(cudaGetLastError);
 extern FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString);
 
 extern FTcudaMalloc FUNC_CUDA(cudaMalloc);
 extern FTcudaMemset FUNC_CUDA(cudaMemset);
+extern FTcudaMemcpy FUNC_CUDA(cudaMemcpy);
 extern FTcudaFree FUNC_CUDA(cudaFree);
 
 extern FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage);
@@ -90,6 +92,7 @@ static int initCUDA()
 
 		FUNC_CUDA(cudaMalloc) = (FTcudaMalloc)GetProcAddress(hCuda, "cudaMalloc");
 		FUNC_CUDA(cudaMemset) = (FTcudaMemset)GetProcAddress(hCuda, "cudaMemset");
+		FUNC_CUDA(cudaMemcpy) = (FTcudaMemcpy)GetProcAddress(hCuda, "cudaMemcpy");
 		FUNC_CUDA(cudaFree) = (FTcudaFree)GetProcAddress(hCuda, "cudaFree");
 
 		FUNC_CUDA(cudaGraphicsGLRegisterImage) = (FTcudaGraphicsGLRegisterImage)GetProcAddress(hCuda, "cudaGraphicsGLRegisterImage");
