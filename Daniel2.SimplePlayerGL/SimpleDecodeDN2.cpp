@@ -1012,10 +1012,10 @@ void SeekToFrame(int x, int y)
 
 void printHelp(void)
 {
-	printf("Usage: SimpleDecodeDN2 [OPTION]...\n");
-	printf("Test the decode DANILE2 format file (DN2) using OpenGL(GLUT)\n");
+	printf("Usage: Daniel2.SimplePlayerGL [OPTION]...\n");
+	printf("Test the decode DANIEL2 format file (DN2) using OpenGL(GLUT)\nNow with added Cinecoder power to decode MXFs with various other codecs (because we can!)");
 	printf("\n");
-	printf("Command line example: <SimpleDecodeDN2.exe> <file_path> -decoders 2 -vsync -rotate_frame\n");
+	printf("Command line example: <Daniel2.SimplePlayerGL.exe> <file_path> -decoders 2 -vsync -rotate_frame\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("-help              display this help menu\n");
