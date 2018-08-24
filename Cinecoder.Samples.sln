@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daniel2.Managed.Tests", "Da
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.SimplePlayerGL", "Daniel2.SimplePlayerGL.vcxproj\Daniel2.SimplePlayerGL.vcxproj", "{3B333D09-2C9F-43DB-824F-ABFE628302EB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Encoder.FileReadMT", "Daniel2.Encoder.FileReadMT\Daniel2.Encoder.FileReadMT.vcxproj", "{51658988-3725-4D7C-B7FB-7926F76E0229}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Daniel2.Encoder.FileReadMT", "Daniel2.DPXEncoder\Daniel2.DPXEncoder.vcxproj", "{51658988-3725-4D7C-B7FB-7926F76E0229}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleAudioDecoder", "SimpleAudioDecoder\SimpleAudioDecoder.csproj", "{53D3A9CB-B65B-4DF1-9DF4-2DF574D07E7D}"
 EndProject
