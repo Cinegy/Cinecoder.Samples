@@ -23,7 +23,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51658988-3725-4D7C-B7FB-7926F76E0229}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Daniel2EncoderFileReadMT</RootNamespace>
+    <RootNamespace>Daniel2.DPXEncoder</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -163,7 +163,7 @@
   <ItemGroup>
     <ClCompile Include="CEncoderTest.cpp" />
     <ClCompile Include="CudaMemAlloc.cpp" />
-    <ClCompile Include="Daniel2.Encoder.FileReadMT.cpp" />
+    <ClCompile Include="Daniel2.DPXEncoder.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
