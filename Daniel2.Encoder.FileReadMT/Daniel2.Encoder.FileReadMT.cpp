@@ -145,7 +145,7 @@ int print_help()
 		"As a side result, it is a tool for conversion from raw video files\n"
 		"or DPX or BMP sequences into Cinegy's Daniel2 packed format.\n"
 		"\n"
-		"Usage: d2enc.exe <inputfile(s)> <output_file> <switches>\n"
+		"Usage: Daniel2.DPXEncoder.exe <inputfile(s)> <output_file> <switches>\n"
 		"\n"
 		"Where the parameters are:\n"
 		"  inputfile  - a single raw filename or a wildcard for an image sequence\n"

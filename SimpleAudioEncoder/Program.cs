@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Cinecoder.Interop;
 
 namespace SimpleAudioEncoder
@@ -8,7 +9,9 @@ namespace SimpleAudioEncoder
     {
         static unsafe int Main(string[] args)
         {
-            Console.WriteLine("Simple Audio Encoder Test App # 1.00. Copyright (c) 2018 Cinegy LLC\n");
+            var buildVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
+
+            Console.WriteLine($"Simple Audio Encoder Test App v{buildVersion}. Copyright (c) 2018 Cinegy LLC\n");
 
             if (args.Length < 3)
             {
@@ -72,7 +75,7 @@ namespace SimpleAudioEncoder
                     audioEncoder.Init(encPar);
                 }
                 else
-                    throw new Exception("$Unknown audio encoder type: {args[0]}");
+                    throw new Exception($"Unknown audio encoder type: {args[0]}");
 
                 BinaryReader inputFile = new BinaryReader(new FileStream(args[1], FileMode.Open));
 
