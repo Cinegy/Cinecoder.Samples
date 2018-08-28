@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" />
-  <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -23,7 +23,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51658988-3725-4D7C-B7FB-7926F76E0229}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Daniel2EncoderFileReadMT</RootNamespace>
+    <RootNamespace>Daniel2.DPXEncoder</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -75,25 +75,25 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Daniel2.DPXEncoder</TargetName>
     <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <TargetName>Daniel2.DPXEncoder</TargetName>
     <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Daniel2.DPXEncoder</TargetName>
     <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>Daniel2.DPXEncoder</TargetName>
     <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -163,7 +163,7 @@
   <ItemGroup>
     <ClCompile Include="CEncoderTest.cpp" />
     <ClCompile Include="CudaMemAlloc.cpp" />
-    <ClCompile Include="Daniel2.Encoder.FileReadMT.cpp" />
+    <ClCompile Include="Daniel2.DPXEncoder.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -176,16 +176,16 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" />
+    <Import Project="..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.15.15264\build\Cinecoder.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets'))" />
   </Target>
 </Project>

@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props" Condition="Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props')" />
-  <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -75,23 +74,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)_bin\$(Configuration).$(PlatformTarget)\</OutDir>
-    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(PlatformTarget)\</IntDir>
+    <OutDir>$(SolutionDir)_bin\$(Configuration).$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)_obj\$(ProjectName)\$(Configuration).$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -101,6 +100,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,6 +121,7 @@ call get-external-libraries.bat</Command>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,6 +144,7 @@ call get-external-libraries.bat</Command>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +153,7 @@ call get-external-libraries.bat</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib;$(SolutionDir)_toolkits\OpenALSoft\libs\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freeglut.lib;OpenAL32.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -167,6 +170,7 @@ call get-external-libraries.bat</Command>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -217,8 +221,7 @@ call get-external-libraries.bat</Command>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" />
-    <Import Project="..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" />
-    <Import Project="..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets" Condition="Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets')" />
+    <Import Project="..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets')" />
   </ImportGroup>
   <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
@@ -250,9 +253,7 @@ call get-external-libraries.bat</Command>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.154.158\build\Cinecoder.Plugin.Multiplexers.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.16.15687\build\Cinecoder.targets'))" />
-    <Error Condition="!Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDASDK.8.0.0.1\build\CUDASDK.props'))" />
-    <Error Condition="!Exists('..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDASDK.8.0.0.1\build\CUDASDK.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.31.19.16046\build\Cinecoder.targets'))" />
   </Target>
 </Project>

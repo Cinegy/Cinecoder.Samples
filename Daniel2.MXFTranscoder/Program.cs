@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-
+using System.Reflection;
 using Cinecoder.Interop;
 using Cinecoder.Plugin.Multiplexers.Interop;
 
@@ -17,7 +17,9 @@ namespace Daniel2.MXFTranscoder
 
         static unsafe int Main(string[] args)
         {
-            Console.WriteLine("Daniel2 MXF Transcoder App # 1.00. Copyright (c) 2018 Cinegy LLC\n");
+            var buildVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
+
+            Console.WriteLine($"Daniel2 MXF Transcoder App v{buildVersion}. Copyright (c) 2018 Cinegy LLC\n");
 
             if(args.Length < 2)
             {
@@ -235,8 +237,8 @@ namespace Daniel2.MXFTranscoder
         static void print_help()
         {
             Console.Write(
-                "This application transcodes any MXF file into \n"+
-                "Daniel2 MXF file for the fastest usage\n"+
+                "This application transcodes any MXF file into a\n"+
+                "Daniel2 MXF file optimized to show fast usage and managed code interop\n"+
                 "\n"+
                 "Usage: Daniel2.MXFTranscoder.exe <inputfile.MXF> <output_file.MXF> [<switches>]\n"+
                 "\n"+
@@ -253,7 +255,7 @@ namespace Daniel2.MXFTranscoder
                 "  /bits=#    - the target bitdepth\n" +
                 "\n" +
                 "Sample usage (raw file):\n"+      
-                "> Daniel2.MXFTranscoder.exe Source.dpx Target.MXF\n"
+                "> Daniel2.MXFTranscoder.exe Source.MXF Target.MXF\n"
             );
 
             Console.WriteLine("\n\nPress Enter to Exit");

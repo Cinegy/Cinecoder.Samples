@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Cinecoder.Interop;
 
@@ -12,7 +13,9 @@ namespace SimpleAudioDecoder
     {
         static unsafe int Main(string[] args)
         {
-            Console.WriteLine("Simple Audio Decoder Test App # 1.00. Copyright (c) 2018 Cinegy LLC\n");
+            var buildVersion = Assembly.GetEntryAssembly().GetName().Version.ToString();
+
+            Console.WriteLine($"Simple Audio Decoder Test App v{buildVersion}. Copyright (c) 2018 Cinegy LLC\n");
 
             if (args.Length < 2)
             {
