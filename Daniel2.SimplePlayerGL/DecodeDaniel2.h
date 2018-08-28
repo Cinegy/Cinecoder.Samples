@@ -43,7 +43,6 @@ private:
 	ReadFileDN2 m_file;
 	std::vector<unsigned char> m_buffer;
 
-	C_Event m_hExitEvent;
 	C_QueueT<C_Block> m_queueFrames;
 	C_QueueT<C_Block> m_queueFrames_free;
 
@@ -99,7 +98,7 @@ private:
 	}
 	virtual HRESULT STDMETHODCALLTYPE DataReady(IUnknown *pDataProducer);
 
-protected:
+private:
 	friend class C_SimpleThread<DecodeDaniel2>;
 	long ThreadProc();
 };

@@ -55,7 +55,6 @@ private:
 	C_CritSec m_critical_read;
 	C_CritSec m_critical_queue;
 
-	C_Event m_hExitEvent;
 	C_QueueT<CodedFrame> m_queueFrames;
 	C_QueueT<CodedFrame> m_queueFrames_free;
 	
@@ -109,7 +108,8 @@ public:
 	CodedFrame* MapFrame();
 	void UnmapFrame(CodedFrame* pFrame);
 
-public:
+private:
+	friend class C_SimpleThread<ReadFileDN2>;
 	long ThreadProc();
 };
 

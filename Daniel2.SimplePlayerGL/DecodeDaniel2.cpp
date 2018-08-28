@@ -146,8 +146,6 @@ int DecodeDaniel2::StopDecode()
 
 	m_bProcess = false;
 
-	m_hExitEvent.Set();
-
 	Close(); // closing thread <ThreadProc>
 
 	return 0;
@@ -157,7 +155,7 @@ C_Block* DecodeDaniel2::MapFrame()
 {
 	C_Block *pBlock = nullptr;
 
-	m_queueFrames.Get(&pBlock, m_hExitEvent); // receiving a block (C_Block) from a queue of finished decoded frames
+	m_queueFrames.Get(&pBlock, m_evExit); // receiving a block (C_Block) from a queue of finished decoded frames
 
 	return pBlock;
 }
@@ -379,7 +377,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	{
 		C_Block *pBlock = nullptr;
 
-		m_queueFrames_free.Get(&pBlock, m_hExitEvent); // get free pointer to object of C_Block form queue
+		m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
 
 		if (pBlock)
 		{
@@ -484,7 +482,7 @@ long DecodeDaniel2::ThreadProc()
 		{
 			C_Block *pBlock = nullptr;
 
-			m_queueFrames_free.Get(&pBlock, m_hExitEvent); // get free pointer to object of C_Block form queue
+			m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
 
 			if (pBlock)
 			{

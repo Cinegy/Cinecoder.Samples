@@ -91,8 +91,6 @@ int ReadFileDN2::StopPipe()
 {
 	m_bProcess = false;
 
-	m_hExitEvent.Set();
-
 	Close();
 
 	return 0;
@@ -132,7 +130,7 @@ CodedFrame* ReadFileDN2::MapFrame()
 
 	CodedFrame *pFrame = nullptr;
 
-	m_queueFrames.Get(&pFrame, m_hExitEvent);
+	m_queueFrames.Get(&pFrame, m_evExit);
 
 	return pFrame;
 }
@@ -159,7 +157,7 @@ long ReadFileDN2::ThreadProc()
 	{
 		CodedFrame* frame = nullptr;
 
-		m_queueFrames_free.Get(&frame, m_hExitEvent);
+		m_queueFrames_free.Get(&frame, m_evExit);
 
 		if (frame)
 		{
@@ -186,7 +184,7 @@ long ReadFileDN2::ThreadProc()
 				for (size_t i = 0; i < m_queueFrames.GetCount(); ++i)
 				{
 					CodedFrame *pFrame = nullptr;
-					m_queueFrames.Get(&pFrame, m_hExitEvent);
+					m_queueFrames.Get(&pFrame, m_evExit);
 					if (pFrame)
 						m_queueFrames_free.Queue(pFrame);
 				}
