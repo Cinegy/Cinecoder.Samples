@@ -73,12 +73,16 @@ AudioSource::AudioSource() :
 	buffers{ 0 },
 	m_FrameRate{ 25, 1 },
 	m_bAudioPause(false),
-	m_iSpeed(1)
+	m_iSpeed(1),
+	m_bProcess(false)
 {
 }
 
 AudioSource::~AudioSource()
 {
+	m_bProcess = false;
+
+	Close(); // closing thread <ThreadProc>
 }
 
 int AudioSource::Init(CC_FRAME_RATE video_framerate)
@@ -144,6 +148,8 @@ int AudioSource::InitOpenAL()
 	m_bInitialize = true;
 
 	PrintVersionAL();
+
+	Create(); // creating thread <ThreadProc>
 
 	return 0;
 }
@@ -230,6 +236,10 @@ int AudioSource::OpenFile(const char* const filename)
 	hr = m_pMediaReader->get_Duration(&Duration);
 	if (FAILED(hr)) return hr;
 
+	CC_INT FrameCount = 0;
+	hr = m_pMediaReader->get_NumberOfFrames(&FrameCount);
+	if (FAILED(hr)) return hr;
+
 	CC_BITRATE BitRate;
 	CC_UINT BitsPerSample;
 	CC_UINT ChannelMask;
@@ -280,49 +290,12 @@ int AudioSource::PlayFrame(size_t iFrame)
 	if (!m_bInitialize)
 		return -1;
 
-	ALint numProcessed = 0;
-	alGetSourcei(source, AL_BUFFERS_PROCESSED, &numProcessed); __al
-
-	ALint source_state = 0;
-	alGetSourcei(source, AL_SOURCE_STATE, &source_state); __al
-
-	if (numProcessed > 0)
+	if (!m_bAudioPause)
 	{
-		size_t iFrames = (iFrame + NUM_BUFFERS);
+		if (listFrames.size() > NUM_BUFFERS)
+			listFrames.pop_front();
 
-		HRESULT hr = S_OK;
-		DWORD cbRetSize = 0;
-
-		BYTE* pb = audioChunk.data();
-		DWORD cb = static_cast<DWORD>(audioChunk.size());
-
-		hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, iFrames * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
-		if (SUCCEEDED(hr) && cbRetSize > 0)
-		{
-			// if we playing in the opposite direction we need reverse audio samples
-			if (m_iSpeed < 0)
-				ReverseSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3));
-
-			// if we playing with speed > 1 we need aliasing our audio samples
-			if (abs(m_iSpeed) > 1)
-				AliasingSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3), (int)m_iNumChannels);
-
-			ALvoid* data = pb;
-			ALsizei size = static_cast<ALsizei>(cbRetSize);
-			ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
-			ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-
-			ALuint buffer;
-
-			alSourceUnqueueBuffers(source, 1, &buffer); __al
-			alBufferData(buffer, format, data, size, frequency); __al
-			alSourceQueueBuffers(source, 1, &buffer); __al
-		}
-	}
-
-	if (source_state != AL_PLAYING && !m_bAudioPause)
-	{
-		alSourcePlay(source); __al
+		listFrames.push_back(iFrame);
 	}
 
 	return 0;
@@ -343,3 +316,76 @@ int AudioSource::SetPause(bool bPause)
 	return 0;
 }
 
+long AudioSource::ThreadProc()
+{
+	m_bProcess = true;
+
+	size_t iCurFrame = NUM_BUFFERS;
+
+	while (m_bProcess)
+	{
+		ALint numProcessed = 0;
+		alGetSourcei(source, AL_BUFFERS_PROCESSED, &numProcessed); __al
+
+		ALint source_state = 0;
+		alGetSourcei(source, AL_SOURCE_STATE, &source_state); __al
+
+		if (numProcessed > 0)
+		{
+			if (listFrames.size() > 0)
+			{
+				iCurFrame = listFrames.front();
+				listFrames.pop_front();
+
+				ALvoid* data = nullptr;
+				ALsizei size = 0;
+				if (UpdateAudioChunk(iCurFrame, &data, &size) == S_OK && data && size > 0)
+				{
+					ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
+					ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+
+					ALuint buffer;
+
+					alSourceUnqueueBuffers(source, 1, &buffer); __al
+					alBufferData(buffer, format, data, size, frequency); __al
+					alSourceQueueBuffers(source, 1, &buffer); __al
+				}
+			}
+		}
+
+		if (source_state != AL_PLAYING && !m_bAudioPause)
+		{
+			alSourcePlay(source); __al
+		}
+
+		Sleep(1);
+	}
+
+	return 0;
+}
+
+HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* size)
+{
+	HRESULT hr = S_OK;
+	DWORD cbRetSize = 0;
+
+	BYTE* pb = audioChunk.data();
+	DWORD cb = static_cast<DWORD>(audioChunk.size());
+
+	hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, iFrame * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
+	if (SUCCEEDED(hr) && cbRetSize > 0)
+	{
+		// if we playing in the opposite direction we need reverse audio samples
+		if (m_iSpeed < 0)
+			ReverseSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3));
+
+		// if we playing with speed > 1 we need aliasing our audio samples
+		if (abs(m_iSpeed) > 1)
+			AliasingSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3), (int)m_iNumChannels);
+
+		*data = pb;
+		*size = static_cast<ALsizei>(cbRetSize);
+	}
+
+	return hr;
+}

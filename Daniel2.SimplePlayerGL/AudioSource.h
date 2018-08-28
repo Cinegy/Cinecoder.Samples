@@ -29,7 +29,7 @@
 
 #define NUM_BUFFERS 6
 
-class AudioSource
+class AudioSource : public C_SimpleThread<AudioSource>
 {
 private:
 	bool m_bInitialize;
@@ -56,6 +56,9 @@ private:
 	ALuint buffers[NUM_BUFFERS];
 
 	bool m_bAudioPause;
+	bool m_bProcess;
+
+	std::list<size_t> listFrames;
 
 public:
 	AudioSource();
@@ -78,5 +81,11 @@ private:
 	int InitOpenAL();
 	int DestroyOpenAL();
 	int PrintVersionAL();
+
+	HRESULT UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* size);
+
+private:
+	friend class C_SimpleThread<AudioSource>;
+	long ThreadProc();
 };
 
