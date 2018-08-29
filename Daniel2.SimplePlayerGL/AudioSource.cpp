@@ -292,10 +292,12 @@ int AudioSource::PlayFrame(size_t iFrame)
 
 	if (!m_bAudioPause)
 	{
-		if (listFrames.size() > NUM_BUFFERS)
-			listFrames.pop_front();
+		C_AutoLock lock(&m_CritSec);
 
-		listFrames.push_back(iFrame);
+		if (queueFrames.size() > NUM_BUFFERS)
+			queueFrames.pop();
+
+		queueFrames.push(iFrame);
 	}
 
 	return 0;
@@ -332,10 +334,14 @@ long AudioSource::ThreadProc()
 
 		if (numProcessed > 0)
 		{
-			if (listFrames.size() > 0)
+			if (queueFrames.size() > 0)
 			{
-				iCurFrame = listFrames.front();
-				listFrames.pop_front();
+				{
+					C_AutoLock lock(&m_CritSec);
+
+					iCurFrame = queueFrames.front();
+					queueFrames.pop();
+				}
 
 				ALvoid* data = nullptr;
 				ALsizei size = 0;

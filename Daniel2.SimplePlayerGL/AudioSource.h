@@ -58,7 +58,8 @@ private:
 	bool m_bAudioPause;
 	bool m_bProcess;
 
-	std::list<size_t> listFrames;
+	C_CritSec m_CritSec;
+	std::queue<size_t> queueFrames;
 
 public:
 	AudioSource();
