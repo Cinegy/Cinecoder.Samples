@@ -24,6 +24,7 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_outputImageFormat(IMAGE_FORMAT_RGBA8BIT),
 	m_bProcess(false),
 	m_bPause(false),
+	m_bDecode(true),
 	m_bInitDecoder(false),
 	m_bUseCuda(false),
 	m_pVideoDec(nullptr),
@@ -459,17 +460,23 @@ long DecodeDaniel2::ThreadProc()
 
 	while (m_bProcess)
 	{
-		if (!m_bPause)
+		if (m_bPause)
 		{
-			CodedFrame* frame = nullptr;
-			frame = m_file.MapFrame(); // get pointer to next coded frame form DN2 file
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue;
+		}
 
-			if (frame)
+		CodedFrame* frame = nullptr;
+		frame = m_file.MapFrame(); // get pointer to next coded frame form DN2 file
+
+		if (frame)
+		{
+			coded_frame = frame->coded_frame.data(); // poiter to coded frame
+			coded_frame_size = frame->coded_frame_size; // size of coded frame
+			frame_number = frame->frame_number; // number of coded frame
+
+			if (m_bDecode)
 			{
-				coded_frame = frame->coded_frame.data(); // poiter to coded frame
-				coded_frame_size = frame->coded_frame_size; // size of coded frame
-				frame_number = frame->frame_number; // number of coded frame
-
 				if (FAILED(hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, frame_number))) // add coded frame to decoder
 				{
 					assert(0);
@@ -478,20 +485,21 @@ long DecodeDaniel2::ThreadProc()
 
 					m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
 				}
-
-				m_file.UnmapFrame(frame); // add to queue free pointer for reading coded frame
 			}
-		}
-		else
-		{
-			C_Block *pBlock = nullptr;
-
-			m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
-
-			if (pBlock)
+			else
 			{
-				m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
+				C_Block *pBlock = nullptr;
+
+				m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
+
+				if (pBlock)
+				{
+					pBlock->iFrameNumber = frame_number; // save frame number
+					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
+				}
 			}
+
+			m_file.UnmapFrame(frame); // add to queue free pointer for reading coded frame
 		}
 	}
 

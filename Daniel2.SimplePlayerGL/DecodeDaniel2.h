@@ -37,6 +37,7 @@ private:
 
 	bool m_bProcess;
 	bool m_bPause;
+	bool m_bDecode;
 	bool m_bInitDecoder;
 	bool m_bUseCuda;
 
@@ -73,8 +74,12 @@ public:
 
 	bool isProcess() { return m_bProcess; }
 	bool isPause() { return m_bPause; }
+	bool isDecode() { return m_bDecode; }
 
 	void SetPause(bool bPause) { m_bPause = bPause; }
+	void SetDecode(bool bDecode) { m_bDecode = bDecode; }
+	
+
 
 	ReadFileDN2* GetReaderPtr() { return &m_file; }
 

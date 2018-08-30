@@ -803,16 +803,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case 'd':
 	{
 		g_bDecoder = !g_bDecoder;
-		decodeD2->SetPause(!g_bDecoder);
+		decodeD2->SetDecode(g_bDecoder);
 
-		if (decodeAudio->IsInitialize())
-		{
-			if (!g_bPause && g_bDecoder)
-				decodeAudio->SetPause(false);
-			else
-				decodeAudio->SetPause(true);
-		}
-		
 		if (g_bDecoder)
 			printf("decoder: on\n");
 		else
