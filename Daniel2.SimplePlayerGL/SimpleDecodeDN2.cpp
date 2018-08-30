@@ -410,7 +410,7 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 	cudaArray *texture_ptr;
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
-	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), (pBlock->Width() * 4), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 
 	return 0;
