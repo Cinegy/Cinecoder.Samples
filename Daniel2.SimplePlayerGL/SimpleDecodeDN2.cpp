@@ -611,9 +611,9 @@ void ComputeFPS()
 		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		if (g_bPause)
-			sprintf_s(cString, "%s (%d x %d): %.2g fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.0f fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.2g fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.0f fps", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)
@@ -646,6 +646,17 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 #else
 		exit(0); // On MacOS we have error <Use of undeclared identifier 'glutLeaveMainLoop'> so we call exit(0)
 #endif
+		break;
+	}
+
+	case '+':
+	case '-':
+	{
+		float volume = decodeAudio->GetVolume() + (key == '+' ? 0.1f : -0.1f);
+		if (volume > 1.f) volume = 1.f;
+		else if (volume < 0.f) volume = 0;
+		decodeAudio->SetVolume(volume);
+		printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
 		break;
 	}
 
@@ -1035,6 +1046,7 @@ void printHelp(void)
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'d':                on/off decoder\n");
+	printf("'+'/'-':            change audio volume (+/- 10%%)\n");
 	printf("'J'/'K'/'L':        change direction video or pause\n");
 	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");
 	printf("'HOME':             seek to first frame\n");

@@ -23,8 +23,15 @@
 	printf("al error = 0x%x line = %d\n", alRes, __LINE__); \
 	return alRes; \
 	} }
+
+#define __al_void { \
+	ALuint alRes = alGetError(); \
+	if (alRes != AL_NO_ERROR) { \
+	printf("al error = 0x%x line = %d\n", alRes, __LINE__); \
+	} }
 #else
 	#define __al
+	#define __al_void
 #endif
 
 #define NUM_BUFFERS 6
@@ -76,6 +83,22 @@ public:
 	void SetSpeed(int iSpeed)
 	{
 		m_iSpeed = iSpeed;
+	}
+
+	void SetVolume(float fVolume)
+	{
+		if (fVolume >= 0.f && fVolume <= 1.f)
+		{
+			alSourcef(source, AL_GAIN, fVolume); __al_void
+		}
+	}
+
+	float GetVolume()
+	{
+		float fVolume = 0;
+		alGetSourcef(source, AL_GAIN, &fVolume); __al_void
+
+		return fVolume;
 	}
 
 private:
