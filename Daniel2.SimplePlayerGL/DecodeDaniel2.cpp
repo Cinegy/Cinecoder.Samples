@@ -406,7 +406,6 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		m_width = FrameSize.cx; // get width
 		m_height = FrameSize.cy; // get height
 
-		//CC_COLOR_FMT fmt = BitDepth == 8 ? CCF_BGR32 : CCF_BGR64;
 		//CC_COLOR_FMT fmt = BitDepth == 8 ? CCF_RGB32 : CCF_RGB64;
 
 		//if (BitDepth == 10)
@@ -428,10 +427,14 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			m_fmt = fmt;
 
-			if (m_fmt == CCF_RGB32 || m_fmt == CCF_BGR32)
+			if (m_fmt == CCF_RGB32)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
-			else if (m_fmt == CCF_RGB64 || m_fmt == CCF_BGR64)
+			else if (m_fmt == CCF_BGR32)
+				m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
+			else if (m_fmt == CCF_RGB64)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			else if (m_fmt == CCF_BGR64)
+				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
 

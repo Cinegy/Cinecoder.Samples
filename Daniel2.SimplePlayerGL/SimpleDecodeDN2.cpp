@@ -330,12 +330,12 @@ void gpu_initGLBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT) // RGBA 8 bit
+	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) // RGBA 8 bit
 	{
 		g_internalFormat = GL_RGBA;
 		g_type = GL_UNSIGNED_BYTE;
-		//g_format = GL_BGRA_EXT;
-		g_format = GL_RGBA;      // this one is 2x faster
+		//g_format = GL_RGBA;      // this one is 2x faster
+		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) g_format = GL_RGBA;
 	}
 	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30) // R10G10B10A2 fromat
 	{
@@ -344,10 +344,11 @@ void gpu_initGLBuffers()
 		//g_type = GL_UNSIGNED_INT_10_10_10_2;
 		g_type = GL_UNSIGNED_INT_2_10_10_10_REV;	// this one is 2x faster
 	}
-	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT) // RGBA 16 bit
+	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) // RGBA 16 bit
 	{
 		g_internalFormat = GL_RGBA16;
 		g_type = GL_UNSIGNED_SHORT;
+		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) g_format = GL_RGBA;
 	}
 	else
 	{
@@ -804,6 +805,14 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		g_bDecoder = !g_bDecoder;
 		decodeD2->SetPause(!g_bDecoder);
 
+		if (decodeAudio->IsInitialize())
+		{
+			if (!g_bPause && g_bDecoder)
+				decodeAudio->SetPause(false);
+			else
+				decodeAudio->SetPause(true);
+		}
+		
 		if (g_bDecoder)
 			printf("decoder: on\n");
 		else
