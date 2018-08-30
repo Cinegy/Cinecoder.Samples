@@ -528,7 +528,8 @@ void Display()
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 
-	decodeAudio->PlayFrame(iCurPlayFrameNumber); // play audio
+	if (decodeAudio->IsInitialize())
+		decodeAudio->PlayFrame(iCurPlayFrameNumber); // play audio
 
 	if (g_bShowTicker) // draw ticker
 	{
@@ -652,11 +653,14 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case '+':
 	case '-':
 	{
-		float volume = decodeAudio->GetVolume() + (key == '+' ? 0.1f : -0.1f);
-		if (volume > 1.f) volume = 1.f;
-		else if (volume < 0.f) volume = 0;
-		decodeAudio->SetVolume(volume);
-		printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
+		if (decodeAudio->IsInitialize())
+		{
+			float volume = decodeAudio->GetVolume() + (key == '+' ? 0.1f : -0.1f);
+			if (volume > 1.f) volume = 1.f;
+			else if (volume < 0.f) volume = 0;
+			decodeAudio->SetVolume(volume);
+			printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
+		}
 		break;
 	}
 
@@ -698,7 +702,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 
 		SetPause(!g_bPause);
 
-		decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+		if (decodeAudio->IsInitialize())
+			decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
 
 		printf("press K (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
 		break;
@@ -718,7 +723,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			SetPause(!g_bPause);
 		}
 
-		decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+		if (decodeAudio->IsInitialize())
+			decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
 
 		printf("press L (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
 		break;
@@ -926,7 +932,8 @@ void SetPause(bool bPause)
 	else
 		printf("pause: off\n");
 
-	decodeAudio->SetPause(g_bPause);
+	if (decodeAudio->IsInitialize())
+		decodeAudio->SetPause(g_bPause);
 }
 
 void SetVerticalSync(bool bVerticalSync)

@@ -79,6 +79,7 @@ public:
 	int SetPause(bool bPause);
 
 	bool IsPause() { return m_bAudioPause; }
+	bool IsInitialize() { return m_bInitialize; }
 
 	void SetSpeed(int iSpeed)
 	{
