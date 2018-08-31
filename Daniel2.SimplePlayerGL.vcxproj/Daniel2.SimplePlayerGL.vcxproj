@@ -205,7 +205,7 @@ call get-external-libraries.bat</Command>
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.cpp" />
-    <ClCompile Include="..\Daniel2.SimplePlayerGL\SimpleDecodeDN2.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\Daniel2.SimplePlayerGL.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
