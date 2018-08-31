@@ -7,20 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		47ACEE1920976C52003E1326 /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0C20976C50003E1326 /* Block.cpp */; };
-		47ACEE1A20976C52003E1326 /* SimpleDecodeDN2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */; };
-		47ACEE1B20976C52003E1326 /* DecodeDaniel2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */; };
-		47ACEE1C20976C52003E1326 /* ReadFileDN2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */; };
-		47ACEE1D20976C52003E1326 /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1620976C51003E1326 /* stdafx.cpp */; };
-		962900A321145528003F87AE /* AudioSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 962900A221145528003F87AE /* AudioSource.cpp */; };
-		962DAD812111E40700DE5B63 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 962DAD802111E40700DE5B63 /* OpenAL.framework */; };
-		96D13B5A206CE66E00102F82 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B59206CE66E00102F82 /* OpenGL.framework */; };
-		96D13B5C206CE67B00102F82 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5B206CE67B00102F82 /* CoreGraphics.framework */; };
-		96D13B5E206CE68300102F82 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5D206CE68300102F82 /* GLUT.framework */; };
+		96AAC9EA21393B8000BAE16D /* Daniel2.SimplePlayerGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0F20976C50003E1326 /* Daniel2.SimplePlayerGL.cpp */; };
+		96AAC9EB21393B8000BAE16D /* AudioSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 962900A221145528003F87AE /* AudioSource.cpp */; };
+		96AAC9EC21393B8000BAE16D /* Block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE0C20976C50003E1326 /* Block.cpp */; };
+		96AAC9ED21393B8000BAE16D /* DecodeDaniel2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */; };
+		96AAC9EE21393B8000BAE16D /* ReadFileDN2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */; };
+		96AAC9EF21393B8000BAE16D /* stdafx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47ACEE1620976C51003E1326 /* stdafx.cpp */; };
+		96AAC9F121393B8000BAE16D /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 962DAD802111E40700DE5B63 /* OpenAL.framework */; };
+		96AAC9F221393B8000BAE16D /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5D206CE68300102F82 /* GLUT.framework */; };
+		96AAC9F321393B8000BAE16D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B5B206CE67B00102F82 /* CoreGraphics.framework */; };
+		96AAC9F421393B8000BAE16D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96D13B59206CE66E00102F82 /* OpenGL.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
-		9664CD9A20A0A574009CF2F2 /* PBXBuildRule */ = {
+		96AAC9F621393B8000BAE16D /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			fileType = pattern.proxy;
@@ -32,7 +32,7 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		96D13B38206CE5A700102F82 /* CopyFiles */ = {
+		96AAC9F521393B8000BAE16D /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -46,7 +46,7 @@
 /* Begin PBXFileReference section */
 		47ACEE0C20976C50003E1326 /* Block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Block.cpp; path = Daniel2.SimplePlayerGL/Block.cpp; sourceTree = "<group>"; };
 		47ACEE0E20976C50003E1326 /* DecodeDaniel2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DecodeDaniel2.h; path = Daniel2.SimplePlayerGL/DecodeDaniel2.h; sourceTree = "<group>"; };
-		47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SimpleDecodeDN2.cpp; path = Daniel2.SimplePlayerGL/SimpleDecodeDN2.cpp; sourceTree = "<group>"; };
+		47ACEE0F20976C50003E1326 /* Daniel2.SimplePlayerGL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Daniel2.SimplePlayerGL.cpp; path = Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp; sourceTree = "<group>"; };
 		47ACEE1020976C50003E1326 /* Block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Block.h; path = Daniel2.SimplePlayerGL/Block.h; sourceTree = "<group>"; };
 		47ACEE1120976C50003E1326 /* DecodeDaniel2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DecodeDaniel2.cpp; path = Daniel2.SimplePlayerGL/DecodeDaniel2.cpp; sourceTree = "<group>"; };
 		47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ReadFileDN2.cpp; path = Daniel2.SimplePlayerGL/ReadFileDN2.cpp; sourceTree = "<group>"; };
@@ -60,21 +60,21 @@
 		962DAD802111E40700DE5B63 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		9643B33C2121C3CC0004A7E0 /* cudaDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cudaDefines.h; path = Daniel2.SimplePlayerGL/cudaDefines.h; sourceTree = "<group>"; };
 		9643B33D2121C3D60004A7E0 /* CinecoderErrorHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CinecoderErrorHandler.h; path = Daniel2.SimplePlayerGL/CinecoderErrorHandler.h; sourceTree = "<group>"; };
-		96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SimpleDecodeDN2; sourceTree = BUILT_PRODUCTS_DIR; };
+		96AAC9FA21393B8000BAE16D /* SimplePlayerGL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SimplePlayerGL; sourceTree = BUILT_PRODUCTS_DIR; };
 		96D13B59206CE66E00102F82 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		96D13B5B206CE67B00102F82 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		96D13B5D206CE68300102F82 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		96D13B37206CE5A700102F82 /* Frameworks */ = {
+		96AAC9F021393B8000BAE16D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				962DAD812111E40700DE5B63 /* OpenAL.framework in Frameworks */,
-				96D13B5E206CE68300102F82 /* GLUT.framework in Frameworks */,
-				96D13B5C206CE67B00102F82 /* CoreGraphics.framework in Frameworks */,
-				96D13B5A206CE66E00102F82 /* OpenGL.framework in Frameworks */,
+				96AAC9F121393B8000BAE16D /* OpenAL.framework in Frameworks */,
+				96AAC9F221393B8000BAE16D /* GLUT.framework in Frameworks */,
+				96AAC9F321393B8000BAE16D /* CoreGraphics.framework in Frameworks */,
+				96AAC9F421393B8000BAE16D /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -95,7 +95,7 @@
 				47ACEE0E20976C50003E1326 /* DecodeDaniel2.h */,
 				47ACEE1420976C51003E1326 /* ReadFileDN2.cpp */,
 				47ACEE1520976C51003E1326 /* ReadFileDN2.h */,
-				47ACEE0F20976C50003E1326 /* SimpleDecodeDN2.cpp */,
+				47ACEE0F20976C50003E1326 /* Daniel2.SimplePlayerGL.cpp */,
 				47ACEE1620976C51003E1326 /* stdafx.cpp */,
 				47ACEE1720976C51003E1326 /* stdafx.h */,
 				47ACEE1820976C51003E1326 /* Timer.h */,
@@ -107,7 +107,7 @@
 		96D13B3B206CE5A700102F82 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */,
+				96AAC9FA21393B8000BAE16D /* SimplePlayerGL */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -126,22 +126,22 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		96D13B39206CE5A700102F82 /* SimpleDecodeDN2 */ = {
+		96AAC9E821393B8000BAE16D /* SimplePlayerGL */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 96D13B41206CE5A700102F82 /* Build configuration list for PBXNativeTarget "SimpleDecodeDN2" */;
+			buildConfigurationList = 96AAC9F721393B8000BAE16D /* Build configuration list for PBXNativeTarget "SimplePlayerGL" */;
 			buildPhases = (
-				96D13B36206CE5A700102F82 /* Sources */,
-				96D13B37206CE5A700102F82 /* Frameworks */,
-				96D13B38206CE5A700102F82 /* CopyFiles */,
+				96AAC9E921393B8000BAE16D /* Sources */,
+				96AAC9F021393B8000BAE16D /* Frameworks */,
+				96AAC9F521393B8000BAE16D /* CopyFiles */,
 			);
 			buildRules = (
-				9664CD9A20A0A574009CF2F2 /* PBXBuildRule */,
+				96AAC9F621393B8000BAE16D /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
-			name = SimpleDecodeDN2;
+			name = SimplePlayerGL;
 			productName = SimpleDecodeDN2;
-			productReference = 96D13B3A206CE5A700102F82 /* SimpleDecodeDN2 */;
+			productReference = 96AAC9FA21393B8000BAE16D /* SimplePlayerGL */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -153,8 +153,7 @@
 				LastUpgradeCheck = 0920;
 				ORGANIZATIONNAME = Cinegy;
 				TargetAttributes = {
-					96D13B39206CE5A700102F82 = {
-						CreatedOnToolsVersion = 9.2;
+					96AAC9E821393B8000BAE16D = {
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -171,28 +170,58 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				96D13B39206CE5A700102F82 /* SimpleDecodeDN2 */,
+				96AAC9E821393B8000BAE16D /* SimplePlayerGL */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		96D13B36206CE5A700102F82 /* Sources */ = {
+		96AAC9E921393B8000BAE16D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				47ACEE1A20976C52003E1326 /* SimpleDecodeDN2.cpp in Sources */,
-				962900A321145528003F87AE /* AudioSource.cpp in Sources */,
-				47ACEE1920976C52003E1326 /* Block.cpp in Sources */,
-				47ACEE1B20976C52003E1326 /* DecodeDaniel2.cpp in Sources */,
-				47ACEE1C20976C52003E1326 /* ReadFileDN2.cpp in Sources */,
-				47ACEE1D20976C52003E1326 /* stdafx.cpp in Sources */,
+				96AAC9EA21393B8000BAE16D /* Daniel2.SimplePlayerGL.cpp in Sources */,
+				96AAC9EB21393B8000BAE16D /* AudioSource.cpp in Sources */,
+				96AAC9EC21393B8000BAE16D /* Block.cpp in Sources */,
+				96AAC9ED21393B8000BAE16D /* DecodeDaniel2.cpp in Sources */,
+				96AAC9EE21393B8000BAE16D /* ReadFileDN2.cpp in Sources */,
+				96AAC9EF21393B8000BAE16D /* stdafx.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		96AAC9F821393B8000BAE16D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/_toolkits/cinecoder/sources,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		96AAC9F921393B8000BAE16D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/_toolkits/cinecoder/sources,
+					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
+				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		96D13B3F206CE5A700102F82 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -244,6 +273,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -291,59 +321,30 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		96D13B42206CE5A700102F82 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
-				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		96D13B43206CE5A700102F82 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
-				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
-				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/libCinecoder.dylib";
-				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		96AAC9F721393B8000BAE16D /* Build configuration list for PBXNativeTarget "SimplePlayerGL" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				96AAC9F821393B8000BAE16D /* Debug */,
+				96AAC9F921393B8000BAE16D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		96D13B35206CE5A700102F82 /* Build configuration list for PBXProject "Daniel2.SimplePlayerGL" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				96D13B3F206CE5A700102F82 /* Debug */,
 				96D13B40206CE5A700102F82 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		96D13B41206CE5A700102F82 /* Build configuration list for PBXNativeTarget "SimpleDecodeDN2" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				96D13B42206CE5A700102F82 /* Debug */,
-				96D13B43206CE5A700102F82 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
