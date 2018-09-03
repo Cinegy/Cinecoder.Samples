@@ -63,7 +63,8 @@ int ReadFileDN2::OpenFile(const char* filename)
 
 	for (size_t i = 0; i < iCountFrames; i++)
 	{
-		m_listFrames.push_back(CodedFrame());
+		//m_listFrames.push_back(CodedFrame());
+		m_listFrames.emplace_back(CodedFrame());
 		m_queueFrames_free.Queue(&m_listFrames.back());
 	}
 

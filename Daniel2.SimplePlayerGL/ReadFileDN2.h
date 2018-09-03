@@ -31,6 +31,9 @@ public:
 	size_t coded_frame_size;
 	size_t frame_number;
 
+	CodedFrame(const CodedFrame&) = default;
+	CodedFrame(CodedFrame&&) = default;
+
 private:
 	//CodedFrame(const CodedFrame&);
 	CodedFrame& operator=(const CodedFrame&);

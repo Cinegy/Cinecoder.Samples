@@ -291,7 +291,8 @@ int DecodeDaniel2::InitValues()
 
 	for (size_t i = 0; i < iCountBlocks; i++) // allocating memory of list of blocks (C_Block)
 	{
-		m_listBlocks.push_back(C_Block());
+		//m_listBlocks.push_back(C_Block());
+		m_listBlocks.emplace_back(C_Block());
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, m_bUseCuda);
 

@@ -10,6 +10,9 @@ public:
 	C_Block();
 	~C_Block();
 
+	C_Block(const C_Block&) = default;
+	C_Block(C_Block&&) = default;
+
 private:
 	//C_Block(const C_Block&);
 	C_Block& operator=(const C_Block&);
