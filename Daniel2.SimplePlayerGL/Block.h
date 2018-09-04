@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 typedef void* cudaPtr;
 
 class C_Block

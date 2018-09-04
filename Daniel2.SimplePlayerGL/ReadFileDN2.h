@@ -1,9 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <fstream>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(__APPLE__)

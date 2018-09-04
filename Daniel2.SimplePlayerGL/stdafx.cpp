@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__) || defined(_WIN32) // CUDA
 FTcudaGetLastError FUNC_CUDA(cudaGetLastError) = nullptr;
 FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString) = nullptr;
 

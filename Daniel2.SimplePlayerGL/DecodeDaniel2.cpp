@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "DecodeDaniel2.h"
 
-#include <algorithm>    // std::max / std::min
-#include <string>
-#include <cassert>
-
 // Cinecoder
 #include <Cinecoder_i.c>
 

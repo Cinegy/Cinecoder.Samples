@@ -11,6 +11,8 @@
 #include <list>
 #include <vector>
 #include <queue>
+#include <memory>
+#include <fstream>
 
 ///////////////////////////////////////////////////////////////////////////////
 

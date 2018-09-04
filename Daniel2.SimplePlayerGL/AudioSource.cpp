@@ -3,6 +3,7 @@
 
 #if defined(__APPLE__)
 typedef signed char INT8;
+typedef signed short INT16;
 typedef long long UINT64;
 #endif
 
@@ -86,7 +87,8 @@ AudioSource::~AudioSource()
 
 	Close(); // closing thread <ThreadProc>
 
-	DestroyOpenAL();
+	if (m_bInitialize)
+		DestroyOpenAL();
 }
 
 int AudioSource::Init(CC_FRAME_RATE video_framerate)

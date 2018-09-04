@@ -3,8 +3,6 @@
 
 #include "stdafx.h"
 
-#include <string>
-
 #if defined (WIN32) || defined (_WIN32 )
 #include <GL/freeglut.h>
 #endif
