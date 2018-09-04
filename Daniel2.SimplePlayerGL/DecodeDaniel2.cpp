@@ -120,8 +120,11 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		switch (m_outputImageFormat)
 		{
 		case IMAGE_FORMAT_RGBA8BIT: printf("RGBA 8bit\n"); break;
+		case IMAGE_FORMAT_BGRA8BIT: printf("BGRA 8bit\n"); break;
 		case IMAGE_FORMAT_RGBA16BIT: printf("RGBA 16bit\n"); break;
+		case IMAGE_FORMAT_BGRA16BIT: printf("BGRA 16bit\n"); break;
 		case IMAGE_FORMAT_RGB30: printf("RGB 30bit\n"); break;
+		default: printf("-----\n"); break;
 		}
 		printf("-------------------------------------\n");
 	}
