@@ -51,7 +51,7 @@ private:
 	size_t m_iSampleBytes;
 	size_t m_iNumChannels;
 	size_t m_iBitsPerSample;
-	size_t m_nBlockAlign;
+	size_t m_iBlockAlign;
 
 	int m_iSpeed;
 

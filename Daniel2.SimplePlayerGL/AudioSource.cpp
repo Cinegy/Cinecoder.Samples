@@ -11,7 +11,7 @@ static void ReverseSamples(BYTE *p, int iSize, int nBlockAlign)
 	long lActual = iSize;
 
 	if (lActual == 0) { assert(0); return; };
-	if (nBlockAlign != 2) { assert(0); return; };
+	if (nBlockAlign != 4) { assert(0); return; };
 
 	UINT64 *p_src = (UINT64 *)(p);
 	UINT64 *p_dst = ((UINT64 *)(p + lActual)) - 1;
@@ -29,13 +29,15 @@ static void AliasingSamples(BYTE *p, int iSize, int nBlockAlign, int nChannels)
 {
 	long lActual = iSize;
 
-	const long iMaxValue = 64;
+	const long iMaxValue = 32;
 
 	if (lActual == 0) { assert(0); return; };
-	if (nBlockAlign != 2) { assert(0); return; };
+	if (nBlockAlign != 4) { assert(0); return; };
 
-	INT8 *p_Beg = (INT8 *)(p);
-	INT8 *p_End = ((INT8 *)(p + lActual)) - 1;
+	if (lActual / nBlockAlign < 2 * iMaxValue) return;
+
+	INT16 *p_Beg = (INT16 *)(p);
+	INT16 *p_End = ((INT16 *)(p + lActual)) - 1;
 	float ftemp;
 
 	for (long i = 0; i <= iMaxValue; i++)
@@ -43,8 +45,8 @@ static void AliasingSamples(BYTE *p, int iSize, int nBlockAlign, int nChannels)
 		ftemp = ((float)i / (float)iMaxValue);
 		for (long ic = 0; ic < nChannels; ic++)
 		{
-			*p_Beg = (INT8)((float)*p_Beg * ftemp);	p_Beg++;
-			*p_End = (INT8)((float)*p_End * ftemp);	p_End--;
+			*p_Beg = (INT16)((float)*p_Beg * ftemp); p_Beg++;
+			*p_End = (INT16)((float)*p_End * ftemp); p_End--;
 		}
 	}
 }
@@ -281,7 +283,7 @@ int AudioSource::OpenFile(const char* const filename)
 	m_iSampleBytes = sample_bytes;
 	m_iNumChannels = NumChannels;
 	m_iBitsPerSample = BitsPerSample;
-	m_nBlockAlign = (m_iNumChannels * m_iBitsPerSample) / 8;
+	m_iBlockAlign = (m_iNumChannels * m_iBitsPerSample) / 8;
 
 	audioChunk.resize(sample_bytes);
 
@@ -386,11 +388,11 @@ HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* siz
 	{
 		// if we playing in the opposite direction we need reverse audio samples
 		if (m_iSpeed < 0)
-			ReverseSamples(pb, (int)cbRetSize, (int)m_nBlockAlign);
+			ReverseSamples(pb, (int)cbRetSize, (int)m_iBlockAlign);
 
 		// if we playing with speed > 1 we need aliasing our audio samples
 		if (abs(m_iSpeed) > 1)
-			AliasingSamples(pb, (int)cbRetSize, (int)m_nBlockAlign, (int)m_iNumChannels);
+			AliasingSamples(pb, (int)cbRetSize, (int)m_iBlockAlign, (int)m_iNumChannels);
 
 		*data = pb;
 		*size = static_cast<ALsizei>(cbRetSize);
