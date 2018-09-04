@@ -83,6 +83,8 @@ AudioSource::~AudioSource()
 	m_bProcess = false;
 
 	Close(); // closing thread <ThreadProc>
+
+	DestroyOpenAL();
 }
 
 int AudioSource::Init(CC_FRAME_RATE video_framerate)
@@ -279,6 +281,7 @@ int AudioSource::OpenFile(const char* const filename)
 	m_iSampleBytes = sample_bytes;
 	m_iNumChannels = NumChannels;
 	m_iBitsPerSample = BitsPerSample;
+	m_nBlockAlign = (m_iNumChannels * m_iBitsPerSample) / 8;
 
 	audioChunk.resize(sample_bytes);
 
@@ -383,11 +386,11 @@ HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* siz
 	{
 		// if we playing in the opposite direction we need reverse audio samples
 		if (m_iSpeed < 0)
-			ReverseSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3));
+			ReverseSamples(pb, (int)cbRetSize, (int)m_nBlockAlign);
 
 		// if we playing with speed > 1 we need aliasing our audio samples
 		if (abs(m_iSpeed) > 1)
-			AliasingSamples(pb, (int)cb, (int)(m_iBitsPerSample >> 3), (int)m_iNumChannels);
+			AliasingSamples(pb, (int)cbRetSize, (int)m_nBlockAlign, (int)m_iNumChannels);
 
 		*data = pb;
 		*size = static_cast<ALsizei>(cbRetSize);
