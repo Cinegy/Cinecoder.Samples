@@ -3,22 +3,6 @@
 #include "Block.h"
 #include "ReadFileDN2.h"
 
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__APPLE__)
-#ifndef COM_NO_WINDOWS_H
-#define COM_NO_WINDOWS_H
-#endif
-#endif
-
-// Cinecoder
-#include <Cinecoder_h.h>
-
-// License
-#include "../cinecoder_license_string.h"
-
-///////////////////////////////////////////////////////////////////////////////
-
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
 
 class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback

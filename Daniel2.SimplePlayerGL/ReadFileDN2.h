@@ -2,20 +2,16 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__APPLE__)
-#ifndef COM_NO_WINDOWS_H
-#define COM_NO_WINDOWS_H
-#endif
-#endif
-
 // Cinecoder
 #include <Cinecoder_h.h>
+
+// License
+#include "../cinecoder_license_string.h"
 
 // Cinegy utils
 #include "utils/comptr.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-
 
 class CodedFrame
 {
