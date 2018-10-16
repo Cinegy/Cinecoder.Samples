@@ -1,6 +1,6 @@
 internal static class License
 {
-    //License valid thru 15/09/2018
+    //License valid thru 15/11/2018
     internal const string Companyname = "cinegy";
-    internal const string Licensekey = "X8H2G1YDU4G52GHNY4ZDW4NYAHCG6T3N6LEKWE8EZ3FNFDKPMYJMF1SEAZ9ZG4JC";
+    internal const string Licensekey = "RWEYZ6YKREC5YFSJYECDWHJYASGFYNPJY3SDW45HFBZNG77PT2TMZ64ERC9GZENF";
 }
