@@ -1,0 +1,402 @@
+# depslib dependency file v1.0
+1542704673 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/AudioSource.cpp
+	"stdafx.h"
+	"AudioSource.h"
+
+1542722950 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/stdafx.h
+	<algorithm>
+	<string>
+	<cassert>
+	<list>
+	<vector>
+	<queue>
+	<memory>
+	<fstream>
+	"utils/HMTSTDUtil.h"
+	<comutil.h>
+	<cuda.h>
+	<cuda_runtime.h>
+	<cuda_gl_interop.h>
+	"cudaDefines.h"
+
+1542387897 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h
+	<thread>
+	<mutex>
+	<list>
+	<chrono>
+	<condition_variable>
+
+1542306988 /usr/local/cuda/include/cuda.h
+	<stdlib.h>
+	<stdint.h>
+
+1542306987 /usr/local/cuda/include/cuda_runtime.h
+	"crt/host_config.h"
+	"builtin_types.h"
+	"library_types.h"
+	"channel_descriptor.h"
+	"cuda_runtime_api.h"
+	"driver_functions.h"
+	"crt/host_defines.h"
+	"vector_functions.h"
+	"nvrtc_device_runtime.h"
+	"crt/device_functions.h"
+	"crt/common_functions.h"
+	"cuda_surface_types.h"
+	"cuda_texture_types.h"
+	"device_launch_parameters.h"
+	"crt/common_functions.h"
+	"cuda_surface_types.h"
+	"cuda_texture_types.h"
+	"crt/device_functions.h"
+	"device_launch_parameters.h"
+	<functional>
+	<utility>
+
+1542306988 /usr/local/cuda/include/crt/host_config.h
+	<features.h>
+	<crtdefs.h>
+	<corecrt.h>
+	<cstdarg>
+
+1542306988 /usr/local/cuda/include/builtin_types.h
+	"device_types.h"
+	"driver_types.h"
+	"surface_types.h"
+	"texture_types.h"
+	"vector_types.h"
+
+1542306988 /usr/local/cuda/include/device_types.h
+	"crt/host_defines.h"
+
+1542306988 /usr/local/cuda/include/crt/host_defines.h
+
+1542306988 /usr/local/cuda/include/driver_types.h
+	"crt/host_defines.h"
+	"vector_types.h"
+	<limits.h>
+	<stddef.h>
+
+1542306988 /usr/local/cuda/include/vector_types.h
+	"crt/host_defines.h"
+
+1542306988 /usr/local/cuda/include/surface_types.h
+	"driver_types.h"
+
+1542306988 /usr/local/cuda/include/texture_types.h
+	"driver_types.h"
+
+1542306988 /usr/local/cuda/include/library_types.h
+
+1542306988 /usr/local/cuda/include/channel_descriptor.h
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/cuda_runtime_api.h
+	"crt/host_defines.h"
+	"builtin_types.h"
+	"cuda_device_runtime_api.h"
+
+1542306987 /usr/local/cuda/include/cuda_device_runtime_api.h
+	"driver_types.h"
+	"crt/host_defines.h"
+
+1542306988 /usr/local/cuda/include/driver_functions.h
+	"builtin_types.h"
+	"crt/host_defines.h"
+	"driver_types.h"
+
+1542306988 /usr/local/cuda/include/vector_functions.h
+	"cuda_runtime_api.h"
+	"vector_functions.hpp"
+
+1542306988 /usr/local/cuda/include/vector_functions.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/crt/device_functions.h
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+	"device_functions.hpp"
+	"device_atomic_functions.h"
+	"device_double_functions.h"
+	"sm_20_atomic_functions.h"
+	"sm_32_atomic_functions.h"
+	"sm_35_atomic_functions.h"
+	"sm_60_atomic_functions.h"
+	"sm_20_intrinsics.h"
+	"sm_30_intrinsics.h"
+	"sm_32_intrinsics.h"
+	"sm_35_intrinsics.h"
+	"sm_61_intrinsics.h"
+	"sm_70_rt.h"
+	"surface_functions.h"
+	"texture_fetch_functions.h"
+	"texture_indirect_functions.h"
+	"surface_indirect_functions.h"
+
+1542306988 /usr/local/cuda/include/crt/device_functions.hpp
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+
+1542306988 /usr/local/cuda/include/device_atomic_functions.h
+	"cuda_runtime_api.h"
+	"cuda_runtime_api.h"
+	"device_atomic_functions.hpp"
+
+1542306988 /usr/local/cuda/include/device_atomic_functions.hpp
+	"cuda_runtime_api.h"
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/crt/device_double_functions.h
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+	"device_double_functions.hpp"
+
+1542306988 /usr/local/cuda/include/crt/device_double_functions.hpp
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+
+1542306988 /usr/local/cuda/include/sm_20_atomic_functions.h
+	"cuda_runtime_api.h"
+	"sm_20_atomic_functions.hpp"
+
+1542306988 /usr/local/cuda/include/sm_20_atomic_functions.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_32_atomic_functions.h
+	"cuda_runtime_api.h"
+	"sm_32_atomic_functions.hpp"
+
+1542306988 /usr/local/cuda/include/sm_32_atomic_functions.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_35_atomic_functions.h
+	"sm_32_atomic_functions.h"
+
+1542306988 /usr/local/cuda/include/sm_60_atomic_functions.h
+	"cuda_runtime_api.h"
+	"sm_60_atomic_functions.hpp"
+
+1542306987 /usr/local/cuda/include/sm_60_atomic_functions.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_20_intrinsics.h
+	"cuda_runtime_api.h"
+	"sm_20_intrinsics.hpp"
+
+1542306988 /usr/local/cuda/include/sm_20_intrinsics.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_30_intrinsics.h
+	"cuda_runtime_api.h"
+	"sm_30_intrinsics.hpp"
+
+1542306988 /usr/local/cuda/include/sm_30_intrinsics.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_32_intrinsics.h
+	"cuda_runtime_api.h"
+	"sm_32_intrinsics.hpp"
+
+1542306988 /usr/local/cuda/include/sm_32_intrinsics.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/sm_35_intrinsics.h
+	"sm_32_intrinsics.h"
+
+1542306988 /usr/local/cuda/include/sm_61_intrinsics.h
+	"cuda_runtime_api.h"
+	"sm_61_intrinsics.hpp"
+
+1542306988 /usr/local/cuda/include/sm_61_intrinsics.hpp
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/crt/sm_70_rt.h
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+	"sm_70_rt.hpp"
+
+1542306988 /usr/local/cuda/include/crt/sm_70_rt.hpp
+	"builtin_types.h"
+	"device_types.h"
+	"host_defines.h"
+
+1542306988 /usr/local/cuda/include/surface_functions.h
+	"cuda_runtime_api.h"
+	"cuda_surface_types.h"
+
+1542306988 /usr/local/cuda/include/cuda_surface_types.h
+	"channel_descriptor.h"
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/texture_fetch_functions.h
+	"cuda_runtime_api.h"
+	"cuda_texture_types.h"
+
+1542306988 /usr/local/cuda/include/cuda_texture_types.h
+	"channel_descriptor.h"
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/texture_indirect_functions.h
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/surface_indirect_functions.h
+	"cuda_runtime_api.h"
+
+1542306988 /usr/local/cuda/include/crt/common_functions.h
+	"builtin_types.h"
+	"host_defines.h"
+	<string.h>
+	<time.h>
+	<new>
+	<stdio.h>
+	<stdlib.h>
+	<assert.h>
+	"cuda_device_runtime_api.h"
+	"math_functions.h"
+
+1542306988 /usr/local/cuda/include/crt/math_functions.h
+	<__config>
+	"builtin_types.h"
+	"host_defines.h"
+	<math.h>
+	<stdlib.h>
+	<cmath>
+	<cstdlib>
+	<crt/func_macro.h>
+	"math_functions.hpp"
+
+1542306988 /usr/local/cuda/include/crt/func_macro.h
+
+1542306988 /usr/local/cuda/include/crt/math_functions.hpp
+	"builtin_types.h"
+	"host_defines.h"
+	"host_defines.h"
+	"math_constants.h"
+	<crt/func_macro.h>
+
+1542306988 /usr/local/cuda/include/math_constants.h
+
+1542306988 /usr/local/cuda/include/device_launch_parameters.h
+	"vector_types.h"
+
+1542306988 /usr/local/cuda/include/cuda_gl_interop.h
+	"cuda_runtime_api.h"
+	<OpenGL/gl.h>
+	<GL/gl.h>
+
+1542713468 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/cudaDefines.h
+	<dlfcn.h>
+
+1542704533 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/AudioSource.h
+	<Cinecoder_h.h>
+	"../cinecoder_license_string.h"
+	"utils/comptr.h"
+	<Al/al.h>
+	<Al/alc.h>
+	<OpenAL/OpenAL.h>
+	<AL/al.h>
+	<AL/alc.h>
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/cinecoder_license_string.h
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/comptr.h
+
+1542649855 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.cpp
+	"stdafx.h"
+	"Block.h"
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.h
+
+1542713169 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
+	"stdafx.h"
+	<GL/freeglut.h>
+	<GLUT/glut.h>
+	<OpenGL/OpenGL.h>
+	<ApplicationServices/ApplicationServices.h>
+	<X11/Xlib.h>
+	<X11/Xutil.h>
+	<GL/glx.h>
+	<GL/freeglut.h>
+	"Timer.h"
+	"DecodeDaniel2.h"
+	"AudioSource.h"
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Timer.h
+	<iostream>
+	<chrono>
+	<ctime>
+	<cmath>
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.h
+	"Block.h"
+	"ReadFileDN2.h"
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/ReadFileDN2.h
+	<Cinecoder_h.h>
+	"../cinecoder_license_string.h"
+	"utils/comptr.h"
+
+1542722857 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
+	"stdafx.h"
+	"DecodeDaniel2.h"
+	<Cinecoder_i.c>
+	"CinecoderErrorHandler.h"
+
+1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/CinecoderErrorHandler.h
+	"utils/HMTSTDUtil.h"
+
+1542704907 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/ReadFileDN2.cpp
+	"stdafx.h"
+	"ReadFileDN2.h"
+
+1542649903 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/stdafx.cpp
+	"stdafx.h"
+
+1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/Cinecoder_h.h
+	"rpc.h"
+	"rpcndr.h"
+	"windows.h"
+	"ole2.h"
+	"Unknwn.h"
+	"d3d11.h"
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/rpc.h
+	"wtypes.h"
+	"guiddef.h"
+	"winerror.h"
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/wtypes.h
+	"msvc_stub.h"
+	"tchar.h"
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/msvc_stub.h
+	<stdint.h>
+	<stdio.h>
+	<unistd.h>
+	<stdlib.h>
+	<malloc.h>
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/tchar.h
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/guiddef.h
+	<string.h>
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/winerror.h
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/rpcndr.h
+
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/Unknwn.h
+
+1542387312 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/winclude/d3d11.h
+
+1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.32.2.16790/sources/Cinecoder_i.c
+	<rpc.h>
+	<rpcndr.h>
+	<guiddef.h>
+	<guiddef.h>
+

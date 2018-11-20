@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Daniel2.SimplePlayerGL" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/Daniel2.SimplePlayerGL" prefix_auto="0" extension_auto="0" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="/home/cinegydev/Footages/Earth4x4K_q6_rgba.dn2 -cuda" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<ExtraCommands>
+					<Add after="cp ../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/*.so bin/Debug" />
+				</ExtraCommands>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Daniel2.SimplePlayerGL" prefix_auto="0" extension_auto="0" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="/home/cinegydev/Footages/Earth4x4K_q6_rgba.dn2 -cuda" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+				<ExtraCommands>
+					<Add after="cp ../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/*.so bin/Release" />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=c++14" />
+			<Add option="-m64" />
+			<Add option="-fexceptions" />
+			<Add directory="/usr/include/AL" />
+			<Add directory="/usr/include/GL " />
+			<Add directory="/usr/local/cuda/include" />
+			<Add directory="../packages/Cinecoder.3.32.2.16790/sources" />
+			<Add directory="../packages/Cinecoder.3.32.2.16790/sources/winclude" />
+		</Compiler>
+		<Linker>
+			<Add option="-m64" />
+			<Add option="-Wl,-rpath=&apos;.&apos;" />
+			<Add library="GL" />
+			<Add library="GLU" />
+			<Add library="glut" />
+			<Add library="openal" />
+			<Add library="pthread" />
+			<Add library="../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/libCinecoder.so" />
+			<Add library="X11" />
+			<Add library="cudart" />
+			<Add library="dl" />
+			<Add directory="/usr/lib/x86_64-linux-gnu" />
+			<Add directory="/usr/local/cuda/lib64" />
+			<Add directory="../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release" />
+		</Linker>
+		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/Block.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/Block.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/CinecoderErrorHandler.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/DecodeDaniel2.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/ReadFileDN2.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/ReadFileDN2.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/Timer.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/cudaDefines.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/stdafx.cpp" />
+		<Unit filename="../Daniel2.SimplePlayerGL/stdafx.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h" />
+		<Unit filename="../Daniel2.SimplePlayerGL/utils/comptr.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
