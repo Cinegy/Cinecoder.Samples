@@ -9,11 +9,14 @@
 // Cinegy utils
 #include "utils/comptr.h"
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 #include <Al/al.h>
 #include <Al/alc.h>
-#else
+#elif defined(__APPLE__)
 #include <OpenAL/OpenAL.h>
+#elif defined(__LINUX__)
+#include <AL/al.h>
+#include <AL/alc.h>
 #endif
 
 #ifndef NDEBUG

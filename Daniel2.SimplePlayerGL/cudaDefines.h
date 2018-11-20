@@ -1,7 +1,5 @@
 #pragma once
 
-#include <windows.h>
-
 #ifdef CUDA_WRAPPER
 	enum cudaMemcpyKind
 	{
@@ -72,18 +70,31 @@ extern FTcudaGraphicsUnmapResources FUNC_CUDA(cudaGraphicsUnmapResources);
 extern FTcudaGraphicsSubResourceGetMappedArray FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray);
 extern FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray);
 
-#define CUDART32_FILENAME "cudart32_80.dll"
-#define CUDART64_FILENAME "cudart64_80.dll"
+#if defined(_WIN32)
+	#define CUDART32_FILENAME "cudart32_80.dll"
+	#define CUDART64_FILENAME "cudart64_80.dll"
+	#if _WIN64
+		#define CUDART_FILENAME CUDART64_FILENAME
+	#else
+		#define CUDART_FILENAME CUDART32_FILENAME
+	#endif
+#else
+	#include <dlfcn.h>
+	#define LoadLibraryA(name) dlopen(name, RTLD_LAZY)
+	#define FreeLibrary(lib) dlclose(lib)
+	#define GetProcAddress(lib, func) dlsym(lib, func)
+	typedef void* FARPROC;
+	typedef void* HMODULE;
+	//#define CUDART_FILENAME "./libcudart.so.10.0"
+	//#define CUDART_FILENAME "/usr/local/cuda-10.0/lib64/libcudart.so.10.0"
+	#define CUDART_FILENAME "/usr/local/cuda-10.0/lib64/libcudart.so"
+#endif
+
+static HMODULE hCuda = nullptr;
 
 static int initCUDA()
 {
-	HMODULE hCuda = NULL;
-
-#if _WIN64
-	hCuda = LoadLibraryA(CUDART64_FILENAME);
-#else
-	hCuda = LoadLibraryA(CUDART32_FILENAME);
-#endif
+	hCuda = LoadLibraryA(CUDART_FILENAME);
 
 	if (hCuda)
 	{
@@ -103,11 +114,9 @@ static int initCUDA()
 
 		FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) = (FTcudaGraphicsSubResourceGetMappedArray)GetProcAddress(hCuda, "cudaGraphicsSubResourceGetMappedArray");
 		FUNC_CUDA(cudaMemcpy2DToArray) = (FTcudaMemcpy2DToArray)GetProcAddress(hCuda, "cudaMemcpy2DToArray");
-
-		FreeLibrary(hCuda);
 	}
 
-	if (!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) || 
+	if (!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) ||
 		!FUNC_CUDA(cudaMalloc) || !FUNC_CUDA(cudaMemset) || !FUNC_CUDA(cudaFree) ||
 		!FUNC_CUDA(cudaGraphicsGLRegisterImage) || !FUNC_CUDA(cudaGraphicsUnregisterResource) ||
 		!FUNC_CUDA(cudaGraphicsMapResources) || !FUNC_CUDA(cudaGraphicsUnmapResources) ||
@@ -117,3 +126,8 @@ static int initCUDA()
 	return 0;
 }
 
+static void destroyCUDA()
+{
+	if (hCuda)
+		FreeLibrary(hCuda);
+}

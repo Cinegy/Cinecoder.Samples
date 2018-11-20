@@ -42,11 +42,12 @@ int ReadFileDN2::OpenFile(const char* filename)
 
 	if (SUCCEEDED(hr)) hr = piFactory->CreateInstance(CLSID_CC_MvxFile, IID_ICC_MvxFile, (IUnknown**)&m_fileMvx);
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 	CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__LINUX__)
 	CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
+
 	if (SUCCEEDED(hr)) hr = m_fileMvx->Open(file_name_str);
 
 	if (!SUCCEEDED(hr))

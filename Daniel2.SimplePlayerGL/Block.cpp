@@ -35,7 +35,7 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCu
 	if (frame_buffer.size() != iSizeFrame)
 		return -1;
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	if (bUseCuda)
 	{
 		cudaError_t res = cudaSuccess;
@@ -54,7 +54,7 @@ void C_Block::Destroy()
 {
 	frame_buffer.clear();
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	if (pKernelDataOut)
 	{
 		cudaFree(pKernelDataOut); __vrcu
@@ -66,12 +66,12 @@ void C_Block::Destroy()
 
 int C_Block::CopyToGPU()
 {
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	if (!pKernelDataOut)
 		return -1;
 
 	cudaError_t res = cudaSuccess;
-	
+
 	res = cudaMemcpy(DataGPUPtr(), DataPtr(), Size(), cudaMemcpyHostToDevice); __vrcu
 
 	return res;

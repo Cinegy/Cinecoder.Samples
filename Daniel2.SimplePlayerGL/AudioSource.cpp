@@ -1,7 +1,13 @@
 #include "stdafx.h"
 #include "AudioSource.h"
 
-#if defined(__APPLE__)
+//#if defined(__APPLE__) || defined(__LINUX__)
+//typedef signed char INT8;
+//typedef signed short INT16;
+//typedef long long UINT64;
+//#endif
+
+#if defined(__unix__)
 typedef signed char INT8;
 typedef signed short INT16;
 typedef long long UINT64;
@@ -210,9 +216,9 @@ int AudioSource::OpenFile(const char* const filename)
 	hr = piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
 	if (FAILED(hr)) return hr;
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 	CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__LINUX__)
 	CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
 

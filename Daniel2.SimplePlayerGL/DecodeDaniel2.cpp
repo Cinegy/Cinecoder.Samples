@@ -43,7 +43,7 @@ DecodeDaniel2::~DecodeDaniel2()
 }
 
 int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
-{ 
+{
 	m_bInitDecoder = false;
 
 	m_bUseCuda = useCuda;
@@ -51,7 +51,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
 	iMaxCountDecoders = std::max((size_t)1, std::min(iMaxCountDecoders, (size_t)4)); // 1..4
-	
+
 	if (res == 0)
 		res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
 
@@ -66,7 +66,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		res = m_file.ReadFrame(0, m_buffer, coded_frame_size); // get 0-coded frame for add decoder and init values after decode first frame
 	}
 
-	if (res == 0) 
+	if (res == 0)
 	{
 		coded_frame = m_buffer.data(); // poiter to 0-coded frame
 
@@ -90,7 +90,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			}
 		}
 
-		if (SUCCEEDED(hr)) 
+		if (SUCCEEDED(hr))
 			hr = m_pVideoDec->Break(CC_TRUE); // break decoder and flush data from decoder (call DataReady)
 
 		if (!m_eventInitDecoder.Wait(2000) || !m_bInitDecoder) // wait 2 seconds for init decode
@@ -104,7 +104,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 	if (res == 0)
 		m_file.StartPipe(); // if initialize was successful, starting pipeline for reading DN2 file
-	
+
 	if (res == 0) // printing parameters such as: filename, size of frame, format image
 	{
 		printf("-------------------------------------\n");
@@ -234,11 +234,11 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 	if (FAILED(hr = piFactory->CreateInstance(clsidDecoder, IID_ICC_VideoDecoder, (IUnknown**)&m_pVideoDec)))
 		return printf("DecodeDaniel2: CreateInstance failed!"), hr;
-	
+
 	if (useCuda) //CUDA decoder needs a little extra help getting the color format correct
 	{
 		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
-		
+
 		if(FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda)))
 			return printf("DecodeDaniel2: Failed to get ICC_DanielVideoDecoder_CUDA interface"), hr;
 
@@ -321,7 +321,7 @@ int DecodeDaniel2::DestroyValues()
 HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 {
 	HRESULT hr = S_OK;
-	
+
 	com_ptr<ICC_VideoProducer> pVideoProducer;
 
 	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_VideoProducer, (void**)&pVideoProducer))) // get Producer
@@ -357,7 +357,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt;
 	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)))
 		return printf("Failed to get ICC_VideoStreamInfoExt interface"), hr;
-	
+
 	pVideoStreamInfoExt->get_ChromaFormat(&ChromaFormat);
 	pVideoStreamInfoExt->get_ColorCoefs(&ColorCoefs);
 	pVideoStreamInfoExt->get_BitDepthLuma(&BitDepth);
@@ -370,7 +370,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 	pVideoFrameInfo->get_CodingNumber(&CodingNumber);
 	pVideoFrameInfo->get_PTS(&PTS);
-	
+
 	///////////////////////////////////////////////
 
 	if (m_bProcess)
@@ -385,11 +385,16 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			DWORD cb = 0;
 
-			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
+#if defined(__WIN32__)// || defined(__LINUX__)
 			if (m_bUseCuda)
 			{
+				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+			}
+			else
+#endif
+			{
+				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 				pBlock->CopyToGPU(); // copy frame from host to device memory
 				//cudaMemset(pBlock->DataGPUPtr(), 255 - (int)PTS % 128, pBlock->Size()); __vrcu
 			}
@@ -406,17 +411,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		m_width = FrameSize.cx; // get width
 		m_height = FrameSize.cy; // get height
 
-		//CC_COLOR_FMT fmt = BitDepth == 8 ? CCF_RGB32 : CCF_RGB64;
-
-		//if (BitDepth == 10)
-		//	fmt = CCF_RGB30;
-
-#if defined(__WIN32__) || defined(_WIN32)
 		CC_COLOR_FMT fmt = CCF_BGR32; // set output format
-#else
-		CC_COLOR_FMT fmt = CCF_RGB32; // set output format
-#endif
 
+#if defined(__APPLE__)
+		fmt = CCF_RGB32; // set output format
+#endif
 		CC_BOOL bRes = CC_FALSE;
 		pVideoProducer->IsFormatSupported(fmt, &bRes);
 		if (bRes)
@@ -454,7 +453,7 @@ long DecodeDaniel2::ThreadProc()
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
 	size_t frame_number = 0;
-	
+
 	HRESULT hr = S_OK;
 
 	while (m_bProcess)

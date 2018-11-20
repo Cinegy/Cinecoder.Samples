@@ -3,16 +3,18 @@
 
 #include "stdafx.h"
 
-#if defined (WIN32) || defined (_WIN32 )
-#include <GL/freeglut.h>
-#endif
-
-#if defined(__APPLE__)
-#include <GLUT/glut.h> // GLUT framework
-#include <OpenGL/OpenGL.h> // OpenGL framework
-#include <ApplicationServices/ApplicationServices.h> // CoreGraphics
-
-#define sprintf_s sprintf
+#if defined(__WIN32__)
+	#include <GL/freeglut.h> // GLUT framework
+#elif defined(__APPLE__)
+	#include <GLUT/glut.h> // GLUT framework
+	#include <OpenGL/OpenGL.h> // OpenGL framework
+	#include <ApplicationServices/ApplicationServices.h> // CoreGraphics
+	#define sprintf_s sprintf
+#elif defined(__LINUX__)
+	#include <X11/Xlib.h>
+	#include <X11/Xutil.h>
+	#include <GL/glx.h>
+	#include <GL/freeglut.h> // GLUT framework
 #endif
 
 #include "Timer.h"
@@ -99,11 +101,9 @@ inline bool CheckErrorGL(const char *file, const int line)
 
 ///////////////////////////////////////////////////////
 
-#if defined (WIN32) || defined (_WIN32 )
-
+#if defined(__WIN32__)
 typedef BOOL(WINAPI *PFNWGLSWAPINTERVALEXTPROC_GLOBAL)(int interval);
 PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
-
 #endif
 
 #define GL_CLAMP_TO_EDGE 0x812F
@@ -158,7 +158,7 @@ C_CritSec g_mutex; // global mutex
 
 ///////////////////////////////////////////////////////
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 cudaGraphicsResource_t cuda_tex_result_resource = nullptr;
 #endif
 
@@ -182,7 +182,7 @@ double ValueFPS = 60.0;
 
 std::shared_ptr<DecodeDaniel2> decodeD2; // Wrapper class which demonstration decoding Daniel2 format
 
-std::shared_ptr<AudioSource> decodeAudio;
+std::shared_ptr<AudioSource> decodeAudio; // Audio decoder
 
 ///////////////////////////////////////////////////////
 
@@ -203,7 +203,7 @@ int InitAudioTrack(std::string filename, CC_FRAME_RATE frameRate)
 	if (res != 0)
 		return res;
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 	res = decodeAudio->OpenFile(filename.c_str()); // Open audio stream
 
 	if (res == 0)
@@ -218,7 +218,7 @@ int InitAudioTrack(std::string filename, CC_FRAME_RATE frameRate)
 
 ///////////////////////////////////////////////////////
 
-void Display();
+void RenderWindow();
 void Keyboard(unsigned char key, int x, int y);
 void SpecialKeyboard(int key, int x, int y);
 void Cleanup();
@@ -244,7 +244,7 @@ void get_versionGLandGLUT()
 
 	printf("OpenGL version: %s\n", versionGL);
 
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 	GLint versionFreeGlutInt = 0;
 	versionFreeGlutInt = (glutGet(GLUT_VERSION));
 
@@ -258,12 +258,12 @@ void get_versionGLandGLUT()
 	}
 #endif
 
-	printf("-------------------------------------\n");	
+	printf("-------------------------------------\n");
 }
 
 bool gpu_initGLUT(int *argc, char **argv)
 {
-#if defined(__WIN32__) || defined(_WIN32)
+#if defined(__WIN32__)
 	int iWinW = GetSystemMetrics(SM_CXSCREEN);
 	int iWinH = GetSystemMetrics(SM_CYSCREEN);
 #elif defined(__APPLE__)
@@ -273,6 +273,12 @@ bool gpu_initGLUT(int *argc, char **argv)
 
 	int iWinW = (int)monitorWidth;
 	int iWinH = (int)monitorHeight;
+#elif defined(__LINUX__)
+    Display* dpy = XOpenDisplay(NULL);
+    Screen*  screen = DefaultScreenOfDisplay(dpy);
+	int iWinW = screen->width;
+	int iWinH = screen->height;
+	XCloseDisplay(dpy);
 #endif
 
 	float fKoeffDiv = (float)image_width / ((float)iWinW / 3.f);
@@ -291,7 +297,7 @@ bool gpu_initGLUT(int *argc, char **argv)
 	iGLUTWindowHandle = glutCreateWindow(TITLE_WINDOW_APP);
 
 	// Register callbacks
-	glutDisplayFunc(Display);
+	glutDisplayFunc(RenderWindow);
 	glutKeyboardFunc(Keyboard);
 	glutReshapeFunc(Reshape);
 	glutIdleFunc(AnimateScene);
@@ -301,11 +307,11 @@ bool gpu_initGLUT(int *argc, char **argv)
 	glutPassiveMotionFunc(OnMouseMove);
 	glutSpecialFunc(SpecialKeyboard);
 
-#if defined (WIN32) || defined (_WIN32 )
+#if defined(__APPLE__)
+	atexit(Cleanup);
+#else
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	glutCloseFunc(Cleanup);
-#else
-	atexit(Cleanup);
 #endif
 
 	glutPositionWindow(100, 100); // Start position window
@@ -357,7 +363,7 @@ void gpu_initGLBuffers()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	// register this textures with CUDA
 
 	cuda_tex_result_resource = nullptr;
@@ -395,7 +401,7 @@ void gpu_UpdateGLSettings()
 	OGL_CHECK_ERROR_GL();
 }
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 int gpu_generateCUDAImage(C_Block* pBlock)
 {
 	// We want to copy cuda_dest_resource data to the texture
@@ -426,7 +432,7 @@ int gpu_generateImage(bool & bRotateFrame)
 	if (!pBlock)
 		return -1;
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	if (g_useCuda)
 	{
 		gpu_generateCUDAImage(pBlock);
@@ -451,7 +457,7 @@ int gpu_generateImage(bool & bRotateFrame)
 	return 0;
 }
 
-void Display()
+void RenderWindow()
 {
 	C_AutoLock lock(&g_mutex);
 
@@ -641,10 +647,10 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	{
 	case 27:
 	{
-#if defined (WIN32) || defined (_WIN32 )
-		glutLeaveMainLoop();
-#else
+#if defined(__APPLE__)
 		exit(0); // On MacOS we have error <Use of undeclared identifier 'glutLeaveMainLoop'> so we call exit(0)
+#else
+		glutLeaveMainLoop();
 #endif
 		break;
 	}
@@ -694,7 +700,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case 'k':
 	{
 		int iSpeed = decodeD2->GetReaderPtr()->GetSpeed();
-		
+
 		if (iSpeed > 0)
 			decodeD2->GetReaderPtr()->SetSpeed(1);
 		else
@@ -730,18 +736,18 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		break;
 	}
 
-	//case 'v':
-	//{
-	//	g_bVSync = !g_bVSync;
-	//	SetVerticalSync(g_bVSync);
+	case 'v':
+	{
+		g_bVSync = !g_bVSync;
+		SetVerticalSync(g_bVSync);
 
-	//	if (g_bVSync)
-	//		printf("vertical synchronisation: on\n");
-	//	else
-	//		printf("vertical synchronisation: off\n");
+		if (g_bVSync)
+			printf("vertical synchronisation: on\n");
+		else
+			printf("vertical synchronisation: off\n");
 
-	//	break;
-	//}
+		break;
+	}
 
 	case 'm':
 	{
@@ -845,7 +851,7 @@ void SpecialKeyboard(int key, int x, int y)
 		break;
 	}
 
-	Display(); // update frame
+	RenderWindow(); // update frame
 }
 
 void Cleanup()
@@ -856,7 +862,7 @@ void Cleanup()
 	// Delete GL texture
 	glDeleteTextures(1, &tex_result);
 
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 	if (cuda_tex_result_resource)
 	{
 		cudaGraphicsUnregisterResource(cuda_tex_result_resource); __vrcu
@@ -896,7 +902,7 @@ void OnMouseClick(int button, int state, int x, int y)
 			SetPause(!g_bPause);
 		}
 	}
-	Display(); // update frame to improve performance of scrubbing
+	RenderWindow(); // update frame to improve performance of scrubbing
 }
 
 void OnMouseMove(int x, int y)
@@ -912,7 +918,7 @@ void OnMouseMove(int x, int y)
 		if (g_mouse_state == GLUT_DOWN && g_mouse_button == GLUT_LEFT_BUTTON)
 		{
 			SeekToFrame(x, y);
-			Display(); // update frame to improve performance of scrubbing
+			RenderWindow(); // update frame to improve performance of scrubbing
 		}
 
 		g_bShowTicker = true;
@@ -938,11 +944,11 @@ void SetPause(bool bPause)
 
 void SetVerticalSync(bool bVerticalSync)
 {
-#if defined (WIN32) || defined (_WIN32 )
+#if defined(__WIN32__)
 	if (!g_wglSwapInterval)
 	{
 		g_wglSwapInterval = (PFNWGLSWAPINTERVALEXTPROC_GLOBAL)wglGetProcAddress("wglSwapIntervalEXT");
-	
+
 		if (!g_wglSwapInterval)
 			g_wglSwapInterval = (PFNWGLSWAPINTERVALEXTPROC_GLOBAL)wglGetProcAddress("wglSwapInterval");
 	}
@@ -954,6 +960,13 @@ void SetVerticalSync(bool bVerticalSync)
 	CGLContextObj               ctx = CGLGetCurrentContext();
 
 	CGLSetParameter(ctx, kCGLCPSwapInterval, &sync);
+#elif defined(__LINUX__)
+	void(*swapInterval)(int) = (void(*)(int)) glXGetProcAddress((const GLubyte*) "glXSwapIntervalSGI");
+	if (!swapInterval)
+		swapInterval = (void(*)(int)) glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
+
+	if (swapInterval)
+		swapInterval(bVerticalSync ? 1 : 0);
 #endif
 }
 
@@ -972,7 +985,7 @@ void SeekToFrame(size_t iFrame)
 		nReadFrame = pBlock->iFrameNumber; // Get currect frame number
 		if (nReadFrame == iFrame) // Search for the expected frame
 		{
-#if defined(__WIN32__) || defined(_WIN32)
+#ifdef USE_CUDA_SDK
 			if (g_useCuda)
 			{
 				gpu_generateCUDAImage(pBlock);
@@ -1041,13 +1054,13 @@ void printHelp(void)
 	//printf("-vsync             enable vertical synchronisation (default - disable)\n");
 	printf("-fpsmax            enable maximum playing fps (default - disable)\n");
 	printf("-rotate_frame      enable rotate frame (default - disable)\n");
-#if defined (WIN32) || defined (_WIN32 )	
+#ifdef USE_CUDA_SDK
 	printf("-cuda		       enable CUDA decoding (default - disable, PC only)\n");
 #endif
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
-	//printf("'v':                on/off vertical synchronisation\n");
+	printf("'v':                on/off vertical synchronisation\n");
 	printf("'m':                on/off maximum playing fps\n");
 	printf("'r':                on/off rotate image\n");
 	printf("'f':                on/off fullscreen mode\n");
@@ -1079,7 +1092,7 @@ int main(int argc, char **argv)
 	std::string filename;
 
 	size_t iMaxCountDecoders = 2;
-	
+
 	char *str = nullptr;
 
 	filename = argv[1];
@@ -1089,10 +1102,10 @@ int main(int argc, char **argv)
 		iMaxCountDecoders = atoi(str); // max count of decoders [1..4] (default: 2)
 	}
 
-	//if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
-	//{
-	//	g_bVSync = true; // on/off vertical synchronisation
-	//}
+	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
+	{
+		g_bVSync = true; // on/off vertical synchronisation
+	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "fpsmax"))
 	{
@@ -1104,7 +1117,7 @@ int main(int argc, char **argv)
 		g_bRotate = true; // on/off rotate image
 	}
 
-#if defined (WIN32) || defined (_WIN32 )
+#ifdef USE_CUDA_SDK
 	if (checkCmdLineArg(argc, (const char **)argv, "cuda"))
 	{
 		g_useCuda = true; // use CUDA decoder rather than CPU decoder
@@ -1112,9 +1125,9 @@ int main(int argc, char **argv)
 
 	if (g_useCuda)
 	{
-		if (initCUDA() != 0)
+		if (initCUDA() != 0) // init CUDA SDK
 		{
-			printf("Error: cannot initialize CUDA! Please check if the %s/%s file exists!\n", CUDART32_FILENAME, CUDART64_FILENAME);
+			printf("Error: cannot initialize CUDA! Please check if the %s file exists!\n", CUDART_FILENAME);
 			return 0;
 		}
 	}
@@ -1155,13 +1168,26 @@ int main(int argc, char **argv)
 
 	// Start timer
 	timer.StartTimer();
-	
+
 	timerqFPSMode.StartTimer();
 
 	decodeD2->StartDecode(); // Start decoding
 
 	// Start mainloop
 	glutMainLoop(); // Wait
+
+	if (decodeD2)
+        decodeD2 = nullptr; // destroy video decoder
+
+    if (decodeAudio)
+        decodeAudio = nullptr; // destroy audio decoder
+
+#ifdef USE_CUDA_SDK
+	if (g_useCuda)
+	{
+		destroyCUDA(); // destroy CUDA SDK
+	}
+#endif
 
 	return 0;
 }

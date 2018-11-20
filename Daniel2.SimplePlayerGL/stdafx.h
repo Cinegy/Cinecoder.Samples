@@ -22,19 +22,38 @@ using namespace cinegy::threading_std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__WIN32__) || defined(_WIN32) // for ConvertStringToBSTR
-#include <comutil.h>
-#pragma comment(lib, "comsuppw.lib")
+#if defined(_WIN32)
+	#if !defined(__WIN32__)
+		#define __WIN32__
+	#endif
 #endif
 
-#if defined(__WIN32__) || defined(_WIN32) // CUDA
-#define CUDA_WRAPPER
+#if defined(__linux__) || defined(__LINUX__)
+	#if !defined(__LINUX__)
+		#define __LINUX__
+	#endif
+#endif
+
+#if defined(__WIN32__) // for ConvertStringToBSTR
+	#include <comutil.h>
+	#pragma comment(lib, "comsuppw.lib")
+#endif
+
+#if defined(__WIN32__) || defined(__LINUX__) // CUDA
+	#define USE_CUDA_SDK
+	#define CUDA_WRAPPER
+#endif
+
 #ifndef CUDA_WRAPPER
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#pragma comment(lib, "cudart_static.lib")
+#if defined(__WIN32__)
+	#pragma comment(lib, "cudart_static.lib")
+#else defined(__LINUX__)
+	#pragma comment(lib, "libcudart_static.a")
+	#endif
 #endif
 
 #include "cudaDefines.h"
@@ -48,6 +67,5 @@ using namespace cinegy::threading_std;
 		cudaLastError, cudaGetErrorString(cudaLastError), __FILE__,__LINE__); \
 	} \
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////

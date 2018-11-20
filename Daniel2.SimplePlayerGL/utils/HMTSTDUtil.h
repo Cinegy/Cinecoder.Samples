@@ -4,6 +4,7 @@
 #include <mutex>
 #include <list>
 #include <chrono>
+#include <condition_variable>
 
 #define INFINITE_TIME 0xFFFFFFFF  // Infinite timeout
 
