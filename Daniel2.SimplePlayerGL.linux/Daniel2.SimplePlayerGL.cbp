@@ -14,6 +14,7 @@
 				<Option parameters="/home/cinegydev/Footages/Earth4x4K_q6_rgba.dn2 -cuda" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-D _DEBUG" />
 				</Compiler>
 				<ExtraCommands>
 					<Add after="cp ../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/*.so bin/Debug" />
@@ -43,7 +44,6 @@
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/AL" />
 			<Add directory="/usr/include/GL " />
-			<Add directory="/usr/local/cuda/include" />
 			<Add directory="../packages/Cinecoder.3.32.2.16790/sources" />
 			<Add directory="../packages/Cinecoder.3.32.2.16790/sources/winclude" />
 		</Compiler>
@@ -57,7 +57,6 @@
 			<Add library="pthread" />
 			<Add library="../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/libCinecoder.so" />
 			<Add library="X11" />
-			<Add library="cudart" />
 			<Add library="dl" />
 			<Add directory="/usr/lib/x86_64-linux-gnu" />
 			<Add directory="/usr/local/cuda/lib64" />

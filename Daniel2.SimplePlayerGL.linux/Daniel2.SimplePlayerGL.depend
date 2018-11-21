@@ -19,7 +19,7 @@
 	<cuda_gl_interop.h>
 	"cudaDefines.h"
 
-1542387897 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h
+1542795704 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h
 	<thread>
 	<mutex>
 	<list>
@@ -306,7 +306,7 @@
 
 1542386922 /home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/comptr.h
 
-1542649855 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.cpp
+1542727711 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.cpp
 	"stdafx.h"
 	"Block.h"
 
@@ -341,7 +341,7 @@
 	"../cinecoder_license_string.h"
 	"utils/comptr.h"
 
-1542722857 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
+1542799266 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
 	"stdafx.h"
 	"DecodeDaniel2.h"
 	<Cinecoder_i.c>
