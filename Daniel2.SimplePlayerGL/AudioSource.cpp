@@ -1,13 +1,7 @@
 #include "stdafx.h"
 #include "AudioSource.h"
 
-//#if defined(__APPLE__) || defined(__LINUX__)
-//typedef signed char INT8;
-//typedef signed short INT16;
-//typedef long long UINT64;
-//#endif
-
-#if defined(__unix__)
+#if defined(__APPLE__) || defined(__LINUX__)
 typedef signed char INT8;
 typedef signed short INT16;
 typedef long long UINT64;

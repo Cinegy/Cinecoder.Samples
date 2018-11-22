@@ -44,6 +44,7 @@ using namespace cinegy::threading_std;
 	#define CUDA_WRAPPER
 #endif
 
+#ifdef USE_CUDA_SDK
 #ifndef CUDA_WRAPPER
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -67,5 +68,6 @@ using namespace cinegy::threading_std;
 		cudaLastError, cudaGetErrorString(cudaLastError), __FILE__,__LINE__); \
 	} \
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
