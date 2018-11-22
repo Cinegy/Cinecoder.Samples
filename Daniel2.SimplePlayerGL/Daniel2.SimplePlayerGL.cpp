@@ -435,7 +435,10 @@ int gpu_generateImage(bool & bRotateFrame)
 #ifdef USE_CUDA_SDK
 	if (g_useCuda)
 	{
-		gpu_generateCUDAImage(pBlock);
+		if (g_bCopyToTexture)
+		{
+			gpu_generateCUDAImage(pBlock);
+		}
 	}
 	else
 #endif
@@ -818,6 +821,21 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		break;
 	}
 
+	case 'n':
+	{
+		bool bReadFile = decodeD2->GetReaderPtr()->GetReadFile();
+		decodeD2->GetReaderPtr()->SetReadFile(!bReadFile);
+
+		bReadFile = decodeD2->GetReaderPtr()->GetReadFile();
+
+		if (bReadFile)
+			printf("read file: on\n");
+		else
+			printf("read file: off\n");
+
+		break;
+	}
+
 	default:
 		break;
 	}
@@ -988,7 +1006,10 @@ void SeekToFrame(size_t iFrame)
 #ifdef USE_CUDA_SDK
 			if (g_useCuda)
 			{
-				gpu_generateCUDAImage(pBlock);
+				if (g_bCopyToTexture)
+				{
+					gpu_generateCUDAImage(pBlock);
+				}
 			}
 			else
 #endif
@@ -1066,6 +1087,7 @@ void printHelp(void)
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'d':                on/off decoder\n");
+	printf("'n':                on/off read file\n");
 	printf("'+'/'-':            change audio volume (+/- 10%%)\n");
 	printf("'J'/'K'/'L':        change direction video or pause\n");
 	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");

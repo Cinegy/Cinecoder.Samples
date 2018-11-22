@@ -3,6 +3,7 @@
 
 ReadFileDN2::ReadFileDN2() :
 	m_bProcess(false),
+	m_bReadFile(false),
 	m_bSeek(false),
 	m_iSpeed(1)
 {
@@ -91,6 +92,7 @@ int ReadFileDN2::StartPipe()
 int ReadFileDN2::StopPipe()
 {
 	m_bProcess = false;
+	m_bReadFile = false;
 
 	Close();
 
@@ -151,6 +153,7 @@ long ReadFileDN2::ThreadProc()
 	int iCurEncodedFrame = 0;
 
 	m_bProcess = true;
+	m_bReadFile = true;
 
 	int res = 0;
 
@@ -162,12 +165,20 @@ long ReadFileDN2::ThreadProc()
 
 		if (frame)
 		{
-			res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size);
+			res = 0;
 
-			if (res == 0)
+			if (m_bReadFile)
 			{
-				frame->frame_number = iCurEncodedFrame;
-				m_queueFrames.Queue(frame);
+				res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size);
+			}
+
+			frame->frame_number = iCurEncodedFrame;
+			m_queueFrames.Queue(frame);
+
+			if (res != 0)
+			{
+				assert(0);
+				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=%p\n", res, frame->coded_frame_size, frame->coded_frame);
 			}
 		}
 

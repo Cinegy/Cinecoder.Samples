@@ -44,6 +44,7 @@ private:
 	com_ptr<ICC_MvxFile> m_fileMvx;
 
 	bool m_bProcess;
+	bool m_bReadFile;
 
 	std::list<CodedFrame> m_listFrames;
 
@@ -98,6 +99,8 @@ public:
 		m_fileMvx->get_StreamType(&type);
 		return type;
 	}
+	void SetReadFile(bool bReadFile) { m_bReadFile = bReadFile; }
+	bool GetReadFile() { return m_bReadFile; }
 
 public:
 	CodedFrame* MapFrame();
