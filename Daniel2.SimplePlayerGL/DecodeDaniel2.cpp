@@ -398,6 +398,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				pBlock->CopyToGPU(); // copy frame from host to device memory
 				//cudaMemset(pBlock->DataGPUPtr(), 255 - (int)PTS % 128, pBlock->Size()); __vrcu
 			}
+#else
+			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 #endif
 			pBlock->iFrameNumber = static_cast<size_t>(PTS); // save PTS (in our case this is the frame number)
 
