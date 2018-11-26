@@ -492,6 +492,10 @@ void RenderWindow()
 		if (res < 0)
 			return;
 	}
+	else
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // for unload CPU when set pause
+	}
 
 	if (res != 0)
 	{
@@ -620,7 +624,7 @@ void ComputeFPS()
 		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		if (g_bPause)
-			sprintf_s(cString, "%s (%d x %d): %.0f fps (Pause)", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
 		else
 			sprintf_s(cString, "%s (%d x %d): %.0f fps", TITLE_WINDOW_APP, w, h, fps);
 
