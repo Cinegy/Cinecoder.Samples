@@ -91,8 +91,8 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_MultiplexerPinSettings, IID_ICC_MXF_MultiplexerPinSettings, (IUnknown**)&pMuxPinSettings)))
 			return print_error(hr, "Failed to create MXF multipexer pin settings");
 
-		if (par.BitrateMode != CC_CBR)
-			return print_error(E_INVALIDARG, "MXF can only work in CBR mode");
+		//if (par.BitrateMode != CC_CBR)
+		//	return print_error(E_INVALIDARG, "MXF can only work in CBR mode");
 
 		pMuxPinSettings->put_StreamType(CC_ES_TYPE_VIDEO_DANIEL);
 		pMuxPinSettings->put_BitRate(par.Bitrate);
