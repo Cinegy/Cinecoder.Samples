@@ -1,15 +1,16 @@
 #pragma once
 
-#include <assert.h>
+#include <atomic>
 
 //////////////////////////////////////////////////////////////////////
 // C_Unknown -- our small class to handle COM-style objects
+// Requires at least C++0x11
 //////////////////////////////////////////////////////////////////////
 
 class C_Unknown : public IUnknown
 {
 private:
-  volatile long m_cRef;
+  std::atomic<int> m_cRef;
 
 public:
   C_Unknown(void) : m_cRef(0)
@@ -22,11 +23,11 @@ public:
 
   STDMETHOD_(ULONG, AddRef)(void)
   {
-    return InterlockedIncrement(&m_cRef);
+    return ++m_cRef;
   }
   STDMETHOD_(ULONG, Release)(void)
   {
-    long count = InterlockedDecrement(&m_cRef);
+    int count = --m_cRef;
     if (count == 0) delete this;
     return count;
   }
