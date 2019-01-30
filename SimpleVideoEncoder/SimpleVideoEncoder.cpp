@@ -146,13 +146,13 @@ int main(int argc, char* argv[])
   if(outf == NULL)
     return fprintf(stderr, "Can't create the target file %s", argv[4]), -4;
 
-  hr = pVideoEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(new C_FileWriter(outf)));
+  __int64 total_size = 0;
+  hr = pVideoEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(new C_FileWriter(outf, &total_size)));
   if(FAILED(hr)) return hr;
 
   // The main loop ------------------------------------
   int frame = 0;
   time_t start_time = GetTickCount();
-  __int64 total_size = 0;
 
   for(;;)
   {
@@ -186,7 +186,7 @@ int main(int argc, char* argv[])
 
   time_t dT = __max(GetTickCount() - start_time, 1);
 
-  printf("\n%lld bps, %g fps\n", total_size * 8 * frame_rate.num / frame_rate.denom / frame, double(frame) * 1000.0 / dT);
+  printf("\n%.3f Mbps, %g fps\n", total_size * 8.0 * frame_rate.num / frame_rate.denom / frame / 1E6, double(frame) * 1000.0 / dT);
 
   fclose(inpf);
   fclose(outf);
