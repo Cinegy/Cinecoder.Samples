@@ -2,13 +2,17 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <tchar.h>
 
 #include <conio.h>
 #include <malloc.h>
 
-#include "cinecoder_h.h"
-#include "cinecoder_i.c"
+//#include <windows.h>
+
+#include "Cinecoder_h.h"
+#include "Cinecoder_i.c"
 
 #include "../cinecoder_license_string.h"
 #include "../cinecoder_error_handler.h"
@@ -17,6 +21,9 @@
 #include "../common/c_unknown.h"
 
 #include "file_writer.h"
+
+#include <chrono>
+using namespace std::chrono;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[])
@@ -96,8 +103,12 @@ int main(int argc, char* argv[])
   if(FAILED(hr = pFactory->CreateInstance(clsidVideoEncoder, IID_ICC_VideoEncoder, (IUnknown**)&pVideoEncoder)))
     return hr;
 
+#ifdef _WIN32
   OLECHAR *cc_profile = (OLECHAR*)_alloca((xml_length + 1) * sizeof(OLECHAR));
   mbstowcs(cc_profile, profile, xml_length);
+#else
+#define cc_profile profile
+#endif
   if(FAILED(hr = pVideoEncoder->InitByXml(cc_profile)))
     return hr;
 
@@ -152,7 +163,7 @@ int main(int argc, char* argv[])
 
   // The main loop ------------------------------------
   int frame = 0;
-  time_t start_time = GetTickCount();
+  auto t0 = system_clock::now();
 
   for(;;)
   {
@@ -184,7 +195,8 @@ int main(int argc, char* argv[])
 	  return hr;
   }
 
-  time_t dT = __max(GetTickCount() - start_time, 1);
+  auto t1 = system_clock::now();
+  auto dT = duration_cast<milliseconds>(t1 - t0).count();
 
   printf("\n%.3f Mbps, %g fps\n", total_size * 8.0 * frame_rate.num / frame_rate.denom / frame / 1E6, double(frame) * 1000.0 / dT);
 

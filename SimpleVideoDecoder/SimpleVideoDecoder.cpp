@@ -1,5 +1,7 @@
 // SimpleVideoDecoder.cpp : Defines the entry point for the console application.
 //
+//#include <windows.h>
+
 #include <stdio.h>
 #include <tchar.h>
 
@@ -46,11 +48,11 @@ int main(int argc, char* argv[])
     // Determining the codec clsid ----------------------------------
     CLSID CODEC_CLSID;
     
-    if(0 == strcmpi(argv[2], "MPEG"))
+    if(0 == stricmp(argv[2], "MPEG"))
       CODEC_CLSID = CLSID_CC_MpegVideoDecoder;
-    else if(0 == strcmpi(argv[2], "H264"))
+    else if(0 == stricmp(argv[2], "H264"))
       CODEC_CLSID = CLSID_CC_H264VideoDecoder;
-    else if(0 == strcmpi(argv[2], "DN2"))
+    else if(0 == stricmp(argv[2], "DN2"))
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder;
     else
       return fprintf(stderr, "Unknown codec_name '%s' specified\n", argv[2]), -2;
