@@ -33,7 +33,7 @@
 					<Add option="-s" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="cp ../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/*.so bin/Release" />
+					<Add after="cp ../packages/Cinecoder.Cinecoder.3.32.4.16953/runtimes/linux-x64/native/release/*.so bin/Release" />
 				</ExtraCommands>
 			</Target>
 		</Build>
@@ -44,8 +44,8 @@
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/AL" />
 			<Add directory="/usr/include/GL " />
-			<Add directory="../packages/Cinecoder.3.32.2.16790/sources" />
-			<Add directory="../packages/Cinecoder.3.32.2.16790/sources/winclude" />
+			<Add directory="../packages/Cinecoder.3.32.4.16953/sources" />
+			<Add directory="../packages/Cinecoder.3.32.4.16953/sources/winclude" />
 		</Compiler>
 		<Linker>
 			<Add option="-m64" />
@@ -55,12 +55,12 @@
 			<Add library="glut" />
 			<Add library="openal" />
 			<Add library="pthread" />
-			<Add library="../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release/libCinecoder.so" />
+			<Add library="../packages/Cinecoder.3.32.4.16953/runtimes/linux-x64/native/release/libCinecoder.so" />
 			<Add library="X11" />
 			<Add library="dl" />
 			<Add directory="/usr/lib/x86_64-linux-gnu" />
 			<Add directory="/usr/local/cuda/lib64" />
-			<Add directory="../packages/Cinecoder.3.32.2.16790/runtimes/linux-x64/native/release" />
+			<Add directory="../packages/Cinecoder.3.32.4.16953/runtimes/linux-x64/native/release" />
 		</Linker>
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.cpp" />
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.h" />
