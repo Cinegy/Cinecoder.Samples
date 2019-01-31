@@ -13,8 +13,8 @@
 
 #include "cinecoder_errors.h"
 
-#include "../cinecoder_license_string.h"
-#include "../cinecoder_error_handler.h"
+#include "../common/cinecoder_license_string.h"
+#include "../common/cinecoder_error_handler.h"
 
 #include "../common/com_ptr.h"
 #include "../common/c_unknown.h"

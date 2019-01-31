@@ -14,8 +14,8 @@
 #include "Cinecoder_h.h"
 #include "Cinecoder_i.c"
 
-#include "../cinecoder_license_string.h"
-#include "../cinecoder_error_handler.h"
+#include "../common/cinecoder_license_string.h"
+#include "../common/cinecoder_error_handler.h"
 
 #include "../common/com_ptr.h"
 #include "../common/c_unknown.h"
