@@ -3,9 +3,10 @@ class C_FileWriter : public C_Unknown, public ICC_ByteStreamCallback
 //------------------------------------------------------------------
 {
   FILE *m_File;
+  __int64& m_total_size;
 
 public:
-  C_FileWriter(FILE *f) : m_File(f)
+  C_FileWriter(FILE *f, __int64 *p_total_size) : m_File(f), m_total_size(*p_total_size)
   {
   }
 
@@ -27,6 +28,8 @@ public:
   	if(fwrite(pbData, 1, cbSize, m_File) != cbSize)
   	  return E_FAIL;
   	
+  	m_total_size += cbSize;
+
   	return S_OK;
   }
 };
