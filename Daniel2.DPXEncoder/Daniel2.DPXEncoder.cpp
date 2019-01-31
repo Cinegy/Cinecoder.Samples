@@ -7,8 +7,8 @@
 #include <Cinecoder_i.c>
 #include <Cinecoder.Plugin.Multiplexers_i.c>
 
-#include "../cinecoder_license_string.h"
-#include "../cinecoder_error_handler.h"
+#include "../common/cinecoder_license_string.h"
+#include "../common/cinecoder_error_handler.h"
 
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *encpar);
 int print_help();

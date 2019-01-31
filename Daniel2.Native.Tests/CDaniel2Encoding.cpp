@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CEncoderTest.h"
 #include <Cinecoder_i.c>
-#include "../cinecoder_license_string.h"
+#include "../common/cinecoder_license_string.h"
 
 CComPtr<ICC_ClassFactory> p_factory;
 CComPtr<ICC_VideoEncoder> p_encoder;

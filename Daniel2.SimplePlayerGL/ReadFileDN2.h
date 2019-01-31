@@ -6,7 +6,7 @@
 #include <Cinecoder_h.h>
 
 // License
-#include "../cinecoder_license_string.h"
+#include "../common/cinecoder_license_string.h"
 
 // Cinegy utils
 #include "utils/comptr.h"
