@@ -24,6 +24,7 @@ private:
 	bool m_bDecode;
 	bool m_bInitDecoder;
 	bool m_bUseCuda;
+	bool m_bUseCudaHost;
 
 	ReadFileDN2 m_file;
 	std::vector<unsigned char> m_buffer;
@@ -35,10 +36,15 @@ private:
 
 	std::list<C_Block> m_listBlocks;
 
+	com_ptr<ICC_ClassFactory> m_piFactory;
 	com_ptr<ICC_VideoDecoder> m_pVideoDec;
 
 	com_ptr<ICC_MediaReader> m_pMediaReader;
 	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
+
+	ULONGLONG m_llDuration;
+	ULONGLONG m_llTimeBase;
+	bool bIntraFormat;
 
 public:
 	DecodeDaniel2();
@@ -63,9 +69,15 @@ public:
 	void SetPause(bool bPause) { m_bPause = bPause; }
 	void SetDecode(bool bDecode) { m_bDecode = bDecode; }
 	
+	void SeekFrame(size_t nFrame) { m_file.SeekFrame(nFrame); }
 
+	void SetSpeed(int iSpeed) { if (bIntraFormat) m_file.SetSpeed(iSpeed); }
+	int GetSpeed() { return m_file.GetSpeed(); }
 
-	ReadFileDN2* GetReaderPtr() { return &m_file; }
+	void SetReadFile(bool bReadFile) { if (bIntraFormat) m_file.SetReadFile(bReadFile); }
+	bool GetReadFile() { return m_file.GetReadFile(); }
+
+	size_t GetCountFrames() { return m_file.GetCountFrames(); }
 
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
 	CC_FRAME_RATE GetFrameRateValue() { return m_FrameRate; }

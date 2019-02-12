@@ -685,12 +685,12 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 
 	case 'j':
 	{
-		int iSpeed = decodeD2->GetReaderPtr()->GetSpeed();
+		int iSpeed = decodeD2->GetSpeed();
 
 		if (iSpeed < 0)
-			decodeD2->GetReaderPtr()->SetSpeed(iSpeed * 2);
+			decodeD2->SetSpeed(iSpeed * 2);
 		else
-			decodeD2->GetReaderPtr()->SetSpeed(-1);
+			decodeD2->SetSpeed(-1);
 
 		if (g_bPause)
 		{
@@ -699,36 +699,36 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		}
 
 		if (decodeAudio && decodeAudio->IsInitialize())
-			decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+			decodeAudio->SetSpeed(decodeD2->GetSpeed());
 
-		printf("press J (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
+		printf("press J (speed: %dx)\n", decodeD2->GetSpeed());
 		break;
 	}
 	case 'k':
 	{
-		int iSpeed = decodeD2->GetReaderPtr()->GetSpeed();
+		int iSpeed = decodeD2->GetSpeed();
 
 		if (iSpeed > 0)
-			decodeD2->GetReaderPtr()->SetSpeed(1);
+			decodeD2->SetSpeed(1);
 		else
-			decodeD2->GetReaderPtr()->SetSpeed(-1);
+			decodeD2->SetSpeed(-1);
 
 		SetPause(!g_bPause);
 
 		if (decodeAudio && decodeAudio->IsInitialize())
-			decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+			decodeAudio->SetSpeed(decodeD2->GetSpeed());
 
-		printf("press K (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
+		printf("press K (speed: %dx)\n", decodeD2->GetSpeed());
 		break;
 	}
 	case 'l':
 	{
-		int iSpeed = decodeD2->GetReaderPtr()->GetSpeed();
+		int iSpeed = decodeD2->GetSpeed();
 
 		if (iSpeed > 0)
-			decodeD2->GetReaderPtr()->SetSpeed(iSpeed * 2);
+			decodeD2->SetSpeed(iSpeed * 2);
 		else
-			decodeD2->GetReaderPtr()->SetSpeed(1);
+			decodeD2->SetSpeed(1);
 
 		if (g_bPause)
 		{
@@ -737,9 +737,9 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		}
 
 		if (decodeAudio && decodeAudio->IsInitialize())
-			decodeAudio->SetSpeed(decodeD2->GetReaderPtr()->GetSpeed());
+			decodeAudio->SetSpeed(decodeD2->GetSpeed());
 
-		printf("press L (speed: %dx)\n", decodeD2->GetReaderPtr()->GetSpeed());
+		printf("press L (speed: %dx)\n", decodeD2->GetSpeed());
 		break;
 	}
 
@@ -827,10 +827,10 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 
 	case 'n':
 	{
-		bool bReadFile = decodeD2->GetReaderPtr()->GetReadFile();
-		decodeD2->GetReaderPtr()->SetReadFile(!bReadFile);
+		bool bReadFile = decodeD2->GetReadFile();
+		decodeD2->SetReadFile(!bReadFile);
 
-		bReadFile = decodeD2->GetReaderPtr()->GetReadFile();
+		bReadFile = decodeD2->GetReadFile();
 
 		if (bReadFile)
 			printf("read file: on\n");
@@ -996,15 +996,22 @@ void SeekToFrame(size_t iFrame)
 {
 	C_AutoLock lock(&g_mutex);
 
-	decodeD2->GetReaderPtr()->SeekFrame(iFrame); // Setting the reading of the input file from the expected frame (from frame number <iFrame>)
+	decodeD2->SeekFrame(iFrame); // Setting the reading of the input file from the expected frame (from frame number <iFrame>)
 
 	size_t nReadFrame = 0;
 	C_Block *pBlock = nullptr;
 
-	for (size_t i = 0; i < 15; i++)
+	C_Timer seek_timer;
+	seek_timer.StartTimer();
+
+	while (seek_timer.GetElapsedTime() <= 5000) // max wait 5 sec
 	{
 		pBlock = decodeD2->MapFrame(); // Get poiter to picture after decoding
 		nReadFrame = pBlock->iFrameNumber; // Get currect frame number
+
+		if (!pBlock)
+			break;
+
 		if (nReadFrame == iFrame) // Search for the expected frame
 		{
 #ifdef USE_CUDA_SDK
@@ -1029,8 +1036,11 @@ void SeekToFrame(size_t iFrame)
 			printf("seek to frame %zu\n", iFrame);
 			break;
 		}
-		decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
+
+		if (pBlock)
+			decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
 	}
+
 	if (nReadFrame != iFrame) // The expected frame was not found
 	{
 		printf("Cannot seek to frame %zu\n", iFrame);
@@ -1180,7 +1190,7 @@ int main(int argc, char **argv)
 	image_width = (unsigned int)decodeD2->GetImageWidth();	// Get image width
 	image_height = (unsigned int)decodeD2->GetImageHeight(); // Get image height
 
-	iAllFrames = decodeD2->GetReaderPtr()->GetCountFrames(); // Get count of frames
+	iAllFrames = decodeD2->GetCountFrames(); // Get count of frames
 
 	ValueFPS = decodeD2->GetFrameRate(); // get frame rate
 
