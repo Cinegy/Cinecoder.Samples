@@ -57,7 +57,7 @@ public:
 	void SetRotate(bool bRotate) { bRotateFrame = bRotate; }
 	bool GetRotate() { return bRotateFrame; }
 
-	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCuda = false);
+	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize, bool bUseCuda = false);
 
 	int CopyToGPU();
 	void Destroy();

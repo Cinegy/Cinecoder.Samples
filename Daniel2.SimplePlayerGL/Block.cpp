@@ -20,7 +20,7 @@ void C_Block::Initialize()
 	pKernelDataOut = nullptr;
 }
 
-long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCuda)
+long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize, bool bUseCuda)
 {
 	Destroy();
 
@@ -29,6 +29,9 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, bool bUseCu
 
 	iPitch = _iStride;
 	iSizeFrame = iPitch * iHeight;
+	
+	if (_iSize >= iSizeFrame)
+		iSizeFrame = _iSize;
 
 	frame_buffer.resize(iSizeFrame); // allocating CPU memory for current frame buffer
 
