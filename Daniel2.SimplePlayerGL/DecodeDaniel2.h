@@ -27,7 +27,6 @@ private:
 	bool m_bUseCudaHost;
 
 	ReadFileDN2 m_file;
-	std::vector<unsigned char> m_buffer;
 
 	C_QueueT<C_Block> m_queueFrames;
 	C_QueueT<C_Block> m_queueFrames_free;
