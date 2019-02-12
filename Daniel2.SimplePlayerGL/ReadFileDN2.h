@@ -22,6 +22,7 @@ public:
 	std::vector<unsigned char> coded_frame;
 	size_t coded_frame_size;
 	size_t frame_number;
+	size_t flags;
 
 	CodedFrame(const CodedFrame&) = default;
 	CodedFrame(CodedFrame&&) = default;
@@ -81,7 +82,13 @@ public:
 		if (nFrame < m_frames) 
 		{ 
 			m_bSeek = true; 
-			m_iSeekFrame = nFrame; 
+			m_iSeekFrame = nFrame;
+
+			CC_MVX_ENTRY Idx;
+			if (SUCCEEDED(m_fileMvx->FindKeyEntry((CC_UINT)nFrame, &Idx)))
+			{
+				m_iSeekFrame = Idx.CodingOrderNum;
+			}
 		} 
 	}
 	void SetSpeed(int iSpeed)

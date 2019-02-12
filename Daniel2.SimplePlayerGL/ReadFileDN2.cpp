@@ -156,6 +156,7 @@ long ReadFileDN2::ThreadProc()
 	m_bReadFile = true;
 
 	int res = 0;
+	bool bSeek = false;
 
 	while (m_bProcess)
 	{
@@ -171,6 +172,9 @@ long ReadFileDN2::ThreadProc()
 			{
 				res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size);
 			}
+			
+			frame->flags = 0;
+			if (bSeek) { frame->flags = 1; bSeek = false; }
 
 			frame->frame_number = iCurEncodedFrame;
 			m_queueFrames.Queue(frame);
@@ -204,6 +208,7 @@ long ReadFileDN2::ThreadProc()
 
 			iCurEncodedFrame = (int)m_iSeekFrame;
 			m_bSeek = false;
+			bSeek = true;
 		}
 	}
 
