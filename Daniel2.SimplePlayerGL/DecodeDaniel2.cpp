@@ -457,7 +457,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #else
 			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 #endif
-			pBlock->iFrameNumber = static_cast<size_t>(PTS) / m_llDuration; // save PTS (in our case this is the frame number)
+			if (m_llDuration > 0)
+				pBlock->iFrameNumber = static_cast<size_t>(PTS) / m_llDuration; // save PTS (in our case this is the frame number)
+			else
+				pBlock->iFrameNumber = (PTS * m_FrameRate.num) / (m_llTimeBase * m_FrameRate.denom);
 
 			m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 		}
@@ -469,7 +472,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		m_width = FrameSize.cx; // get width
 		m_height = FrameSize.cy; // get height
 
-		m_llTimeBase = m_llDuration = 1;
+		m_llTimeBase = 1; m_llDuration = 0;
 
 		CC_TIME duration = 0;
 		CC_TIMEBASE timeBase = 0;
@@ -488,6 +491,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				CC_VA_STATUS vaStatus;
 				if (d3d11VideoProducer && SUCCEEDED(d3d11VideoProducer->get_VA_Status(&vaStatus)))
 				{
+					vaStatus = CC_VA_STATUS_OFF;
 					if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 						if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
 				}
@@ -591,23 +595,16 @@ long DecodeDaniel2::ThreadProc()
 
 			if (m_bDecode)
 			{
-				if (!bIntraFormat)
+				if (frame_number == 0 || frame->flags == 1) // seek
 				{
-					if (frame_number == 0 || frame->flags == 1) // seek
-					{
-						CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
+					CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
 
-						hr = m_pVideoDec->Break(CC_TRUE);
-						if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
-					}
-					else
-					{
-						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size));
-					}
+					hr = m_pVideoDec->Break(CC_TRUE);
+					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
 				}
 				else
 				{
-					hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, frame_number); // add coded frame to decoder
+					hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size));
 				}
 
 				if (FAILED(hr)) // add coded frame to decoder

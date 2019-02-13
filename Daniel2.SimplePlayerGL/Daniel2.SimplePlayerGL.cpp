@@ -679,6 +679,9 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case 32:
 	case 'p':
 	{
+		if (g_bPause)
+			SeekToFrame(iCurPlayFrameNumber);
+
 		SetPause(!g_bPause);
 		break;
 	}
@@ -712,6 +715,9 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			decodeD2->SetSpeed(1);
 		else
 			decodeD2->SetSpeed(-1);
+
+		if (g_bPause)
+			SeekToFrame(iCurPlayFrameNumber);
 
 		SetPause(!g_bPause);
 
