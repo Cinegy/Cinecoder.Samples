@@ -225,9 +225,9 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	Cinecoder_SetErrorHandler(&g_ErrorHandler); // set error handler
-#endif
+//#endif
 
 	CLSID clsidDecoder;
 	switch(m_file.GetStreamType())
