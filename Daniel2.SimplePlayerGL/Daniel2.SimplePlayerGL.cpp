@@ -1090,13 +1090,13 @@ void printHelp(void)
 	printf("Command line example: <Daniel2.SimplePlayerGL.exe> <file_path> -decoders 2 -vsync -rotate_frame\n");
 	printf("\n");
 	printf("Options:\n");
-	printf("-help              display this help menu\n");
-	printf("-decoders <N>      max count of decoders [1..4] (default: 2)\n");
-	//printf("-vsync             enable vertical synchronisation (default - disable)\n");
-	printf("-fpsmax            enable maximum playing fps (default - disable)\n");
-	printf("-rotate_frame      enable rotate frame (default - disable)\n");
+	printf("-help               display this help menu\n");
+	printf("-decoders <N>       max count of decoders [1..4] (default: 2)\n");
+	//printf("-vsync              enable vertical synchronisation (default - disable)\n");
+	printf("-fpsmax             enable maximum playing fps (default - disable)\n");
+	printf("-rotate_frame       enable rotate frame (default - disable)\n");
 #ifdef USE_CUDA_SDK
-	printf("-cuda		       enable CUDA decoding (default - disable, PC only)\n");
+	printf("-cuda               enable CUDA decoding (default - disable, PC only)\n");
 #endif
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
