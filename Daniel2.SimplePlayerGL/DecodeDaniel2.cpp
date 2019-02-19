@@ -82,11 +82,11 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 		m_eventInitDecoder.Reset();
 
-		hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, 0);
+		hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, 0); __check_hr
 
 		for (size_t i = 0; i < 2; i++)
 		{
-			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size));
+			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
 
 			if (FAILED(hr)) // add coded frame to decoder
 			{
@@ -94,7 +94,9 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p", hr, coded_frame_size, coded_frame);
 
-				hr = m_pVideoDec->Break(CC_FALSE); // break decoder
+				hr = m_pVideoDec->Break(CC_FALSE); // break decoder 
+
+				__check_hr
 
 				DestroyDecoder(); // destroy decoder
 
@@ -194,10 +196,12 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	m_piFactory = nullptr;
 
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&m_piFactory); // get Factory
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) 
+		return printf("DecodeDaniel2: Cinecoder_CreateClassFactory failed!"), hr;
 
 	hr = m_piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) 
+		return printf("DecodeDaniel2: AssignLicense failed!"), hr;
 
 	CC_VERSION_INFO version = Cinecoder_GetVersion(); // get version of Cinecoder
 
@@ -375,7 +379,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	com_ptr<ICC_VideoProducer> pVideoProducer;
 
 	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_VideoProducer, (void**)&pVideoProducer))) // get Producer
-		return hr;
+		return printf("DecodeDaniel2: DataReady get VideoProducer failed!"), hr;
 
 	///////////////////////////////////////////////
 	// getting information about the decoded frame
@@ -402,24 +406,24 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	if (FAILED(hr = pVideoProducer->GetVideoFrameInfo((ICC_VideoFrameInfo**)&pVideoFrameInfo)))
 		return printf("GetVideoFrameInfo() fails"), hr;
 
-	hr = pVideoStreamInfo->get_FrameRate(&FrameRate);
-	hr = pVideoStreamInfo->get_FrameSize(&FrameSize);
+	hr = pVideoStreamInfo->get_FrameRate(&FrameRate); __check_hr
+	hr = pVideoStreamInfo->get_FrameSize(&FrameSize); __check_hr
 
 	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt;
 	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)))
 		return printf("Failed to get ICC_VideoStreamInfoExt interface"), hr;
 
-	hr = pVideoStreamInfoExt->get_ChromaFormat(&ChromaFormat);
-	hr = pVideoStreamInfoExt->get_ColorCoefs(&ColorCoefs);
-	hr = pVideoStreamInfoExt->get_BitDepthLuma(&BitDepth);
+	hr = pVideoStreamInfoExt->get_ChromaFormat(&ChromaFormat); __check_hr
+	hr = pVideoStreamInfoExt->get_ColorCoefs(&ColorCoefs); __check_hr
+	hr = pVideoStreamInfoExt->get_BitDepthLuma(&BitDepth); __check_hr
 
 	com_ptr<ICC_DanielVideoStreamInfo>	pDanielVideoStreamInfo;
 	if(SUCCEEDED(pVideoStreamInfo->QueryInterface(IID_ICC_DanielVideoStreamInfo, (void**)&pDanielVideoStreamInfo)))
 	{
-		hr = pDanielVideoStreamInfo->get_PictureOrientation(&PictureOrientation);
+		hr = pDanielVideoStreamInfo->get_PictureOrientation(&PictureOrientation); __check_hr
 	}
 
-	hr = pVideoFrameInfo->get_PTS(&PTS);
+	hr = pVideoFrameInfo->get_PTS(&PTS); __check_hr
 
 	///////////////////////////////////////////////
 
@@ -442,20 +446,24 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				if (m_bUseCudaHost) // use CUDA-pipeline with host memory
 				{
 					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+					__check_hr
 					pBlock->CopyToGPU(); // copy frame from host to device memory
 				}
 				else
 				{
 					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+					__check_hr
 				}
 			}
 			else
 #endif
 			{
 				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+				__check_hr
 			}
 #else
 			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+			__check_hr
 #endif
 			if (m_llDuration > 0)
 				pBlock->iFrameNumber = static_cast<size_t>(PTS) / m_llDuration; // save PTS (in our case this is the frame number)
@@ -563,6 +571,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		}
 	}
 
+	__check_hr
+
 	return hr;
 }
 
@@ -599,12 +609,12 @@ long DecodeDaniel2::ThreadProc()
 				{
 					CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
 
-					hr = m_pVideoDec->Break(CC_TRUE);
+					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
 					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
 				}
 				else
 				{
-					hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size));
+					hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
 				}
 
 				if (FAILED(hr)) // add coded frame to decoder
@@ -614,6 +624,8 @@ long DecodeDaniel2::ThreadProc()
 					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
 
 					hr = m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
+
+					__check_hr
 				}
 			}
 			else

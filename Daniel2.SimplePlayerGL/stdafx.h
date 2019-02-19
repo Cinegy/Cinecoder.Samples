@@ -70,4 +70,13 @@ using namespace cinegy::threading_std;
 }
 #endif
 
+#define __check_hr \
+{ \
+	if (hr != S_OK && hr != S_FALSE) \
+	{ \
+		printf("HRESULT error %d (%s %d)\n", \
+		hr, __FILE__,__LINE__); \
+	} \
+}
+
 ///////////////////////////////////////////////////////////////////////////////
