@@ -288,8 +288,12 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			return printf("DecodeDaniel2: put_TargetColorFormat failed!"), hr;
 	}
 
-	if (m_bUseCuda && !useCuda) 
-		m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+	if (m_bUseCuda && !useCuda)
+	{
+		//m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+		printf("Error: cannot support GPU-decoding for this format!\n");
+		return -1; // if not GPU-decoder -> exit
+	}
 
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
 	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
@@ -499,9 +503,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				CC_VA_STATUS vaStatus;
 				if (d3d11VideoProducer && SUCCEEDED(d3d11VideoProducer->get_VA_Status(&vaStatus)))
 				{
-					vaStatus = CC_VA_STATUS_OFF;
 					if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
-						if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+					{
+						//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+						if (m_bUseCuda) return 0; // Init GPU-decoder failed -> exit
+					}
 				}
 			}
 		}/*
