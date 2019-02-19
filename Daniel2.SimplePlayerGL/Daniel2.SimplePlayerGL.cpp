@@ -318,6 +318,8 @@ bool gpu_initGLUT(int *argc, char **argv)
 
 	SetVerticalSync(g_bVSync); // Set value of vertical synchronisation (on/off)
 
+	OGL_CHECK_ERROR_GL();
+
 	return true;
 }
 
@@ -362,6 +364,8 @@ void gpu_initGLBuffers()
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	OGL_CHECK_ERROR_GL();
 
 #ifdef USE_CUDA_SDK
 	// register this textures with CUDA
@@ -996,6 +1000,7 @@ void SetVerticalSync(bool bVerticalSync)
 	if (swapInterval)
 		swapInterval(bVerticalSync ? 1 : 0);
 #endif
+	OGL_CHECK_ERROR_GL();
 }
 
 void SeekToFrame(size_t iFrame)
