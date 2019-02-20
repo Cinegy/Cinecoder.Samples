@@ -3,7 +3,7 @@
 
 // Cinecoder
 #include <Cinecoder_i.c>
-//#include <Cinecoder.Plugin.GpuCodecs_i.c>
+#include <Cinecoder.Plugin.GpuCodecs_i.c>
 
 #include "CinecoderErrorHandler.h"
 
@@ -205,12 +205,12 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 	CC_VERSION_INFO version = Cinecoder_GetVersion(); // get version of Cinecoder
 
-//#if defined(__WIN32__)
-//	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR("Cinecoder.Plugin.GpuCodecs.dll");
-//#elif defined(__APPLE__) || defined(__LINUX__)
-//	CC_STRING plugin_filename_str = const_cast<CC_STRING>("Cinecoder.Plugin.GpuCodecs.dll");
-//#endif
-//	m_piFactory->LoadPlugin(plugin_filename_str); // no error here
+#if defined(__WIN32__)
+	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR("Cinecoder.Plugin.GpuCodecs.dll");
+#elif defined(__APPLE__) || defined(__LINUX__)
+	CC_STRING plugin_filename_str = const_cast<CC_STRING>("Cinecoder.Plugin.GpuCodecs.dll");
+#endif
+	m_piFactory->LoadPlugin(plugin_filename_str); // no error here
 
 	std::string strCinecoderVersion;
 
@@ -260,11 +260,11 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			bIntraFormat = false;
 			break;
 			
-		//case CC_ES_TYPE_VIDEO_HEVC:
-		//	clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
-		//	m_strStreamType = "HEVC";
-		//	bIntraFormat = false;
-		//	break;
+		case CC_ES_TYPE_VIDEO_HEVC:
+			clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
+			m_strStreamType = "HEVC";
+			bIntraFormat = false;
+			break;
 
 		case CC_ES_TYPE_VIDEO_DANIEL:
 		default:
