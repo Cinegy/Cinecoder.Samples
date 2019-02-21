@@ -36,13 +36,13 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = m_pFactory->AssignLicense(par.CompanyName, par.LicenseKey)))
 		return print_error(hr, "AssignLicense error");
 
-	CComPtr<ICC_VideoEncoder> pEncoder;
+	com_ptr<ICC_VideoEncoder> pEncoder;
 	CLSID clsidEnc = par.DeviceId >= 0 ? CLSID_CC_DanielVideoEncoder_CUDA : CLSID_CC_DanielVideoEncoder;
 	if (FAILED(hr = m_pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder)))
 		return print_error(hr, "Encoder creation error");
 
 	// We use ICC_DanielVideoEncoderSettings_CUDA settings for both encoders because _CUDA settings class is an inheritor of ICC_DanielVideoEncoderSettings.
-	CComPtr<ICC_DanielVideoEncoderSettings_CUDA> pSettings;
+	com_ptr<ICC_DanielVideoEncoderSettings_CUDA> pSettings;
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_DanielVideoEncoderSettings_CUDA, IID_ICC_DanielVideoEncoderSettings_CUDA, (IUnknown**)&pSettings)))
 		return print_error(hr, "Encoder settings creation error");
 
@@ -65,7 +65,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = pEncoder->Init(pSettings)))
 		return print_error(hr, "Encoder initialization error");
 
-	CComPtr<ICC_OutputFile> pFileWriter;
+	com_ptr<ICC_OutputFile> pFileWriter;
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pFileWriter)))
 		return print_error(hr, "File writer creation error");
 
@@ -73,12 +73,12 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if(!pext || (_tcsicmp(pext, _T(".DN2")) != 0 && _tcsicmp(pext, _T(".MXF")) != 0))
 		return print_error(E_FAIL, "Unrecognized output file type");
 
-	if (FAILED(hr = pFileWriter->Create(CComBSTR(par.OutputFileName))))
+	if (FAILED(hr = pFileWriter->Create(const_cast<TCHAR*>(par.OutputFileName))))
 		return print_error(hr, "Output file creation error");
 
 	if (_tcsicmp(pext, _T(".MXF")) == 0)
 	{
-		if(FAILED(hr = m_pFactory->LoadPlugin(CComBSTR("Cinecoder.Plugin.Multiplexers.dll"))))
+		if(FAILED(hr = m_pFactory->LoadPlugin(_T("Cinecoder.Plugin.Multiplexers.dll"))))
 			return print_error(hr, "Error loading the MXF plugin");
 
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_OP1A_Multiplexer, IID_ICC_Multiplexer, (IUnknown**)&m_pMuxer)))
@@ -87,7 +87,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		if(FAILED(m_pMuxer->Init(NULL)))
 			return print_error(hr, "Failed to init the MXF multipexer");
 
-		CComPtr<ICC_MXF_MultiplexerPinSettings> pMuxPinSettings;
+		com_ptr<ICC_MXF_MultiplexerPinSettings> pMuxPinSettings;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_MultiplexerPinSettings, IID_ICC_MXF_MultiplexerPinSettings, (IUnknown**)&pMuxPinSettings)))
 			return print_error(hr, "Failed to create MXF multipexer pin settings");
 
@@ -98,7 +98,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		pMuxPinSettings->put_BitRate(par.Bitrate);
 		pMuxPinSettings->put_FrameRate(MK_RATIONAL(par.FrameRateN, par.FrameRateD));
 
-		CComPtr<ICC_ByteStreamConsumer> pMuxerPin;
+		com_ptr<ICC_ByteStreamConsumer> pMuxerPin;
 		if(FAILED(hr = m_pMuxer->CreatePin(pMuxPinSettings, &pMuxerPin)))
 			return print_error(hr, "Failed to create MXF Multiplexer Daniel2 PIN");
 
@@ -115,7 +115,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	}
 	else // write with index file
 	{
-		CComPtr<ICC_IndexWriter> pIndexWriter;
+		com_ptr<ICC_IndexWriter> pIndexWriter;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MvxWriter, IID_ICC_IndexWriter, (IUnknown**)&pIndexWriter)))
 			return print_error(hr, "Index writer creation error");
 
@@ -125,12 +125,12 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		if (FAILED(hr = pIndexWriter->put_OutputCallback(pFileWriter)))
 			return print_error(hr, "Index writer cb assignment error");
 
-		CComPtr<ICC_OutputFile> pIndexFileWriter;
+		com_ptr<ICC_OutputFile> pIndexFileWriter;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pIndexFileWriter)))
 			return print_error(hr, "Index file writer creation error");
 
-		CComQIPtr<ICC_DataWriterEx> pDataWriterEx = pIndexFileWriter;
-		if (!pDataWriterEx)
+		com_ptr<ICC_DataWriterEx> pDataWriterEx;
+		if(FAILED(hr = pIndexFileWriter->QueryInterface(IID_ICC_DataWriterEx, (void**)&pDataWriterEx)))
 			return print_error(hr, "ICC_File has no ICC_DataWriterEx interface");
 
 		if (FAILED(hr = pIndexWriter->put_IndexCallback(pDataWriterEx)))
@@ -142,7 +142,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		TCHAR mvx_name[MAX_PATH];
 		_tmakepath(mvx_name, drive, dir, name, _T(".mvx"));
 
-		if (FAILED(hr = pIndexFileWriter->Create(CComBSTR(mvx_name))))
+		if (FAILED(hr = pIndexFileWriter->Create(mvx_name)))
 			return print_error(hr, "Output file creation error");
 	}
 
@@ -476,13 +476,14 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		frame_descr.cFormat = m_EncPar.InputColorFormat;
 		frame_descr.iStride = m_EncPar.InputPitch;
 
-		if (CComQIPtr<ICC_VideoConsumerExtAsync> pEncAsync = m_pEncoder)
+		com_ptr<ICC_VideoConsumerExtAsync> pEncAsync;
+		if (SUCCEEDED(m_pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync)))
 		{
 			hr = pEncAsync->AddScaleFrameAsync(
 				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
-				CComPtr<IUnknown>(),
+				com_ptr<IUnknown>(),
 				nullptr);
 		}
 		else

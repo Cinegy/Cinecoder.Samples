@@ -71,10 +71,10 @@ private:
 	int		CreateEncoder(const TEST_PARAMS&);
 
 	TEST_PARAMS	m_EncPar{};
-	CComPtr<ICC_VideoEncoder> m_pEncoder;
+	com_ptr<ICC_VideoEncoder> m_pEncoder;
 
-	CComPtr<ICC_ClassFactory> m_pFactory;
-	CComPtr<ICC_Multiplexer> m_pMuxer;
+	com_ptr<ICC_ClassFactory> m_pFactory;
+	com_ptr<ICC_Multiplexer> m_pMuxer;
 	
 	DWORD m_FrameSizeInBytes{};
 
