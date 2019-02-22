@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <thread>
+#include <condition_variable>
 #include <atomic>
 #include <mutex>
 #include <chrono>
@@ -97,13 +98,23 @@ private:
 	DWORD	EncodingThreadProc();
 	static	DWORD	encoding_thread_proc(void *p);
 
-	HANDLE	m_evCancel{};
+	volatile bool m_bCancel{};
+
+	struct waiter
+	{
+		std::mutex				mutex;
+		std::condition_variable	cond_var;
+	};
+
+	waiter	m_evDataLoaded;
+	waiter	m_evDataReleased;
 
 	struct BufferDescr
 	{
 		LPBYTE	pBuffer;
-		HANDLE	evVacant;
-		HANDLE	evFilled;
+		waiter	*evVacant;
+		waiter	*evFilled;
+		bool	bFilled;
 		HRESULT	hrReadStatus;
 	};
 	std::vector<BufferDescr> m_Queue;

@@ -206,13 +206,12 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		if (!descr.pBuffer)
 			return print_error(E_OUTOFMEMORY, "Can't allocate an input frame buffer for the queue");
 		
-		descr.evVacant = CreateEvent(NULL, FALSE, TRUE, NULL);
-		descr.evFilled = CreateEvent(NULL, FALSE, FALSE, NULL);
+		descr.evVacant = new waiter();
+		descr.evFilled = new waiter();
+		descr.bFilled  = false;
 		
 		m_Queue.push_back(descr);
 	}
-
-	m_evCancel = CreateEvent(NULL, TRUE, FALSE, NULL);
 
 	m_EncPar = par;
 
@@ -233,8 +232,8 @@ int	CEncoderTest::Close()
 	{
 		BufferDescr descr = m_Queue.back();
 
-		CloseHandle(descr.evVacant);
-		CloseHandle(descr.evFilled);
+		delete descr.evVacant;
+		delete descr.evFilled;
 
 		extern void cuda_free_pinned(void *ptr);
 
@@ -245,8 +244,6 @@ int	CEncoderTest::Close()
 
 		m_Queue.pop_back();
 	}
-
-	CloseHandle(m_evCancel);
 
 	m_pEncoder->Done(CC_TRUE);
 
@@ -297,14 +294,17 @@ int		CEncoderTest::Cancel()
 	if (!m_bRunning)
 		return S_FALSE;
 
-	SetEvent(m_evCancel);
+	m_bCancel = true;
 
-	m_EncodingThread.join();
+	for(size_t i = 0; i < m_ReadingThreads.size(); i++)
+		m_Queue[i].evVacant->cond_var.notify_one();
 
 	for(size_t i = 0; i < m_ReadingThreads.size(); i++)
 		m_ReadingThreads[i].join();
 
 	m_ReadingThreads.clear();
+
+	m_EncodingThread.join();
 
 	m_bRunning = false;
 
@@ -352,18 +352,26 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 
 		BufferDescr &bufdescr = m_Queue[buffer_id];
 
-    	HANDLE hh[2] = { m_evCancel, bufdescr.evVacant };
+		{
+			std::unique_lock<std::mutex> lck(bufdescr.evVacant->mutex);
 
-		DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
-		if(wait_result == WAIT_OBJECT_0)
+			if(!m_bCancel && bufdescr.bFilled)
+				bufdescr.evVacant->cond_var.wait(lck);
+		}
+
+		if(m_bCancel)
+		{
+			bufdescr.hrReadStatus = S_FALSE;
+			bufdescr.evFilled->cond_var.notify_one();
 			break;
+		}
 
 		if (m_EncPar.StopFrameNum >= 0)
 		{
 			if (frame_no > m_EncPar.StopFrameNum && !m_EncPar.Looped)
 			{
 				bufdescr.hrReadStatus = S_FALSE;
-				SetEvent(bufdescr.evFilled);
+				bufdescr.evFilled->cond_var.notify_one();
 				break;
 			}
 
@@ -392,14 +400,14 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r, NULL))
 		{
 			bufdescr.hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
-			SetEvent(bufdescr.evFilled);
+			bufdescr.evFilled->cond_var.notify_one();
 			break;
 		}
 
 		if (r != m_FrameSizeInBytes)
 		{
 			bufdescr.hrReadStatus = S_FALSE;
-			SetEvent(bufdescr.evFilled);
+			bufdescr.evFilled->cond_var.notify_one();
 			break;
 		}
 
@@ -414,7 +422,9 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		m_Stats.NumBytesRead += m_FrameSizeInBytes;
 		m_StatsLock.unlock();
 
-		SetEvent(bufdescr.evFilled);
+		std::unique_lock<std::mutex> lck(bufdescr.evFilled->mutex);
+		bufdescr.bFilled = true;
+		bufdescr.evFilled->cond_var.notify_one();
 	}
 
 	HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
@@ -422,7 +432,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
     if(FAILED(hr))
     {
       fprintf(stderr, "Reading thread %d: error %08lx\n", thread_idx, hr);
-      SetEvent(m_evCancel);
+      m_bCancel = true;
     }
 
     CloseHandle(hFile);
@@ -452,20 +462,26 @@ DWORD	CEncoderTest::EncodingThreadProc()
 	{
 		const int buffer_id = frame_no % m_EncPar.QueueSize;
 
+		BufferDescr &bufdescr = m_Queue[buffer_id];
+
 		auto t0 = system_clock::now();
 
-		HANDLE hh[2] = { m_evCancel, m_Queue[buffer_id].evFilled };
+		{
+			std::unique_lock<std::mutex> lck(bufdescr.evFilled->mutex);
 
-		const DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
-		if (wait_result == WAIT_OBJECT_0)
+			if(!m_bCancel && !bufdescr.bFilled)
+				bufdescr.evFilled->cond_var.wait(lck);
+		}
+
+		if (m_bCancel)
 		{
 			m_hrResult = S_FALSE;// E_ABORT;
 			break;
 		}
 
-		if (m_Queue[buffer_id].hrReadStatus != S_OK)
+		if (bufdescr.hrReadStatus != S_OK)
 		{
-			m_hrResult = m_Queue[buffer_id].hrReadStatus;
+			m_hrResult = bufdescr.hrReadStatus;
 			break;
 		}
 
@@ -477,7 +493,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		if (SUCCEEDED(m_pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync)))
 		{
 			hr = pEncAsync->AddScaleFrameAsync(
-				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				com_ptr<IUnknown>(),
@@ -486,7 +502,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		else
 		{
 			hr = m_pEncoder->AddScaleFrame(
-				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				NULL);
@@ -498,7 +514,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		auto t1 = system_clock::now();
 		auto dT = duration_cast<milliseconds>(t1 - t0).count();
 
-		int wait_time = 42 - dT;
+//		int wait_time = 42 - dT;
 //		if (wait_time > 1)
 //			Sleep(wait_time);
 
@@ -507,7 +523,9 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		m_Stats.NumBytesWritten += 0;
 		m_StatsLock.unlock();
 
-		SetEvent(m_Queue[buffer_id].evVacant);
+		std::unique_lock<std::mutex> lck(bufdescr.evVacant->mutex);
+		bufdescr.bFilled = false;
+		bufdescr.evVacant->cond_var.notify_one();
 	}
 
 	m_NumActiveThreads --;
