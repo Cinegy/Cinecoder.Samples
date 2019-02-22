@@ -216,8 +216,6 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 
 	m_EncPar = par;
 
-	memset((void*)&m_Stats, 0, sizeof(m_Stats));
-
 	return S_OK;
 }
 
@@ -318,11 +316,10 @@ int		CEncoderTest::GetCurrentEncodingStats(ENCODER_STATS *pStats)
 //---------------------------------------------------------------
 {
 	if (!pStats) return E_POINTER;
-	
-	pStats->NumFramesRead    = m_Stats.NumFramesRead;
-	pStats->NumFramesWritten = m_Stats.NumFramesWritten;
-	pStats->NumBytesRead     = InterlockedExchangeAdd64(&m_Stats.NumBytesRead, 0);
-	pStats->NumBytesWritten  = InterlockedExchangeAdd64(&m_Stats.NumBytesWritten, 0);
+
+	m_StatsLock.lock();
+	*pStats = m_Stats;
+	m_StatsLock.unlock();
 
 	return S_OK;
 }
@@ -350,7 +347,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 
     for(;;)
     {
-    	int frame_no = InterlockedExchangeAdd(&m_ReadFrameCounter, 1);
+    	int frame_no = m_ReadFrameCounter++;
     	int buffer_id = frame_no % m_EncPar.QueueSize;
 
 		BufferDescr &bufdescr = m_Queue[buffer_id];
@@ -412,8 +409,10 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 	    	hFile = INVALID_HANDLE_VALUE;
 	    }
 
-		InterlockedIncrement(&m_Stats.NumFramesRead);
-		InterlockedAdd64(&m_Stats.NumBytesRead, m_FrameSizeInBytes);
+		m_StatsLock.lock();
+		m_Stats.NumFramesRead++;
+		m_Stats.NumBytesRead += m_FrameSizeInBytes;
+		m_StatsLock.unlock();
 
 		SetEvent(bufdescr.evFilled);
 	}
@@ -427,7 +426,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
     }
 
     CloseHandle(hFile);
-    InterlockedDecrement(&m_NumActiveThreads);
+    m_NumActiveThreads--;
 
     fprintf(stderr, "Reading thread %d is done\n", thread_idx);
 
@@ -502,12 +501,15 @@ DWORD	CEncoderTest::EncodingThreadProc()
 //		if (wait_time > 1)
 //			Sleep(wait_time);
 
-		InterlockedIncrement(&m_Stats.NumFramesWritten);
-		InterlockedAdd64(&m_Stats.NumBytesWritten, 0);
+		m_StatsLock.lock();
+		m_Stats.NumFramesWritten++;
+		m_Stats.NumBytesWritten += 0;
+		m_StatsLock.unlock();
+
 		SetEvent(m_Queue[buffer_id].evVacant);
 	}
 
-	InterlockedDecrement(&m_NumActiveThreads);
+	m_NumActiveThreads --;
  	fprintf(stderr, "Encoding thread is done\n");
 
 	return hr;

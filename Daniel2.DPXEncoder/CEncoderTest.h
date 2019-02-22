@@ -1,8 +1,9 @@
 #pragma once
 
-#include <Windows.h>
 #include <vector>
 #include <thread>
+#include <atomic>
+#include <mutex>
 
 #include "Cinecoder_h.h"
 
@@ -82,8 +83,8 @@ private:
 	BOOL m_bRunning;
 	HRESULT	m_hrResult{};
 
-	volatile LONG m_NumActiveThreads;
-	volatile LONG m_ReadFrameCounter{};
+	std::atomic<LONG> m_NumActiveThreads{};
+	std::atomic<LONG> m_ReadFrameCounter{};
 
 	std::vector<std::thread> m_ReadingThreads;
 	DWORD	ReadingThreadProc(int n);
@@ -104,5 +105,6 @@ private:
 	};
 	std::vector<BufferDescr> m_Queue;
 
-	volatile ENCODER_STATS	m_Stats{};
+	std::mutex m_StatsLock;
+	ENCODER_STATS	m_Stats{};
 };
