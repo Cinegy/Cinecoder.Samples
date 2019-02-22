@@ -10,6 +10,10 @@
 #include "../common/cinecoder_license_string.h"
 #include "../common/cinecoder_error_handler.h"
 
+#include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
+
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *encpar);
 int print_help();
 int check_for_dpx(TEST_PARAMS *encpar);
@@ -321,12 +325,12 @@ int check_for_dpx(TEST_PARAMS *par)
 	TCHAR dpx_filename[MAX_PATH] = {};
 	_stprintf(dpx_filename, dpx_filemask, par->StartFrameNum);
 
-    HANDLE hFile = CreateFile(dpx_filename, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-	if(hFile == INVALID_HANDLE_VALUE)
-		return _ftprintf(stderr, _T("Can't open '%s'"), dpx_filename), HRESULT_FROM_WIN32(GetLastError());
+    FILE *hFile = _tfopen(dpx_filename, _T("rb"));
+	if(!hFile)
+		return _ftprintf(stderr, _T("Can't open '%s'"), dpx_filename), -1;
 
-    dpx_file_header_t dpx_hdr; DWORD r;
-    if(!ReadFile(hFile, &dpx_hdr, sizeof(dpx_hdr), &r, NULL))
+    dpx_file_header_t dpx_hdr;
+    if(fread(&dpx_hdr, 1, sizeof(dpx_hdr), hFile) != sizeof(dpx_hdr))
     	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), HRESULT_FROM_WIN32(GetLastError());
 
     if(dpx_hdr.file.magic_num != 'XPDS' && dpx_hdr.file.magic_num != 'SDPX')
@@ -352,7 +356,7 @@ int check_for_dpx(TEST_PARAMS *par)
 
 	int dpx_w = SWAP4(BE,dpx_hdr.image.pixels_per_line);
 	int dpx_h = SWAP4(BE,dpx_hdr.image.lines_per_image);
-	int dpx_size = GetFileSize(hFile, NULL);// SWAP4(BE, dpx_hdr.file.file_size);
+	int dpx_size = filelength(fileno(hFile));// SWAP4(BE, dpx_hdr.file.file_size);
 	int dpx_offset = SWAP4(BE,dpx_hdr.file.data_offset);
 	int dpx_padding = SWAP4(BE, dpx_hdr.image.channel[0].line_padding);
 
@@ -396,6 +400,8 @@ int check_for_dpx(TEST_PARAMS *par)
 	par->FileSize = dpx_size;
 	par->DataOffset = dpx_offset;
 	par->ChromaFormat = CC_CHROMA_RGBA;
+
+    fclose(hFile);
 
 	return S_OK;
 }
