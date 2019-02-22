@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <iostream>
 #include "CEncoderTest.h"
 
 //---------------------------------------------------------------
@@ -265,10 +266,10 @@ int	CEncoderTest::Close()
 int		CEncoderTest::Run()
 //---------------------------------------------------------------
 {
-	m_hEncodingThread = CreateThread(NULL, 0, encoding_thread_proc, this, 0, NULL);
+	m_EncodingThread = std::thread(encoding_thread_proc, this);
 
 	for (int i = 0; i < m_EncPar.NumReadThreads; i++)
-		m_hReadingThreads.push_back(CreateThread(NULL, 0, reading_thread_proc, this, 0, NULL));
+		m_ReadingThreads.push_back(std::thread(reading_thread_proc, this, i));
 
 	m_NumActiveThreads = m_EncPar.NumReadThreads + 1;
 	m_ReadFrameCounter = 0;
@@ -300,15 +301,12 @@ int		CEncoderTest::Cancel()
 
 	SetEvent(m_evCancel);
 
-	WaitForSingleObject(m_hEncodingThread, INFINITE);
-	WaitForMultipleObjects((DWORD)m_hReadingThreads.size(), &m_hReadingThreads[0], TRUE, INFINITE);
+	m_EncodingThread.join();
 
-	for(size_t i = 0; i < m_hReadingThreads.size(); i++)
-		CloseHandle(m_hReadingThreads[i]);
+	for(size_t i = 0; i < m_ReadingThreads.size(); i++)
+		m_ReadingThreads[i].join();
 
-	m_hReadingThreads.clear();
-
-	CloseHandle(m_hEncodingThread);
+	m_ReadingThreads.clear();
 
 	m_bRunning = false;
 
@@ -330,17 +328,17 @@ int		CEncoderTest::GetCurrentEncodingStats(ENCODER_STATS *pStats)
 }
 
 //---------------------------------------------------------------
-DWORD	WINAPI	CEncoderTest::reading_thread_proc(void *p)
+DWORD	CEncoderTest::reading_thread_proc(void *p, int thread_idx)
 //---------------------------------------------------------------
 {
-	return reinterpret_cast<CEncoderTest*>(p)->ReadingThreadProc();
+	return reinterpret_cast<CEncoderTest*>(p)->ReadingThreadProc(thread_idx);
 }
 
 //---------------------------------------------------------------
-DWORD 	CEncoderTest::ReadingThreadProc()
+DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 //---------------------------------------------------------------
 {
-    fprintf(stderr, "Reading thread %lu is started\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %d is started\n", thread_idx);
 
     HANDLE hFile = INVALID_HANDLE_VALUE;
 
@@ -424,20 +422,20 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 
     if(FAILED(hr))
     {
-      fprintf(stderr, "Reading thread %lu: error %08lx\n", GetCurrentThreadId(), hr);
+      fprintf(stderr, "Reading thread %d: error %08lx\n", thread_idx, hr);
       SetEvent(m_evCancel);
     }
 
     CloseHandle(hFile);
     InterlockedDecrement(&m_NumActiveThreads);
 
-    fprintf(stderr, "Reading thread %lu is done\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %d is done\n", thread_idx);
 
     return hr;
 }
 
 //---------------------------------------------------------------
-DWORD	WINAPI	CEncoderTest::encoding_thread_proc(void *p)
+DWORD	CEncoderTest::encoding_thread_proc(void *p)
 //---------------------------------------------------------------
 {
 	return reinterpret_cast<CEncoderTest*>(p)->EncodingThreadProc();
@@ -449,7 +447,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 {
 	HRESULT hr = S_OK;
 
-	fprintf(stderr, "Encoding thread %lu is started\n", GetCurrentThreadId());
+	fprintf(stderr, "Encoding thread is started\n");
 
 	for(int frame_no = 0; ; frame_no++)
 	{
@@ -510,7 +508,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 	}
 
 	InterlockedDecrement(&m_NumActiveThreads);
-	fprintf(stderr, "Encoding thread %lu is done\n", GetCurrentThreadId());
+ 	fprintf(stderr, "Encoding thread is done\n");
 
 	return hr;
 }

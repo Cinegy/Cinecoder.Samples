@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <vector>
+#include <thread>
 
 #include "Cinecoder_h.h"
 
@@ -84,13 +85,13 @@ private:
 	volatile LONG m_NumActiveThreads;
 	volatile LONG m_ReadFrameCounter{};
 
-	std::vector<HANDLE>	m_hReadingThreads;
-	DWORD	ReadingThreadProc();
-	static	DWORD	WINAPI	reading_thread_proc(void *p);
+	std::vector<std::thread> m_ReadingThreads;
+	DWORD	ReadingThreadProc(int n);
+	static	DWORD	reading_thread_proc(void *p, int n);
 
-	HANDLE	m_hEncodingThread{};
+	std::thread	m_EncodingThread;
 	DWORD	EncodingThreadProc();
-	static	DWORD	WINAPI	encoding_thread_proc(void *p);
+	static	DWORD	encoding_thread_proc(void *p);
 
 	HANDLE	m_evCancel{};
 
