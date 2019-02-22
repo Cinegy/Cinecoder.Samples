@@ -3,8 +3,9 @@
 
 // Cinecoder
 #include <Cinecoder_i.c>
+#if defined(__WIN32__)
 #include <Cinecoder.Plugin.GpuCodecs_i.c>
-
+#endif
 #include "CinecoderErrorHandler.h"
 
 #ifdef max
@@ -92,7 +93,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			{
 				assert(0);
 
-				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p", hr, coded_frame_size, coded_frame);
+				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
 
 				hr = m_pVideoDec->Break(CC_FALSE); // break decoder 
 
@@ -197,20 +198,13 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&m_piFactory); // get Factory
 	if (FAILED(hr)) 
-		return printf("DecodeDaniel2: Cinecoder_CreateClassFactory failed!"), hr;
+		return printf("DecodeDaniel2: Cinecoder_CreateClassFactory failed!\n"), hr;
 
 	hr = m_piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
 	if (FAILED(hr)) 
-		return printf("DecodeDaniel2: AssignLicense failed!"), hr;
+		return printf("DecodeDaniel2: AssignLicense failed!\n"), hr;
 
 	CC_VERSION_INFO version = Cinecoder_GetVersion(); // get version of Cinecoder
-
-#if defined(__WIN32__)
-	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR("Cinecoder.Plugin.GpuCodecs.dll");
-#elif defined(__APPLE__) || defined(__LINUX__)
-	CC_STRING plugin_filename_str = const_cast<CC_STRING>("Cinecoder.Plugin.GpuCodecs.dll");
-#endif
-	m_piFactory->LoadPlugin(plugin_filename_str); // no error here
 
 	std::string strCinecoderVersion;
 
@@ -224,6 +218,11 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	strCinecoderVersion += std::to_string((long long)version.RevisionNo);
 
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
+
+#if defined(__WIN32__)
+	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR("Cinecoder.Plugin.GpuCodecs.dll");
+	m_piFactory->LoadPlugin(plugin_filename_str); // no error here
+#endif
 
 //#ifdef _DEBUG
 	Cinecoder_SetErrorHandler(&g_ErrorHandler); // set error handler
@@ -260,32 +259,23 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			bIntraFormat = false;
 			break;
 			
+#if defined(__WIN32__)
 		case CC_ES_TYPE_VIDEO_HEVC:
 			clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
-
+#endif
 		case CC_ES_TYPE_VIDEO_DANIEL:
-		default:
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
 			m_strStreamType = "Daniel";
 			bIntraFormat = true;
 			break;
-	}
 
-	if (FAILED(hr = m_piFactory->CreateInstance(clsidDecoder, IID_ICC_VideoDecoder, (IUnknown**)&m_pVideoDec)))
-		return printf("DecodeDaniel2: CreateInstance failed!"), hr;
-
-	if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
-	{
-		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
-
-		if(FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda)))
-			return printf("DecodeDaniel2: Failed to get ICC_DanielVideoDecoder_CUDA interface"), hr;
-
-		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // need call put_TargetColorFormat for using GetFrame when using GPU-pipeline
-			return printf("DecodeDaniel2: put_TargetColorFormat failed!"), hr;
+		default:
+			printf("DecodeDaniel2: Not support current format!\n");
+			return -1;
+			break;
 	}
 
 	if (m_bUseCuda && !useCuda)
@@ -295,11 +285,25 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 		return -1; // if not GPU-decoder -> exit
 	}
 
+	if (FAILED(hr = m_piFactory->CreateInstance(clsidDecoder, IID_ICC_VideoDecoder, (IUnknown**)&m_pVideoDec)))
+		return printf("DecodeDaniel2: CreateInstance failed!\n"), hr;
+
+	if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
+	{
+		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
+
+		if(FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda)))
+			return printf("DecodeDaniel2: Failed to get ICC_DanielVideoDecoder_CUDA interface!\n"), hr;
+
+		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // need call put_TargetColorFormat for using GetFrame when using GPU-pipeline
+			return printf("DecodeDaniel2: put_TargetColorFormat failed!\n"), hr;
+	}
+
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
 	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
 	{
 		if (FAILED(hr = pPolicy->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
-			return printf("DecodeDaniel2: put_ProcessDataPolicy failed!"), hr;
+			return printf("DecodeDaniel2: put_ProcessDataPolicy failed!\n"), hr;
 	}
 
 	com_ptr<ICC_ConcurrencyLevelProp> pConcur;
@@ -307,16 +311,16 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	{
 		// set count of decoders in carousel of decoders
 		if (FAILED(hr = pConcur->put_ConcurrencyLevel(static_cast<CC_AMOUNT>(iMaxCountDecoders))))
-			return printf("DecodeDaniel2: put_ConcurrencyLevel failed!"), hr;
+			return printf("DecodeDaniel2: put_ConcurrencyLevel failed!\n"), hr;
 	}
 
 	// set output callback
 	if (FAILED(hr = m_pVideoDec->put_OutputCallback((ICC_DataReadyCallback *)this)))
-		return printf("DecodeDaniel2: put_OutputCallback failed!"), hr;
+		return printf("DecodeDaniel2: put_OutputCallback failed!\n"), hr;
 
 	// init decoder
 	if (FAILED(hr = m_pVideoDec->Init()))
-		return printf("DecodeDaniel2: Init failed!"), hr;
+		return printf("DecodeDaniel2: Init failed!\n"), hr;
 
 	return 0;
 }
@@ -346,15 +350,13 @@ int DecodeDaniel2::InitValues()
 		size_t size = 0;
 
 		if (strcmp(m_strStreamType, "HEVC") == 0)
-		{
 			size = m_stride * m_height * 3 / 2;
-		}
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 
 		if (res != 0)
 		{
-			printf("InitBlocks: Init() return error - %d", res);
+			printf("InitBlocks: Init() return error - %d\n", res);
 			return res;
 		}
 
@@ -383,7 +385,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	com_ptr<ICC_VideoProducer> pVideoProducer;
 
 	if (FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_VideoProducer, (void**)&pVideoProducer))) // get Producer
-		return printf("DecodeDaniel2: DataReady get VideoProducer failed!"), hr;
+		return printf("DecodeDaniel2: DataReady get VideoProducer failed!\n"), hr;
 
 	///////////////////////////////////////////////
 	// getting information about the decoded frame
@@ -405,17 +407,17 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	com_ptr<ICC_VideoFrameInfo> pVideoFrameInfo;
 
 	if (FAILED(hr = pVideoProducer->GetVideoStreamInfo((ICC_VideoStreamInfo**)&pVideoStreamInfo)))
-		return printf("GetVideoStreamInfo() fails"), hr;
+		return printf("GetVideoStreamInfo() fails\n"), hr;
 
 	if (FAILED(hr = pVideoProducer->GetVideoFrameInfo((ICC_VideoFrameInfo**)&pVideoFrameInfo)))
-		return printf("GetVideoFrameInfo() fails"), hr;
+		return printf("GetVideoFrameInfo() fails\n"), hr;
 
 	hr = pVideoStreamInfo->get_FrameRate(&FrameRate); __check_hr
 	hr = pVideoStreamInfo->get_FrameSize(&FrameSize); __check_hr
 
 	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt;
 	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)))
-		return printf("Failed to get ICC_VideoStreamInfoExt interface"), hr;
+		return printf("Failed to get ICC_VideoStreamInfoExt interface\n"), hr;
 
 	hr = pVideoStreamInfoExt->get_ChromaFormat(&ChromaFormat); __check_hr
 	hr = pVideoStreamInfoExt->get_ColorCoefs(&ColorCoefs); __check_hr
@@ -495,23 +497,22 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		if (SUCCEEDED(m_pVideoDec->get_TimeBase(&timeBase)) && timeBase != 0)
 			m_llTimeBase = timeBase;
 
-		if (strcmp(m_strStreamType, "Daniel") == 0)
+		com_ptr<ICC_VideoAccelerationInfo> pVideoAccelerationInfo;
+		if (SUCCEEDED(m_pVideoDec->QueryInterface(IID_ICC_VideoAccelerationInfo, (void**)&pVideoAccelerationInfo)))
 		{
-			com_ptr<ICC_D3D11VideoProducer> d3d11VideoProducer;
-			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoProducer**)&d3d11VideoProducer)))
+			CC_VA_STATUS vaStatus;
+			if (pVideoAccelerationInfo && SUCCEEDED(pVideoAccelerationInfo->get_VA_Status(&vaStatus)))
 			{
-				CC_VA_STATUS vaStatus;
-				if (d3d11VideoProducer && SUCCEEDED(d3d11VideoProducer->get_VA_Status(&vaStatus)))
+				if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 				{
-					if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
-					{
-						//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
-						if (m_bUseCuda) return 0; // Init GPU-decoder failed -> exit
-					}
+					//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+					if (m_bUseCuda && !m_bUseCudaHost) return 0; // Init GPU-decoder failed -> exit
 				}
 			}
-		}/*
-		else if (strcmp(m_strStreamType, "HEVC") == 0)
+		}
+
+#if defined(__WIN32__)
+		if (strcmp(m_strStreamType, "HEVC") == 0)
 		{
 			com_ptr<ICC_D3D11VideoObject> d3d11VideoObject;
 			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoObject**)&d3d11VideoObject)))
@@ -519,32 +520,28 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				CC_VA_STATUS vaStatus;
 				if (d3d11VideoObject && SUCCEEDED(d3d11VideoObject->get_VA_Status(&vaStatus)))
 				{
-					if (vaStatus == CC_VA_STATUS_ON)
+					if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 					{
-						CC_VIDEO_FRAME_DESCR vid_frame_desc;
-						if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
-						{
-							m_fmt = vid_frame_desc.cFormat;
-							m_stride = vid_frame_desc.iStride;
-							m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
-
-							m_bInitDecoder = true; // set init decoder value
-							m_eventInitDecoder.Set(); // set event about decoder was initialized
-
-							return S_OK;
-						}
-					}
-					else
-					{
-						if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+						//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+						if (m_bUseCuda && !m_bUseCudaHost) return 0; // Init GPU-decoder failed -> exit
 					}
 				}
+
+				CC_VIDEO_FRAME_DESCR vid_frame_desc;
+				if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
+				{
+					m_fmt = vid_frame_desc.cFormat;
+					m_stride = vid_frame_desc.iStride;
+					m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+
+					m_bInitDecoder = true; // set init decoder value
+					m_eventInitDecoder.Set(); // set event about decoder was initialized
+
+					return S_OK;
+				}
 			}
-			else
-			{
-				if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
-			}
-		}*/
+		}
+#endif
 
 		CC_COLOR_FMT fmt = CCF_BGR32; // set output format
 
