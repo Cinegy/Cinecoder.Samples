@@ -452,7 +452,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 	{
 		const int buffer_id = frame_no % m_EncPar.QueueSize;
 
-		const DWORD t0 = GetTickCount();
+		auto t0 = system_clock::now();
 
 		HANDLE hh[2] = { m_evCancel, m_Queue[buffer_id].evFilled };
 
@@ -495,9 +495,10 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		if(FAILED(hr))
 		  break;
 
-		DWORD t1 = GetTickCount();
-	
-		int wait_time = 42 - (t1 - t0);
+		auto t1 = system_clock::now();
+		auto dT = duration_cast<milliseconds>(t1 - t0).count();
+
+		int wait_time = 42 - dT;
 //		if (wait_time > 1)
 //			Sleep(wait_time);
 

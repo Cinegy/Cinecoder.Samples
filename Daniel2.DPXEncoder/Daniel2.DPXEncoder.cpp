@@ -47,9 +47,7 @@ int _tmain(int argc, TCHAR *argv[])
 	if (FAILED(hr = Test.AssignParameters(par)))
 		return print_error(hr, "EncoderTest.AssignParameters error");
 
-	LARGE_INTEGER t0, freq;
-	QueryPerformanceFrequency(&freq);
-	QueryPerformanceCounter(&t0);
+	auto t0 = system_clock::now();
 
 	ENCODER_STATS s0 = {};
 
@@ -65,15 +63,14 @@ int _tmain(int argc, TCHAR *argv[])
 			break;
 		}
 
-		Sleep(500);
+		std::this_thread::sleep_for(500ms);
 
-		LARGE_INTEGER t1;
-		QueryPerformanceCounter(&t1);
+		auto t1 = system_clock::now();
 
 		ENCODER_STATS s1 = {};
 		Test.GetCurrentEncodingStats(&s1);
 
-		double dT = double(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+		double dT = duration<double>(t1 - t0).count();
 
 		double Rspeed = (s1.NumBytesRead - s0.NumBytesRead) / (1024.0*1024.0*1024.0) / dT;
 		double Wspeed = (s1.NumBytesWritten - s0.NumBytesWritten) / (1024.0*1024.0*1024.0) / dT;

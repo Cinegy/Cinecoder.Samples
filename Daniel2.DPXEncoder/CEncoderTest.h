@@ -4,6 +4,9 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <chrono>
+using namespace std::chrono;
+using namespace std::chrono_literals;
 
 #include "Cinecoder_h.h"
 
