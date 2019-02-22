@@ -11,8 +11,6 @@
 #include "../common/cinecoder_error_handler.h"
 
 #include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
 
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *encpar);
 int print_help();
@@ -356,7 +354,8 @@ int check_for_dpx(TEST_PARAMS *par)
 
 	int dpx_w = SWAP4(BE,dpx_hdr.image.pixels_per_line);
 	int dpx_h = SWAP4(BE,dpx_hdr.image.lines_per_image);
-	int dpx_size = filelength(fileno(hFile));// SWAP4(BE, dpx_hdr.file.file_size);
+	fseek(hFile, 0, SEEK_END);
+	int dpx_size = ftell(hFile);// SWAP4(BE, dpx_hdr.file.file_size);
 	int dpx_offset = SWAP4(BE,dpx_hdr.file.data_offset);
 	int dpx_padding = SWAP4(BE, dpx_hdr.image.channel[0].line_padding);
 
