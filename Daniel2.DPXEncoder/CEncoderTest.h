@@ -9,6 +9,8 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
+#include <stdlib.h>
+
 #include "Cinecoder_h.h"
 
 struct TEST_PARAMS

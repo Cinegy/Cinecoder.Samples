@@ -201,8 +201,11 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		if(par.DeviceId >= 0)
 			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes);
 		else
+#ifdef _WIN32
 			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes, MEM_COMMIT, PAGE_READWRITE);
-		
+#else
+			descr.pBuffer = (LPBYTE)aligned_alloc(m_FrameSizeInBytes, 4096);
+#endif		
 		if (!descr.pBuffer)
 			return print_error(E_OUTOFMEMORY, "Can't allocate an input frame buffer for the queue");
 		
@@ -240,8 +243,11 @@ int	CEncoderTest::Close()
 		if(m_EncPar.DeviceId >= 0)
 			cuda_free_pinned(descr.pBuffer);
 		else
+#ifdef _WIN32
 			VirtualFree(descr.pBuffer, 0, MEM_RELEASE);
-
+#else
+			free(descr.pBuffer);
+#endif
 		m_Queue.pop_back();
 	}
 
