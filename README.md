@@ -30,6 +30,6 @@ memory, and then upload into the GPU for encoding. It also uses several reading 
 ### Dependencies
 
 We rely on a few packages we publish on NuGet for these samples:
-[Cinecoder](https://www.nuget.org/packages/Cinecoder/) - core library for encoding / decoding
-[Cinecoder Multiplexers](https://www.nuget.org/packages/Cinecoder.Plugin.Multiplexers/) - extension library for MXF manipulation
-[Cinecoder GPU Plugins](https://www.nuget.org/packages/Cinecoder.Plugin.GpuCodecs/) - extension library for enabling NVENC / NVDEC and Intel QuickSync accelerated operations
+* [Cinecoder](https://www.nuget.org/packages/Cinecoder/) - core library for encoding / decoding
+* [Cinecoder Multiplexers](https://www.nuget.org/packages/Cinecoder.Plugin.Multiplexers/) - extension library for MXF manipulation
+* [Cinecoder GPU Plugins](https://www.nuget.org/packages/Cinecoder.Plugin.GpuCodecs/) - extension library for enabling NVENC / NVDEC and Intel QuickSync accelerated operations
