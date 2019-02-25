@@ -138,10 +138,9 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 			return print_error(hr, "Index writer cb 2 assignment error");
 
 		// making a proper filename for the video index
-		TCHAR drive[MAX_PATH], dir[MAX_PATH], name[MAX_PATH], ext[MAX_PATH];
-		_tsplitpath(par.OutputFileName, drive, dir, name, ext);
 		TCHAR mvx_name[MAX_PATH];
-		_tmakepath(mvx_name, drive, dir, name, _T(".mvx"));
+		_tcscpy(mvx_name, par.OutputFileName);
+		_tcscpy(_tcsrchr(mvx_name, '.'), _T(".mvx"));
 
 		if (FAILED(hr = pIndexFileWriter->Create(mvx_name)))
 			return print_error(hr, "Output file creation error");
