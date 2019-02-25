@@ -116,6 +116,7 @@ private:
 		LPBYTE	pBuffer;
 		waiter	*evVacant;
 		waiter	*evFilled;
+		bool	bOccupied;
 		bool	bFilled;
 		HRESULT	hrReadStatus;
 	};

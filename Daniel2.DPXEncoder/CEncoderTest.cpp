@@ -354,7 +354,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
     
     for(;;)
     {
-    	int frame_no = m_ReadFrameCounter++;
+		int frame_no = m_ReadFrameCounter++;
     	int buffer_id = frame_no % m_EncPar.QueueSize;
 
 		pbufdescr = &m_Queue[buffer_id];
@@ -362,8 +362,10 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		{
 			std::unique_lock<std::mutex> lck(pbufdescr->evVacant->mutex);
 
-			if(!m_bCancel && pbufdescr->bFilled)
+			while(!m_bCancel && pbufdescr->bOccupied)
 				pbufdescr->evVacant->cond_var.wait(lck);
+
+			pbufdescr->bOccupied = true;
 		}
 
 		if(m_bCancel)
@@ -479,7 +481,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		{
 			std::unique_lock<std::mutex> lck(bufdescr.evFilled->mutex);
 
-			if(!m_bCancel && !bufdescr.bFilled)
+			while(!m_bCancel && !bufdescr.bFilled)
 				bufdescr.evFilled->cond_var.wait(lck);
 		}
 
@@ -536,6 +538,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 
 		std::unique_lock<std::mutex> lck(bufdescr.evVacant->mutex);
 		bufdescr.bFilled = false;
+		bufdescr.bOccupied = false;
 		bufdescr.evVacant->cond_var.notify_one();
 	}
 
