@@ -78,7 +78,7 @@ int _tmain(int argc, TCHAR *argv[])
 		double Wfps = (s1.NumFramesWritten - s0.NumFramesWritten) / dT;
 		int queue_fill_level = s1.NumFramesRead - s1.NumFramesWritten;
 
-		printf("\rframe # %d, Q=%d [%-*.*s], R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps) ",
+		fprintf(stderr, "\rframe # %d, Q=%d [%-*.*s], R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps) ",
 			s1.NumFramesRead,
 			queue_fill_level,
 			par.QueueSize, queue_fill_level,
@@ -94,12 +94,12 @@ int _tmain(int argc, TCHAR *argv[])
 
 	if (FAILED(hr))
 	{
-		printf("Test failed, code = %08lxh\n", Test.GetResult());
+		return print_error(hr, "Test failed");
 	}
 	else
 	{
 		Test.GetCurrentEncodingStats(&s0);
-		printf("\nDone.\nFrames processed: %ld\n", s0.NumFramesWritten);
+		printf("\nDone.\nFrames processed: %d\n", s0.NumFramesWritten);
 	}
 
 	Test.Close();
@@ -111,7 +111,7 @@ int _tmain(int argc, TCHAR *argv[])
 int print_error(int err, const char *str)
 //---------------------------------------------------------------
 {
-	fprintf(stderr, "Error: %s%s", str?str:"", str?", ":"");
+	fprintf(stderr, "\nError: %s%s", str?str:"", str?", ":"");
 
 	if(SUCCEEDED(err))
 	{
@@ -311,11 +311,9 @@ void ConvertFileMask(const TCHAR *mask, TCHAR *buf)
 int check_for_dpx(TEST_PARAMS *par)
 //---------------------------------------------------------------
 {
-    TCHAR ext[MAX_PATH] = {};
-	_tsplitpath(par->InputFileName, NULL, NULL, NULL, ext);
+    const TCHAR *ext = _tcsrchr(par->InputFileName, '.');
 
-	bool is_dpx= _tcsicmp(ext, _T(".DPX")) == 0;
-	if(!is_dpx)
+	if(!ext || _tcsicmp(ext, _T(".DPX")) != 0)
 		return S_FALSE;
 
 	static TCHAR dpx_filemask[MAX_PATH] = {}; // hack! par->InputFileName can point to this buffer

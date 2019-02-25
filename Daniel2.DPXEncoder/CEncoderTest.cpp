@@ -79,7 +79,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 
 	if (_tcsicmp(pext, _T(".MXF")) == 0)
 	{
-		if(FAILED(hr = m_pFactory->LoadPlugin(_T("Cinecoder.Plugin.Multiplexers.dll"))))
+		if(FAILED(hr = m_pFactory->LoadPlugin(LPTSTR(_T("Cinecoder.Plugin.Multiplexers.dll")))))
 			return print_error(hr, "Error loading the MXF plugin");
 
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_OP1A_Multiplexer, IID_ICC_Multiplexer, (IUnknown**)&m_pMuxer)))
@@ -198,12 +198,12 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		extern void *cuda_alloc_pinned(size_t size);
 
 		if(par.DeviceId >= 0)
-			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes);
+			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes + 4096);
 		else
 #ifdef _WIN32
-			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes, MEM_COMMIT, PAGE_READWRITE);
+			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes + 4096, MEM_COMMIT, PAGE_READWRITE);
 #else
-			descr.pBuffer = (LPBYTE)aligned_alloc(m_FrameSizeInBytes, 4096);
+			descr.pBuffer = (LPBYTE)aligned_alloc(m_FrameSizeInBytes + 4096, 4096);
 #endif		
 		if (!descr.pBuffer)
 			return print_error(E_OUTOFMEMORY, "Can't allocate an input frame buffer for the queue");
@@ -349,24 +349,25 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
     if(!m_EncPar.SetOfFiles)
 	    hFile = open_file(m_EncPar.InputFileName, !m_EncPar.UseCache);
 
+	BufferDescr *pbufdescr = nullptr;
+    
     for(;;)
     {
     	int frame_no = m_ReadFrameCounter++;
     	int buffer_id = frame_no % m_EncPar.QueueSize;
 
-		BufferDescr &bufdescr = m_Queue[buffer_id];
+		pbufdescr = &m_Queue[buffer_id];
 
 		{
-			std::unique_lock<std::mutex> lck(bufdescr.evVacant->mutex);
+			std::unique_lock<std::mutex> lck(pbufdescr->evVacant->mutex);
 
-			if(!m_bCancel && bufdescr.bFilled)
-				bufdescr.evVacant->cond_var.wait(lck);
+			if(!m_bCancel && pbufdescr->bFilled)
+				pbufdescr->evVacant->cond_var.wait(lck);
 		}
 
 		if(m_bCancel)
 		{
-			bufdescr.hrReadStatus = S_FALSE;
-			bufdescr.evFilled->cond_var.notify_one();
+			pbufdescr->hrReadStatus = S_FALSE;
 			break;
 		}
 
@@ -374,8 +375,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		{
 			if (frame_no > m_EncPar.StopFrameNum && !m_EncPar.Looped)
 			{
-				bufdescr.hrReadStatus = S_FALSE;
-				bufdescr.evFilled->cond_var.notify_one();
+				pbufdescr->hrReadStatus = S_FALSE;
 				break;
 			}
 
@@ -392,7 +392,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 	    	TCHAR filename[MAX_PATH];
 	    	_stprintf(filename, m_EncPar.InputFileName, frame_no);
 	        hFile = open_file(filename, !m_EncPar.UseCache);
-
+//	        _ftprintf(stderr, _T("openfile(%s)=%d\n"), filename, hFile);
 	    }
 	    else
 	    {
@@ -401,21 +401,20 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		}
 
 		DWORD r;
-		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
+		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
 		{
 #ifdef _WIN32
-			bufdescr.hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
+			pbufdescr->hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
 #else
-			bufdescr.hrReadStatus = HRESULT(errno | 0x80000000u);
+			pbufdescr->hrReadStatus = HRESULT(errno | 0x80000000u);
+//	        _ftprintf(stderr, _T("readfile(%d,%p,%d)=%d\n"), hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, r);
 #endif
-			bufdescr.evFilled->cond_var.notify_one();
 			break;
 		}
 
 		if (r != m_FrameSizeInBytes)
 		{
-			bufdescr.hrReadStatus = S_FALSE;
-			bufdescr.evFilled->cond_var.notify_one();
+			pbufdescr->hrReadStatus = S_FALSE;
 			break;
 		}
 
@@ -429,16 +428,19 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 		m_Stats.NumBytesRead += m_FrameSizeInBytes;
 		m_StatsLock.unlock();
 
-		std::unique_lock<std::mutex> lck(bufdescr.evFilled->mutex);
-		bufdescr.bFilled = true;
-		bufdescr.evFilled->cond_var.notify_one();
+		std::unique_lock<std::mutex> lck(pbufdescr->evFilled->mutex);
+		pbufdescr->bFilled = true;
+		pbufdescr->evFilled->cond_var.notify_one();
 	}
 
-	HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+	// we have to notify the waiter
+	pbufdescr->evFilled->cond_var.notify_one();
+
+	HRESULT hr = pbufdescr->hrReadStatus;
 
     if(FAILED(hr))
     {
-      fprintf(stderr, "Reading thread %d: error %08lx\n", thread_idx, hr);
+      fprintf(stderr, "Reading thread %d: error %08x\n", thread_idx, hr);
       m_bCancel = true;
     }
 
@@ -495,7 +497,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		CC_VIDEO_FRAME_DESCR frame_descr = {};
 		frame_descr.cFormat = m_EncPar.InputColorFormat;
 		frame_descr.iStride = m_EncPar.InputPitch;
-
+#if 0
 		com_ptr<ICC_VideoConsumerExtAsync> pEncAsync;
 		if (SUCCEEDED(m_pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync)))
 		{
@@ -507,6 +509,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 				nullptr);
 		}
 		else
+#endif
 		{
 			hr = m_pEncoder->AddScaleFrame(
 				bufdescr.pBuffer + m_EncPar.DataOffset,
