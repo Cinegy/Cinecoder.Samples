@@ -10,7 +10,7 @@
 class C_Unknown : public IUnknown
 {
 private:
-  std::atomic<int> m_cRef;
+  std::atomic<ULONG> m_cRef;
 
 public:
   C_Unknown(void) : m_cRef(0)

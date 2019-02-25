@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <iostream>
 #include "CEncoderTest.h"
 
 //---------------------------------------------------------------
@@ -36,13 +37,13 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = m_pFactory->AssignLicense(par.CompanyName, par.LicenseKey)))
 		return print_error(hr, "AssignLicense error");
 
-	CComPtr<ICC_VideoEncoder> pEncoder;
+	com_ptr<ICC_VideoEncoder> pEncoder;
 	CLSID clsidEnc = par.DeviceId >= 0 ? CLSID_CC_DanielVideoEncoder_CUDA : CLSID_CC_DanielVideoEncoder;
 	if (FAILED(hr = m_pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder)))
 		return print_error(hr, "Encoder creation error");
 
 	// We use ICC_DanielVideoEncoderSettings_CUDA settings for both encoders because _CUDA settings class is an inheritor of ICC_DanielVideoEncoderSettings.
-	CComPtr<ICC_DanielVideoEncoderSettings_CUDA> pSettings;
+	com_ptr<ICC_DanielVideoEncoderSettings_CUDA> pSettings;
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_DanielVideoEncoderSettings_CUDA, IID_ICC_DanielVideoEncoderSettings_CUDA, (IUnknown**)&pSettings)))
 		return print_error(hr, "Encoder settings creation error");
 
@@ -65,7 +66,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = pEncoder->Init(pSettings)))
 		return print_error(hr, "Encoder initialization error");
 
-	CComPtr<ICC_OutputFile> pFileWriter;
+	com_ptr<ICC_OutputFile> pFileWriter;
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pFileWriter)))
 		return print_error(hr, "File writer creation error");
 
@@ -73,12 +74,12 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if(!pext || (_tcsicmp(pext, _T(".DN2")) != 0 && _tcsicmp(pext, _T(".MXF")) != 0))
 		return print_error(E_FAIL, "Unrecognized output file type");
 
-	if (FAILED(hr = pFileWriter->Create(CComBSTR(par.OutputFileName))))
+	if (FAILED(hr = pFileWriter->Create(const_cast<TCHAR*>(par.OutputFileName))))
 		return print_error(hr, "Output file creation error");
 
 	if (_tcsicmp(pext, _T(".MXF")) == 0)
 	{
-		if(FAILED(hr = m_pFactory->LoadPlugin(CComBSTR("Cinecoder.Plugin.Multiplexers.dll"))))
+		if(FAILED(hr = m_pFactory->LoadPlugin(LPTSTR(_T("Cinecoder.Plugin.Multiplexers.dll")))))
 			return print_error(hr, "Error loading the MXF plugin");
 
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_OP1A_Multiplexer, IID_ICC_Multiplexer, (IUnknown**)&m_pMuxer)))
@@ -87,7 +88,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		if(FAILED(m_pMuxer->Init(NULL)))
 			return print_error(hr, "Failed to init the MXF multipexer");
 
-		CComPtr<ICC_MXF_MultiplexerPinSettings> pMuxPinSettings;
+		com_ptr<ICC_MXF_MultiplexerPinSettings> pMuxPinSettings;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MXF_MultiplexerPinSettings, IID_ICC_MXF_MultiplexerPinSettings, (IUnknown**)&pMuxPinSettings)))
 			return print_error(hr, "Failed to create MXF multipexer pin settings");
 
@@ -98,7 +99,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		pMuxPinSettings->put_BitRate(par.Bitrate);
 		pMuxPinSettings->put_FrameRate(MK_RATIONAL(par.FrameRateN, par.FrameRateD));
 
-		CComPtr<ICC_ByteStreamConsumer> pMuxerPin;
+		com_ptr<ICC_ByteStreamConsumer> pMuxerPin;
 		if(FAILED(hr = m_pMuxer->CreatePin(pMuxPinSettings, &pMuxerPin)))
 			return print_error(hr, "Failed to create MXF Multiplexer Daniel2 PIN");
 
@@ -115,7 +116,7 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	}
 	else // write with index file
 	{
-		CComPtr<ICC_IndexWriter> pIndexWriter;
+		com_ptr<ICC_IndexWriter> pIndexWriter;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_MvxWriter, IID_ICC_IndexWriter, (IUnknown**)&pIndexWriter)))
 			return print_error(hr, "Index writer creation error");
 
@@ -125,24 +126,23 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 		if (FAILED(hr = pIndexWriter->put_OutputCallback(pFileWriter)))
 			return print_error(hr, "Index writer cb assignment error");
 
-		CComPtr<ICC_OutputFile> pIndexFileWriter;
+		com_ptr<ICC_OutputFile> pIndexFileWriter;
 		if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pIndexFileWriter)))
 			return print_error(hr, "Index file writer creation error");
 
-		CComQIPtr<ICC_DataWriterEx> pDataWriterEx = pIndexFileWriter;
-		if (!pDataWriterEx)
+		com_ptr<ICC_DataWriterEx> pDataWriterEx;
+		if(FAILED(hr = pIndexFileWriter->QueryInterface(IID_ICC_DataWriterEx, (void**)&pDataWriterEx)))
 			return print_error(hr, "ICC_File has no ICC_DataWriterEx interface");
 
 		if (FAILED(hr = pIndexWriter->put_IndexCallback(pDataWriterEx)))
 			return print_error(hr, "Index writer cb 2 assignment error");
 
 		// making a proper filename for the video index
-		TCHAR drive[MAX_PATH], dir[MAX_PATH], name[MAX_PATH], ext[MAX_PATH];
-		_tsplitpath(par.OutputFileName, drive, dir, name, ext);
 		TCHAR mvx_name[MAX_PATH];
-		_tmakepath(mvx_name, drive, dir, name, _T(".mvx"));
+		_tcscpy(mvx_name, par.OutputFileName);
+		_tcscpy(_tcsrchr(mvx_name, '.'), _T(".mvx"));
 
-		if (FAILED(hr = pIndexFileWriter->Create(CComBSTR(mvx_name))))
+		if (FAILED(hr = pIndexFileWriter->Create(mvx_name)))
 			return print_error(hr, "Output file creation error");
 	}
 
@@ -198,24 +198,24 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		extern void *cuda_alloc_pinned(size_t size);
 
 		if(par.DeviceId >= 0)
-			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes);
+			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes + 4096);
 		else
-			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes, MEM_COMMIT, PAGE_READWRITE);
-		
+#ifdef _WIN32
+			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes + 4096, MEM_COMMIT, PAGE_READWRITE);
+#else
+			descr.pBuffer = (LPBYTE)aligned_alloc(m_FrameSizeInBytes + 4096, 4096);
+#endif		
 		if (!descr.pBuffer)
 			return print_error(E_OUTOFMEMORY, "Can't allocate an input frame buffer for the queue");
 		
-		descr.evVacant = CreateEvent(NULL, FALSE, TRUE, NULL);
-		descr.evFilled = CreateEvent(NULL, FALSE, FALSE, NULL);
+		descr.evVacant = new waiter();
+		descr.evFilled = new waiter();
+		descr.bFilled  = false;
 		
 		m_Queue.push_back(descr);
 	}
 
-	m_evCancel = CreateEvent(NULL, TRUE, FALSE, NULL);
-
 	m_EncPar = par;
-
-	memset((void*)&m_Stats, 0, sizeof(m_Stats));
 
 	return S_OK;
 }
@@ -234,20 +234,21 @@ int	CEncoderTest::Close()
 	{
 		BufferDescr descr = m_Queue.back();
 
-		CloseHandle(descr.evVacant);
-		CloseHandle(descr.evFilled);
+		delete descr.evVacant;
+		delete descr.evFilled;
 
 		extern void cuda_free_pinned(void *ptr);
 
 		if(m_EncPar.DeviceId >= 0)
 			cuda_free_pinned(descr.pBuffer);
 		else
+#ifdef _WIN32
 			VirtualFree(descr.pBuffer, 0, MEM_RELEASE);
-
+#else
+			free(descr.pBuffer);
+#endif
 		m_Queue.pop_back();
 	}
-
-	CloseHandle(m_evCancel);
 
 	m_pEncoder->Done(CC_TRUE);
 
@@ -265,14 +266,15 @@ int	CEncoderTest::Close()
 int		CEncoderTest::Run()
 //---------------------------------------------------------------
 {
-	m_hEncodingThread = CreateThread(NULL, 0, encoding_thread_proc, this, 0, NULL);
-
-	for (int i = 0; i < m_EncPar.NumReadThreads; i++)
-		m_hReadingThreads.push_back(CreateThread(NULL, 0, reading_thread_proc, this, 0, NULL));
-
 	m_NumActiveThreads = m_EncPar.NumReadThreads + 1;
 	m_ReadFrameCounter = 0;
-	m_hrResult = S_OK;
+	m_hrResult         = S_OK;
+
+	m_EncodingThread = std::thread(encoding_thread_proc, this);
+
+	for (int i = 0; i < m_EncPar.NumReadThreads; i++)
+		m_ReadingThreads.push_back(std::thread(reading_thread_proc, this, i));
+
 	m_bRunning = TRUE;
 
 	return S_OK;
@@ -298,17 +300,17 @@ int		CEncoderTest::Cancel()
 	if (!m_bRunning)
 		return S_FALSE;
 
-	SetEvent(m_evCancel);
+	m_bCancel = true;
 
-	WaitForSingleObject(m_hEncodingThread, INFINITE);
-	WaitForMultipleObjects((DWORD)m_hReadingThreads.size(), &m_hReadingThreads[0], TRUE, INFINITE);
+	for(size_t i = 0; i < m_ReadingThreads.size(); i++)
+		m_Queue[i].evVacant->cond_var.notify_one();
 
-	for(size_t i = 0; i < m_hReadingThreads.size(); i++)
-		CloseHandle(m_hReadingThreads[i]);
+	for(size_t i = 0; i < m_ReadingThreads.size(); i++)
+		m_ReadingThreads[i].join();
 
-	m_hReadingThreads.clear();
+	m_ReadingThreads.clear();
 
-	CloseHandle(m_hEncodingThread);
+	m_EncodingThread.join();
 
 	m_bRunning = false;
 
@@ -320,55 +322,63 @@ int		CEncoderTest::GetCurrentEncodingStats(ENCODER_STATS *pStats)
 //---------------------------------------------------------------
 {
 	if (!pStats) return E_POINTER;
-	
-	pStats->NumFramesRead    = m_Stats.NumFramesRead;
-	pStats->NumFramesWritten = m_Stats.NumFramesWritten;
-	pStats->NumBytesRead     = InterlockedExchangeAdd64(&m_Stats.NumBytesRead, 0);
-	pStats->NumBytesWritten  = InterlockedExchangeAdd64(&m_Stats.NumBytesWritten, 0);
+
+	m_StatsLock.lock();
+	*pStats = m_Stats;
+	m_StatsLock.unlock();
 
 	return S_OK;
 }
 
 //---------------------------------------------------------------
-DWORD	WINAPI	CEncoderTest::reading_thread_proc(void *p)
+DWORD	CEncoderTest::reading_thread_proc(void *p, int thread_idx)
 //---------------------------------------------------------------
 {
-	return reinterpret_cast<CEncoderTest*>(p)->ReadingThreadProc();
+	return reinterpret_cast<CEncoderTest*>(p)->ReadingThreadProc(thread_idx);
 }
 
+#include "filework.h"
+
 //---------------------------------------------------------------
-DWORD 	CEncoderTest::ReadingThreadProc()
+DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 //---------------------------------------------------------------
 {
-    fprintf(stderr, "Reading thread %lu is started\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %d is started\n", thread_idx);
 
-    HANDLE hFile = INVALID_HANDLE_VALUE;
+    file_handle_t hFile = INVALID_FILE_HANDLE;
 
     if(!m_EncPar.SetOfFiles)
-	    hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
+	    hFile = open_file(m_EncPar.InputFileName, !m_EncPar.UseCache);
 
-    //if(hFile == INVALID_HANDLE_VALUE)
-    //	return fprintf(stderr, "Thread %d: error %08xh opening the file\n", GetCurrentThreadId(), HRESULT_FROM_WIN32(GetLastError())), HRESULT_FROM_WIN32(GetLastError());
-
+	BufferDescr *pbufdescr = nullptr;
+    
     for(;;)
     {
-    	int frame_no = InterlockedExchangeAdd(&m_ReadFrameCounter, 1);
+		int frame_no = m_ReadFrameCounter++;
     	int buffer_id = frame_no % m_EncPar.QueueSize;
 
-		BufferDescr &bufdescr = m_Queue[buffer_id];
+		pbufdescr = &m_Queue[buffer_id];
 
-    	HANDLE hh[2] = { m_evCancel, bufdescr.evVacant };
+		{
+			std::unique_lock<std::mutex> lck(pbufdescr->evVacant->mutex);
 
-		DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
-		if(wait_result == WAIT_OBJECT_0)
+			while(!m_bCancel && pbufdescr->bOccupied)
+				pbufdescr->evVacant->cond_var.wait(lck);
+
+			pbufdescr->bOccupied = true;
+		}
+
+		if(m_bCancel)
+		{
+			pbufdescr->hrReadStatus = S_FALSE;
 			break;
+		}
 
 		if (m_EncPar.StopFrameNum >= 0)
 		{
 			if (frame_no > m_EncPar.StopFrameNum && !m_EncPar.Looped)
 			{
-				bufdescr.hrReadStatus = S_FALSE;
-				SetEvent(bufdescr.evFilled);
+				pbufdescr->hrReadStatus = S_FALSE;
 				break;
 			}
 
@@ -384,60 +394,69 @@ DWORD 	CEncoderTest::ReadingThreadProc()
 	    {
 	    	TCHAR filename[MAX_PATH];
 	    	_stprintf(filename, m_EncPar.InputFileName, frame_no);
-	        hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
-
+	        hFile = open_file(filename, !m_EncPar.UseCache);
+//	        _ftprintf(stderr, _T("openfile(%s)=%d\n"), filename, hFile);
 	    }
 	    else
 	    {
 			LONGLONG offset = frame_no * LONGLONG(m_FrameSizeInBytes);
-			SetFilePointer(hFile, (LONG)offset, ((LONG*)&offset)+1, FILE_BEGIN);
+			set_file_pos(hFile, offset);
 		}
 
 		DWORD r;
-		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r, NULL))
+		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
 		{
-			bufdescr.hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
-			SetEvent(bufdescr.evFilled);
+#ifdef _WIN32
+			pbufdescr->hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
+#else
+			pbufdescr->hrReadStatus = HRESULT(errno | 0x80000000u);
+//	        _ftprintf(stderr, _T("readfile(%d,%p,%d)=%d\n"), hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, r);
+#endif
 			break;
 		}
 
 		if (r != m_FrameSizeInBytes)
 		{
-			bufdescr.hrReadStatus = S_FALSE;
-			SetEvent(bufdescr.evFilled);
+			pbufdescr->hrReadStatus = S_FALSE;
 			break;
 		}
 
 	    if(m_EncPar.SetOfFiles)
 	    {
-	    	CloseHandle(hFile);
-	    	hFile = INVALID_HANDLE_VALUE;
+	    	close_file(hFile);
 	    }
 
-		InterlockedIncrement(&m_Stats.NumFramesRead);
-		InterlockedAdd64(&m_Stats.NumBytesRead, m_FrameSizeInBytes);
+		m_StatsLock.lock();
+		m_Stats.NumFramesRead++;
+		m_Stats.NumBytesRead += m_FrameSizeInBytes;
+		m_StatsLock.unlock();
 
-		SetEvent(bufdescr.evFilled);
+		std::unique_lock<std::mutex> lck(pbufdescr->evFilled->mutex);
+		pbufdescr->bFilled = true;
+		pbufdescr->evFilled->cond_var.notify_one();
 	}
 
-	HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+	// we have to notify the waiter
+	pbufdescr->evFilled->cond_var.notify_one();
+
+	HRESULT hr = pbufdescr->hrReadStatus;
 
     if(FAILED(hr))
     {
-      fprintf(stderr, "Reading thread %lu: error %08lx\n", GetCurrentThreadId(), hr);
-      SetEvent(m_evCancel);
+      fprintf(stderr, "Reading thread %d: error %08x\n", thread_idx, hr);
+      m_bCancel = true;
     }
 
-    CloseHandle(hFile);
-    InterlockedDecrement(&m_NumActiveThreads);
+    close_file(hFile);
+    m_NumActiveThreads--;
 
-    fprintf(stderr, "Reading thread %lu is done\n", GetCurrentThreadId());
+    fprintf(stderr, "Reading thread %d is done\n", thread_idx);
 
     return hr;
 }
 
 //---------------------------------------------------------------
-DWORD	WINAPI	CEncoderTest::encoding_thread_proc(void *p)
+DWORD	CEncoderTest::encoding_thread_proc(void *p)
 //---------------------------------------------------------------
 {
 	return reinterpret_cast<CEncoderTest*>(p)->EncodingThreadProc();
@@ -449,46 +468,54 @@ DWORD	CEncoderTest::EncodingThreadProc()
 {
 	HRESULT hr = S_OK;
 
-	fprintf(stderr, "Encoding thread %lu is started\n", GetCurrentThreadId());
+	fprintf(stderr, "Encoding thread is started\n");
 
 	for(int frame_no = 0; ; frame_no++)
 	{
 		const int buffer_id = frame_no % m_EncPar.QueueSize;
 
-		const DWORD t0 = GetTickCount();
+		BufferDescr &bufdescr = m_Queue[buffer_id];
 
-		HANDLE hh[2] = { m_evCancel, m_Queue[buffer_id].evFilled };
+		auto t0 = system_clock::now();
 
-		const DWORD wait_result = WaitForMultipleObjects(2, hh, FALSE, INFINITE);
-		if (wait_result == WAIT_OBJECT_0)
+		{
+			std::unique_lock<std::mutex> lck(bufdescr.evFilled->mutex);
+
+			while(!m_bCancel && !bufdescr.bFilled)
+				bufdescr.evFilled->cond_var.wait(lck);
+		}
+
+		if (m_bCancel)
 		{
 			m_hrResult = S_FALSE;// E_ABORT;
 			break;
 		}
 
-		if (m_Queue[buffer_id].hrReadStatus != S_OK)
+		if (bufdescr.hrReadStatus != S_OK)
 		{
-			m_hrResult = m_Queue[buffer_id].hrReadStatus;
+			m_hrResult = bufdescr.hrReadStatus;
 			break;
 		}
 
 		CC_VIDEO_FRAME_DESCR frame_descr = {};
 		frame_descr.cFormat = m_EncPar.InputColorFormat;
 		frame_descr.iStride = m_EncPar.InputPitch;
-
-		if (CComQIPtr<ICC_VideoConsumerExtAsync> pEncAsync = m_pEncoder)
+#if 0
+		com_ptr<ICC_VideoConsumerExtAsync> pEncAsync;
+		if (SUCCEEDED(m_pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync)))
 		{
 			hr = pEncAsync->AddScaleFrameAsync(
-				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
-				CComPtr<IUnknown>(),
+				com_ptr<IUnknown>(),
 				nullptr);
 		}
 		else
+#endif
 		{
 			hr = m_pEncoder->AddScaleFrame(
-				m_Queue[buffer_id].pBuffer + m_EncPar.DataOffset,
+				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				NULL);
@@ -497,19 +524,26 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		if(FAILED(hr))
 		  break;
 
-		DWORD t1 = GetTickCount();
-	
-		int wait_time = 42 - (t1 - t0);
+		auto t1 = system_clock::now();
+		auto dT = duration_cast<milliseconds>(t1 - t0).count();
+
+//		int wait_time = 42 - dT;
 //		if (wait_time > 1)
 //			Sleep(wait_time);
 
-		InterlockedIncrement(&m_Stats.NumFramesWritten);
-		InterlockedAdd64(&m_Stats.NumBytesWritten, 0);
-		SetEvent(m_Queue[buffer_id].evVacant);
+		m_StatsLock.lock();
+		m_Stats.NumFramesWritten++;
+		m_Stats.NumBytesWritten += 0;
+		m_StatsLock.unlock();
+
+		std::unique_lock<std::mutex> lck(bufdescr.evVacant->mutex);
+		bufdescr.bFilled = false;
+		bufdescr.bOccupied = false;
+		bufdescr.evVacant->cond_var.notify_one();
 	}
 
-	InterlockedDecrement(&m_NumActiveThreads);
-	fprintf(stderr, "Encoding thread %lu is done\n", GetCurrentThreadId());
+	m_NumActiveThreads --;
+ 	fprintf(stderr, "Encoding thread is done\n");
 
 	return hr;
 }

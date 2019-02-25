@@ -20,3 +20,4 @@ configure_file(${Cinecoder_LIBRARY_DIRS}/libd2cudalib.so ${CMAKE_RUNTIME_OUTPUT_
 add_subdirectory(SimpleVideoDecoder)
 add_subdirectory(SimpleVideoEncoder)
 add_subdirectory(Daniel2.SimplePlayerGL)
+add_subdirectory(Daniel2.DPXEncoder)

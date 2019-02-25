@@ -10,6 +10,8 @@
 #include "../common/cinecoder_license_string.h"
 #include "../common/cinecoder_error_handler.h"
 
+#include <stdio.h>
+
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *encpar);
 int print_help();
 int check_for_dpx(TEST_PARAMS *encpar);
@@ -45,9 +47,7 @@ int _tmain(int argc, TCHAR *argv[])
 	if (FAILED(hr = Test.AssignParameters(par)))
 		return print_error(hr, "EncoderTest.AssignParameters error");
 
-	LARGE_INTEGER t0, freq;
-	QueryPerformanceFrequency(&freq);
-	QueryPerformanceCounter(&t0);
+	auto t0 = system_clock::now();
 
 	ENCODER_STATS s0 = {};
 
@@ -63,15 +63,14 @@ int _tmain(int argc, TCHAR *argv[])
 			break;
 		}
 
-		Sleep(500);
+		std::this_thread::sleep_for(500ms);
 
-		LARGE_INTEGER t1;
-		QueryPerformanceCounter(&t1);
+		auto t1 = system_clock::now();
 
 		ENCODER_STATS s1 = {};
 		Test.GetCurrentEncodingStats(&s1);
 
-		double dT = double(t1.QuadPart - t0.QuadPart) / freq.QuadPart;
+		double dT = duration<double>(t1 - t0).count();
 
 		double Rspeed = (s1.NumBytesRead - s0.NumBytesRead) / (1024.0*1024.0*1024.0) / dT;
 		double Wspeed = (s1.NumBytesWritten - s0.NumBytesWritten) / (1024.0*1024.0*1024.0) / dT;
@@ -79,7 +78,7 @@ int _tmain(int argc, TCHAR *argv[])
 		double Wfps = (s1.NumFramesWritten - s0.NumFramesWritten) / dT;
 		int queue_fill_level = s1.NumFramesRead - s1.NumFramesWritten;
 
-		printf("\rframe # %d, Q=%d [%-*.*s], R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps) ",
+		fprintf(stderr, "\rframe # %d, Q=%d [%-*.*s], R = %.3f GB/s (%.3f fps), W = %.3f GB/s (%.3f fps) ",
 			s1.NumFramesRead,
 			queue_fill_level,
 			par.QueueSize, queue_fill_level,
@@ -95,12 +94,12 @@ int _tmain(int argc, TCHAR *argv[])
 
 	if (FAILED(hr))
 	{
-		printf("Test failed, code = %08lxh\n", Test.GetResult());
+		return print_error(hr, "Test failed");
 	}
 	else
 	{
 		Test.GetCurrentEncodingStats(&s0);
-		printf("\nDone.\nFrames processed: %ld\n", s0.NumFramesWritten);
+		printf("\nDone.\nFrames processed: %d\n", s0.NumFramesWritten);
 	}
 
 	Test.Close();
@@ -112,7 +111,7 @@ int _tmain(int argc, TCHAR *argv[])
 int print_error(int err, const char *str)
 //---------------------------------------------------------------
 {
-	fprintf(stderr, "Error: %s%s", str?str:"", str?", ":"");
+	fprintf(stderr, "\nError: %s%s", str?str:"", str?", ":"");
 
 	if(SUCCEEDED(err))
 	{
@@ -124,9 +123,13 @@ int print_error(int err, const char *str)
 	}
 	else
 	{
+#ifdef _WIN32
 		char buf[1024] = {0};
 		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, buf, sizeof(buf), 0);
 		fprintf(stderr, "code=%08xh (%s)\n", err, buf);
+#else
+		fprintf(stderr, "code=%08xh (%s)\n", err, strerror(err & ~0x80000000u));
+#endif
 	}
 
 	return err;
@@ -304,15 +307,18 @@ void ConvertFileMask(const TCHAR *mask, TCHAR *buf)
 
 #include "dpx_file.h"
 
+constexpr uint32_t fourcc( char const p[5] )
+{
+  return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+}
+
 //---------------------------------------------------------------
 int check_for_dpx(TEST_PARAMS *par)
 //---------------------------------------------------------------
 {
-    TCHAR ext[MAX_PATH] = {};
-	_tsplitpath(par->InputFileName, NULL, NULL, NULL, ext);
+    const TCHAR *ext = _tcsrchr(par->InputFileName, '.');
 
-	bool is_dpx= _tcsicmp(ext, _T(".DPX")) == 0;
-	if(!is_dpx)
+	if(!ext || _tcsicmp(ext, _T(".DPX")) != 0)
 		return S_FALSE;
 
 	static TCHAR dpx_filemask[MAX_PATH] = {}; // hack! par->InputFileName can point to this buffer
@@ -321,18 +327,18 @@ int check_for_dpx(TEST_PARAMS *par)
 	TCHAR dpx_filename[MAX_PATH] = {};
 	_stprintf(dpx_filename, dpx_filemask, par->StartFrameNum);
 
-    HANDLE hFile = CreateFile(dpx_filename, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-	if(hFile == INVALID_HANDLE_VALUE)
-		return _ftprintf(stderr, _T("Can't open '%s'"), dpx_filename), HRESULT_FROM_WIN32(GetLastError());
+    FILE *hFile = _tfopen(dpx_filename, _T("rb"));
+	if(!hFile)
+		return _ftprintf(stderr, _T("Can't open '%s'"), dpx_filename), -1;
 
-    dpx_file_header_t dpx_hdr; DWORD r;
-    if(!ReadFile(hFile, &dpx_hdr, sizeof(dpx_hdr), &r, NULL))
-    	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), HRESULT_FROM_WIN32(GetLastError());
+    dpx_file_header_t dpx_hdr;
+    if(fread(&dpx_hdr, 1, sizeof(dpx_hdr), hFile) != sizeof(dpx_hdr))
+    	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), -2;
 
-    if(dpx_hdr.file.magic_num != 'XPDS' && dpx_hdr.file.magic_num != 'SDPX')
+    if(dpx_hdr.file.magic_num != fourcc("XPDS") && dpx_hdr.file.magic_num != fourcc("SDPX"))
     	return _ftprintf(stderr, _T("Wrong MAGIC_NUMBER")), E_UNEXPECTED;
 
-	bool BE = dpx_hdr.file.magic_num == 'XPDS';
+	bool BE = dpx_hdr.file.magic_num == fourcc("XPDS");
 
 	if(dpx_hdr.file.encryption_key != 0xFFFFFFFF)
 		return _ftprintf(stderr, _T("DPX: encryped, key=%08x. Unsupported."), SWAP4(BE, dpx_hdr.file.encryption_key)), E_UNEXPECTED;
@@ -352,7 +358,8 @@ int check_for_dpx(TEST_PARAMS *par)
 
 	int dpx_w = SWAP4(BE,dpx_hdr.image.pixels_per_line);
 	int dpx_h = SWAP4(BE,dpx_hdr.image.lines_per_image);
-	int dpx_size = GetFileSize(hFile, NULL);// SWAP4(BE, dpx_hdr.file.file_size);
+	fseek(hFile, 0, SEEK_END);
+	int dpx_size = ftell(hFile);// SWAP4(BE, dpx_hdr.file.file_size);
 	int dpx_offset = SWAP4(BE,dpx_hdr.file.data_offset);
 	int dpx_padding = SWAP4(BE, dpx_hdr.image.channel[0].line_padding);
 
@@ -396,6 +403,8 @@ int check_for_dpx(TEST_PARAMS *par)
 	par->FileSize = dpx_size;
 	par->DataOffset = dpx_offset;
 	par->ChromaFormat = CC_CHROMA_RGBA;
+
+    fclose(hFile);
 
 	return S_OK;
 }
