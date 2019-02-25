@@ -307,6 +307,11 @@ void ConvertFileMask(const TCHAR *mask, TCHAR *buf)
 
 #include "dpx_file.h"
 
+constexpr uint32_t fourcc( char const p[5] )
+{
+  return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+}
+
 //---------------------------------------------------------------
 int check_for_dpx(TEST_PARAMS *par)
 //---------------------------------------------------------------
@@ -330,10 +335,10 @@ int check_for_dpx(TEST_PARAMS *par)
     if(fread(&dpx_hdr, 1, sizeof(dpx_hdr), hFile) != sizeof(dpx_hdr))
     	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), -2;
 
-    if(dpx_hdr.file.magic_num != 'XPDS' && dpx_hdr.file.magic_num != 'SDPX')
+    if(dpx_hdr.file.magic_num != fourcc("XPDS") && dpx_hdr.file.magic_num != fourcc("SDPX"))
     	return _ftprintf(stderr, _T("Wrong MAGIC_NUMBER")), E_UNEXPECTED;
 
-	bool BE = dpx_hdr.file.magic_num == 'XPDS';
+	bool BE = dpx_hdr.file.magic_num == fourcc("XPDS");
 
 	if(dpx_hdr.file.encryption_key != 0xFFFFFFFF)
 		return _ftprintf(stderr, _T("DPX: encryped, key=%08x. Unsupported."), SWAP4(BE, dpx_hdr.file.encryption_key)), E_UNEXPECTED;
