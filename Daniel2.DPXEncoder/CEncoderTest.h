@@ -89,8 +89,8 @@ private:
 	BOOL m_bRunning;
 	HRESULT	m_hrResult{};
 
-	std::atomic<LONG> m_NumActiveThreads{};
-	std::atomic<LONG> m_ReadFrameCounter{};
+	std::atomic<int> m_NumActiveThreads{};
+	std::atomic<int> m_ReadFrameCounter{};
 
 	std::vector<std::thread> m_ReadingThreads;
 	DWORD	ReadingThreadProc(int n);

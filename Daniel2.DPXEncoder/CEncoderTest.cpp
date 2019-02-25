@@ -266,14 +266,15 @@ int	CEncoderTest::Close()
 int		CEncoderTest::Run()
 //---------------------------------------------------------------
 {
+	m_NumActiveThreads = m_EncPar.NumReadThreads + 1;
+	m_ReadFrameCounter = 0;
+	m_hrResult         = S_OK;
+
 	m_EncodingThread = std::thread(encoding_thread_proc, this);
 
 	for (int i = 0; i < m_EncPar.NumReadThreads; i++)
 		m_ReadingThreads.push_back(std::thread(reading_thread_proc, this, i));
 
-	m_NumActiveThreads = m_EncPar.NumReadThreads + 1;
-	m_ReadFrameCounter = 0;
-	m_hrResult = S_OK;
 	m_bRunning = TRUE;
 
 	return S_OK;
