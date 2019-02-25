@@ -123,9 +123,13 @@ int print_error(int err, const char *str)
 	}
 	else
 	{
+#ifdef _WIN32
 		char buf[1024] = {0};
 		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, buf, sizeof(buf), 0);
 		fprintf(stderr, "code=%08xh (%s)\n", err, buf);
+#else
+		fprintf(stderr, "code=%08xh (%s)\n", err, strerror(err & ~0x80000000u));
+#endif
 	}
 
 	return err;
@@ -326,7 +330,7 @@ int check_for_dpx(TEST_PARAMS *par)
 
     dpx_file_header_t dpx_hdr;
     if(fread(&dpx_hdr, 1, sizeof(dpx_hdr), hFile) != sizeof(dpx_hdr))
-    	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), HRESULT_FROM_WIN32(GetLastError());
+    	return _ftprintf(stderr, _T("Can't read DPX header from '%s'"), dpx_filename), -2;
 
     if(dpx_hdr.file.magic_num != 'XPDS' && dpx_hdr.file.magic_num != 'SDPX')
     	return _ftprintf(stderr, _T("Wrong MAGIC_NUMBER")), E_UNEXPECTED;
