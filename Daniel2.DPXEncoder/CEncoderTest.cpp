@@ -336,19 +336,18 @@ DWORD	CEncoderTest::reading_thread_proc(void *p, int thread_idx)
 	return reinterpret_cast<CEncoderTest*>(p)->ReadingThreadProc(thread_idx);
 }
 
+#include "filework.h"
+
 //---------------------------------------------------------------
 DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 //---------------------------------------------------------------
 {
     fprintf(stderr, "Reading thread %d is started\n", thread_idx);
 
-    HANDLE hFile = INVALID_HANDLE_VALUE;
+    file_handle_t hFile = INVALID_FILE_HANDLE;
 
     if(!m_EncPar.SetOfFiles)
-	    hFile = CreateFile(m_EncPar.InputFileName, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
-
-    //if(hFile == INVALID_HANDLE_VALUE)
-    //	return fprintf(stderr, "Thread %d: error %08xh opening the file\n", GetCurrentThreadId(), HRESULT_FROM_WIN32(GetLastError())), HRESULT_FROM_WIN32(GetLastError());
+	    hFile = open_file(m_EncPar.InputFileName, !m_EncPar.UseCache);
 
     for(;;)
     {
@@ -392,19 +391,23 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 	    {
 	    	TCHAR filename[MAX_PATH];
 	    	_stprintf(filename, m_EncPar.InputFileName, frame_no);
-	        hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, m_EncPar.UseCache ? 0 : FILE_FLAG_NO_BUFFERING, NULL);
+	        hFile = open_file(filename, !m_EncPar.UseCache);
 
 	    }
 	    else
 	    {
 			LONGLONG offset = frame_no * LONGLONG(m_FrameSizeInBytes);
-			SetFilePointer(hFile, (LONG)offset, ((LONG*)&offset)+1, FILE_BEGIN);
+			set_file_pos(hFile, offset);
 		}
 
 		DWORD r;
-		if (hFile == INVALID_HANDLE_VALUE || !ReadFile(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r, NULL))
+		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, bufdescr.pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
 		{
+#ifdef _WIN32
 			bufdescr.hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
+#else
+			bufdescr.hrReadStatus = HRESULT(errno | 0x80000000u);
+#endif
 			bufdescr.evFilled->cond_var.notify_one();
 			break;
 		}
@@ -418,8 +421,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 
 	    if(m_EncPar.SetOfFiles)
 	    {
-	    	CloseHandle(hFile);
-	    	hFile = INVALID_HANDLE_VALUE;
+	    	close_file(hFile);
 	    }
 
 		m_StatsLock.lock();
@@ -440,7 +442,7 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
       m_bCancel = true;
     }
 
-    CloseHandle(hFile);
+    close_file(hFile);
     m_NumActiveThreads--;
 
     fprintf(stderr, "Reading thread %d is done\n", thread_idx);
