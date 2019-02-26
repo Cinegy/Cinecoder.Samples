@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.props')" />
+  <Import Project="..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -223,7 +224,8 @@ call get-external-libraries.bat</Command>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.targets')" />
     <Import Project="..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.targets')" />
-    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.targets')" />
+    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets')" />
+    <Import Project="..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.targets')" />
   </ImportGroup>
   <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
     <ItemGroup>
@@ -257,7 +259,9 @@ call get-external-libraries.bat</Command>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.7.28621\build\Cinecoder.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.3.20002\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.10.39744\build\Cinecoder.targets'))" />
   </Target>
 </Project>
