@@ -27,3 +27,9 @@ This project is designed to show off the raw speed of Daniel2 encoding, using C+
 Our approach with this project is to take an input file(s) and read directly into CUDA pinned
 memory, and then upload into the GPU for encoding. It also uses several reading threads and no reading cache to get the maximum possible reading bandwidth. On top-end cards, the PCI bus speed becomes the major limiting factor of the encoding process.
 
+### Dependencies
+
+We rely on a few packages we publish on NuGet for these samples:
+* [Cinecoder](https://www.nuget.org/packages/Cinecoder/) - core library for encoding / decoding
+* [Cinecoder Multiplexers](https://www.nuget.org/packages/Cinecoder.Plugin.Multiplexers/) - extension library for MXF manipulation
+* [Cinecoder GPU Plugins](https://www.nuget.org/packages/Cinecoder.Plugin.GpuCodecs/) - extension library for enabling NVENC / NVDEC and Intel QuickSync accelerated operations

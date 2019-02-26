@@ -1,7 +1,15 @@
 #pragma once
 
-#include <Windows.h>
 #include <vector>
+#include <thread>
+#include <condition_variable>
+#include <atomic>
+#include <mutex>
+#include <chrono>
+using namespace std::chrono;
+using namespace std::chrono_literals;
+
+#include <stdlib.h>
 
 #include "Cinecoder_h.h"
 
@@ -71,37 +79,49 @@ private:
 	int		CreateEncoder(const TEST_PARAMS&);
 
 	TEST_PARAMS	m_EncPar{};
-	CComPtr<ICC_VideoEncoder> m_pEncoder;
+	com_ptr<ICC_VideoEncoder> m_pEncoder;
 
-	CComPtr<ICC_ClassFactory> m_pFactory;
-	CComPtr<ICC_Multiplexer> m_pMuxer;
+	com_ptr<ICC_ClassFactory> m_pFactory;
+	com_ptr<ICC_Multiplexer> m_pMuxer;
 	
 	DWORD m_FrameSizeInBytes{};
 
 	BOOL m_bRunning;
 	HRESULT	m_hrResult{};
 
-	volatile LONG m_NumActiveThreads;
-	volatile LONG m_ReadFrameCounter{};
+	std::atomic<int> m_NumActiveThreads{};
+	std::atomic<int> m_ReadFrameCounter{};
 
-	std::vector<HANDLE>	m_hReadingThreads;
-	DWORD	ReadingThreadProc();
-	static	DWORD	WINAPI	reading_thread_proc(void *p);
+	std::vector<std::thread> m_ReadingThreads;
+	DWORD	ReadingThreadProc(int n);
+	static	DWORD	reading_thread_proc(void *p, int n);
 
-	HANDLE	m_hEncodingThread{};
+	std::thread	m_EncodingThread;
 	DWORD	EncodingThreadProc();
-	static	DWORD	WINAPI	encoding_thread_proc(void *p);
+	static	DWORD	encoding_thread_proc(void *p);
 
-	HANDLE	m_evCancel{};
+	volatile bool m_bCancel{};
+
+	struct waiter
+	{
+		std::mutex				mutex;
+		std::condition_variable	cond_var;
+	};
+
+	waiter	m_evDataLoaded;
+	waiter	m_evDataReleased;
 
 	struct BufferDescr
 	{
 		LPBYTE	pBuffer;
-		HANDLE	evVacant;
-		HANDLE	evFilled;
+		waiter	*evVacant;
+		waiter	*evFilled;
+		bool	bOccupied;
+		bool	bFilled;
 		HRESULT	hrReadStatus;
 	};
 	std::vector<BufferDescr> m_Queue;
 
-	volatile ENCODER_STATS	m_Stats{};
+	std::mutex m_StatsLock;
+	ENCODER_STATS	m_Stats{};
 };
