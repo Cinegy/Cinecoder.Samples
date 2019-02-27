@@ -40,7 +40,7 @@ typedef int file_handle_t;
 
 file_handle_t open_file(LPCTSTR filename, bool unbuffered)
 {
-    return open(filename, O_EXCL | (unbuffered ? O_DIRECT : 0), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH |  S_IWOTH);
+	return open(filename, O_BINARY | O_RDONLY | (unbuffered ? (O_DIRECT | O_SYNC): 0), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH |  S_IWOTH);
 }
 
 void close_file(file_handle_t &h)

@@ -197,13 +197,15 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		
 		extern void *cuda_alloc_pinned(size_t size);
 
+		int page_aligned_size = (m_FrameSizeInBytes + 4095) & ~4095;
+
 		if(par.DeviceId >= 0)
-			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(m_FrameSizeInBytes + 4096);
+			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(page_aligned_size);
 		else
 #ifdef _WIN32
-			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, m_FrameSizeInBytes + 4096, MEM_COMMIT, PAGE_READWRITE);
+			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, page_aligned_size, MEM_COMMIT, PAGE_READWRITE);
 #else
-			descr.pBuffer = (LPBYTE)aligned_alloc(m_FrameSizeInBytes + 4096, 4096);
+			descr.pBuffer = (LPBYTE)aligned_alloc(4096, page_aligned_size);
 #endif		
 		if (!descr.pBuffer)
 			return print_error(E_OUTOFMEMORY, "Can't allocate an input frame buffer for the queue");
@@ -466,8 +468,6 @@ DWORD	CEncoderTest::encoding_thread_proc(void *p)
 DWORD	CEncoderTest::EncodingThreadProc()
 //---------------------------------------------------------------
 {
-	HRESULT hr = S_OK;
-
 	fprintf(stderr, "Encoding thread is started\n");
 
 	for(int frame_no = 0; ; frame_no++)
@@ -504,7 +504,7 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		com_ptr<ICC_VideoConsumerExtAsync> pEncAsync;
 		if (SUCCEEDED(m_pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync)))
 		{
-			hr = pEncAsync->AddScaleFrameAsync(
+			m_hrResult = pEncAsync->AddScaleFrameAsync(
 				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
@@ -514,15 +514,12 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		else
 #endif
 		{
-			hr = m_pEncoder->AddScaleFrame(
+			m_hrResult = m_pEncoder->AddScaleFrame(
 				bufdescr.pBuffer + m_EncPar.DataOffset,
 				m_FrameSizeInBytes - m_EncPar.DataOffset,
 				&frame_descr,
 				NULL);
 		}
-
-		if(FAILED(hr))
-		  break;
 
 		auto t1 = system_clock::now();
 		auto dT = duration_cast<milliseconds>(t1 - t0).count();
@@ -540,10 +537,17 @@ DWORD	CEncoderTest::EncodingThreadProc()
 		bufdescr.bFilled = false;
 		bufdescr.bOccupied = false;
 		bufdescr.evVacant->cond_var.notify_one();
+
+	    if(FAILED(m_hrResult))
+	    {
+	      fprintf(stderr, "Encoding thread error %08x\n", m_hrResult);
+	      m_bCancel = true;
+	      break;
+	    }
 	}
 
 	m_NumActiveThreads --;
  	fprintf(stderr, "Encoding thread is done\n");
 
-	return hr;
+	return m_hrResult;
 }
