@@ -13,7 +13,6 @@ set(SOURCES
 
 set(HEADERS
 	stdafx.h
-	targetver.h
 	CEncoderTest.h
 	dpx_file.h
 )
