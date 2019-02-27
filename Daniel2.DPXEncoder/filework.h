@@ -1,4 +1,4 @@
-#if 0 /*def _WIN32*/
+#ifdef _WIN32
 typedef HANDLE file_handle_t;
 #define INVALID_FILE_HANDLE INVALID_HANDLE_VALUE
 
