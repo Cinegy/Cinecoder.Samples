@@ -1,4 +1,4 @@
-project (Daniel2.SimplePlayerGL)
+project (Daniel2_SimplePlayerGL)
 
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -35,4 +35,7 @@ link_directories("${Cinecoder_LIBRARY_DIRS}")
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl X11)
+target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl)
+if(UNIX AND NOT APPLE)
+target_link_libraries(${PROJECT_NAME} X11)
+endif()

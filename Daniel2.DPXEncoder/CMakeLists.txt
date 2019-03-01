@@ -1,4 +1,4 @@
-project (Daniel2.DPXEncoder)
+project (Daniel2_DPXEncoder)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -24,7 +24,9 @@ link_directories("${Cinecoder_LIBRARY_DIRS}")
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 #add_compile_options("-Wl,-rpath='$ORIGIN'")
+if(UNIX AND NOT APPLE)
 set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,-rpath='$ORIGIN'")
+endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${Cinecoder_LIBRARIES})

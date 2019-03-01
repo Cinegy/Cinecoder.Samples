@@ -204,6 +204,8 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		else
 #ifdef _WIN32
 			descr.pBuffer = (LPBYTE)VirtualAlloc(NULL, page_aligned_size, MEM_COMMIT, PAGE_READWRITE);
+#elif defined(__APPLE__)
+			descr.pBuffer = (LPBYTE)malloc(page_aligned_size);
 #else
 			descr.pBuffer = (LPBYTE)aligned_alloc(4096, page_aligned_size);
 #endif		

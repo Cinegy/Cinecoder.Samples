@@ -40,6 +40,9 @@ typedef int file_handle_t;
 
 file_handle_t open_file(LPCTSTR filename, bool unbuffered)
 {
+#ifdef __APPLE__
+#define O_DIRECT 0
+#endif
 	return open(filename, O_BINARY | O_RDONLY | (unbuffered ? (O_DIRECT | O_SYNC): 0), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH |  S_IWOTH);
 }
 
