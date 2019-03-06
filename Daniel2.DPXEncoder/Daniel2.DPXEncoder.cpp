@@ -154,7 +154,7 @@ int print_help()
 		"  inputfile  - a single raw filename or a wildcard for an image sequence\n"
 		"  outputfile - the output filename (.MXF or .DN2)\n"
 		"\n"
-		"  /raw=t:WxH - the color type, can be one of {yuy2,v210}, W=width, H=height\n"
+		"  /raw=t:WxH - the color type, can be one of {yuy2,uyvy,v210,rgb30}, W=width, H=height\n"
 		"  /fps=#     - the frame rate (i.e. 25, 29.97, [60], etc)\n"
 		"  /start=#   - the number of first frame to encode ([0])\n"
 		"  /stop=#    - the number of last frame to encode\n"
@@ -212,12 +212,14 @@ int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *par)
 	{
 		if (0 == _tcsnicmp(argv[i], _T("/raw="), 5))
 		{
-				 if (0 == _tcsnicmp(argv[i]+5, _T("YUY2:"), 5))	par->InputColorFormat = CCF_YUY2;
-			else if (0 == _tcsnicmp(argv[i]+5, _T("UYVY:"), 5))	par->InputColorFormat = CCF_UYVY;
-			else if (0 == _tcsnicmp(argv[i]+5, _T("V210:"), 5))	par->InputColorFormat = CCF_V210;
-			else return _ftprintf(stderr, _T("Unknown /raw color format: %4.4s"), argv[i]+5), -i;
+			int wxh_offs = 0;
+				 if (0 == _tcsnicmp(argv[i]+5, _T("YUY2:"),  5)) { par->InputColorFormat = CCF_YUY2;  wxh_offs = 10; }
+			else if (0 == _tcsnicmp(argv[i]+5, _T("UYVY:"),  5)) { par->InputColorFormat = CCF_UYVY;  wxh_offs = 10; }
+			else if (0 == _tcsnicmp(argv[i]+5, _T("V210:"),  5)) { par->InputColorFormat = CCF_V210;  wxh_offs = 10; }
+			else if (0 == _tcsnicmp(argv[i]+5, _T("RGB30:"), 6)) { par->InputColorFormat = CCF_RGB30; wxh_offs = 11; }
+			else return _ftprintf(stderr, _T("Unknown /raw color format: %s"), argv[i]+5), -i;
 
-			if (_stscanf_s(argv[i] + 10, _T("%dx%d"), &par->Width, &par->Height) != 2)
+			if (_stscanf_s(argv[i] + wxh_offs, _T("%dx%d"), &par->Width, &par->Height) != 2)
 				return _ftprintf(stderr, _T("incorrect /raw frame size specification: %s"), argv[i]+10), -i;
 		}
 		else if (0 == _tcsncmp(argv[i], _T("/fps="), 5))
@@ -369,7 +371,7 @@ int check_for_dpx(TEST_PARAMS *par)
 		switch (bits)
 		{
 		case 10: 
-			par->InputColorFormat = BE ? CCF_A2RGB30_BE : CCF_A2RGB30;
+			par->InputColorFormat = BE ? CCF_RGB30X2_BE : CCF_RGB30X2;
 			par->InputPitch = dpx_w * 32 / 8 + dpx_padding;
 			break;
 		case 12:

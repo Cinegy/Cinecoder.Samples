@@ -182,6 +182,7 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 
 	case CCF_RGB30:
 		m_FrameSizeInBytes = par.Height * par.Width * 4;
+		break;
 
 	case CCF_RGB48:
 		m_FrameSizeInBytes = par.Height * par.Width * 6;
