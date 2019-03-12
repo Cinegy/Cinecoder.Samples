@@ -7,7 +7,9 @@
 #include <tchar.h>
 
 #include <conio.h>
+#ifdef __LINUX__
 #include <malloc.h>
+#endif
 
 //#include <windows.h>
 

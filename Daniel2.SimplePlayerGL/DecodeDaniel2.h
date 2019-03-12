@@ -88,6 +88,10 @@ private:
 	int InitValues();
 	int DestroyValues();
 
+#if defined(__WIN32__)
+	HRESULT LoadPlugin(const char* pluginDLL);
+#endif
+
 private:
 	virtual ULONG STDMETHODCALLTYPE AddRef(void) { return 2; }
 	virtual ULONG STDMETHODCALLTYPE Release(void) { return 1; }

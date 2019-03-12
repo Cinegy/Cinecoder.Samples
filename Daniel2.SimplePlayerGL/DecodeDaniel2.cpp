@@ -190,6 +190,27 @@ void DecodeDaniel2::UnmapFrame(C_Block* pBlock)
 	}
 }
 
+#if defined(__WIN32__)
+HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
+{
+	char strCinecoder[] = "Cinecoder.dll";
+	char strPath[MAX_PATH] = { 0 };
+	GetModuleFileNameA(GetModuleHandleA(strCinecoder), strPath, MAX_PATH);
+	std::string strPluginDLL(strPath);
+	std::size_t found = strPluginDLL.find(strCinecoder);
+	if (found != std::string::npos)
+	{
+		strPluginDLL.erase(found);
+		strPluginDLL += pluginDLL;
+	}
+	else return E_FAIL;
+
+
+	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR(strPluginDLL.c_str());
+	return m_piFactory->LoadPlugin(plugin_filename_str); // no error here
+}
+#endif
+
 int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 {
 	HRESULT hr = S_OK;
@@ -220,8 +241,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
 
 #if defined(__WIN32__)
-	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR("Cinecoder.Plugin.GpuCodecs.dll");
-	m_piFactory->LoadPlugin(plugin_filename_str); // no error here
+	LoadPlugin("Cinecoder.Plugin.GpuCodecs.dll");
 #endif
 
 //#ifdef _DEBUG
