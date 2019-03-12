@@ -148,15 +148,15 @@ namespace cinegy
 				if (ThreadExists())
 				{
 					m_evExit.Set();
-
-					if (m_thread && m_thread->joinable())
-					{
-						//m_thread->detach();
-						m_thread->join();
-					}
-
-					m_thread = nullptr;
 				}
+
+				if (m_thread && m_thread->joinable())
+				{
+					//m_thread->detach();
+					m_thread->join();
+				}
+
+				m_thread = nullptr;
 			}
 
 			bool ThreadExists(void)
