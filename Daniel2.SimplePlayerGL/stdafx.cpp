@@ -14,6 +14,11 @@ FTcudaMemcpy FUNC_CUDA(cudaMemcpy) = nullptr;
 FTcudaFree FUNC_CUDA(cudaFree) = nullptr;
 
 FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage) = nullptr;
+
+#if defined(__WIN32__)
+FTcudaGraphicsD3D11RegisterResource FUNC_CUDA(cudaGraphicsD3D11RegisterResource) = nullptr;
+#endif
+
 FTcudaGraphicsUnregisterResource FUNC_CUDA(cudaGraphicsUnregisterResource) = nullptr;
 
 FTcudaGraphicsMapResources FUNC_CUDA(cudaGraphicsMapResources) = nullptr;

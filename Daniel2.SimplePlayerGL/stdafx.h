@@ -57,7 +57,19 @@ using namespace cinegy::threading_std;
 	#endif
 #endif
 
+#if defined(__WIN32__) // use DirectX 11
+#include <d3d11.h>
+//#include <dxgi.h>
+
+#pragma comment(lib, "d3d11.lib")
+//#pragma comment(lib, "dxgi.lib")
+#endif
+
 #include "cudaDefines.h"
+
+#if defined(__WIN32__) // use CUDA convert library
+#include "CUDAConvertLib.h"
+#endif
 
 #define __vrcu \
 { \

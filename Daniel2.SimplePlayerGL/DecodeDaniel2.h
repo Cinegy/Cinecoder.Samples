@@ -18,6 +18,8 @@ private:
 	const char* m_strStreamType;
 
 	CC_FRAME_RATE m_FrameRate;
+	CC_CHROMA_FORMAT m_ChromaFormat;
+	DWORD m_BitDepth;
 
 	bool m_bProcess;
 	bool m_bPause;
@@ -44,6 +46,8 @@ private:
 	ULONGLONG m_llDuration;
 	ULONGLONG m_llTimeBase;
 	bool bIntraFormat;
+
+	C_Block pBlockYUY;
 
 public:
 	DecodeDaniel2();

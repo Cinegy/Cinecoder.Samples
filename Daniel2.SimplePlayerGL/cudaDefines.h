@@ -46,6 +46,9 @@ typedef cudaError_t(*FTcudaMemcpy)(void* dst, const void* src, size_t count, cud
 typedef cudaError_t(*FTcudaFree)(void *devPtr);
 
 typedef cudaError_t(*FTcudaGraphicsGLRegisterImage)(struct cudaGraphicsResource **resource, unsigned int image, unsigned int target, unsigned int flags);
+#if defined(__WIN32__)
+typedef cudaError_t(*FTcudaGraphicsD3D11RegisterResource)(struct cudaGraphicsResource **resource, ID3D11Resource *pD3DResource, unsigned int flags);
+#endif
 typedef cudaError_t(*FTcudaGraphicsUnregisterResource)(cudaGraphicsResource_t resource);
 typedef cudaError_t(*FTcudaGraphicsMapResources)(int count, cudaGraphicsResource_t *resources, cudaStream_t stream);
 typedef cudaError_t(*FTcudaGraphicsUnmapResources)(int count, cudaGraphicsResource_t *resources, cudaStream_t stream);
@@ -62,6 +65,9 @@ extern FTcudaMemcpy FUNC_CUDA(cudaMemcpy);
 extern FTcudaFree FUNC_CUDA(cudaFree);
 
 extern FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage);
+#if defined(__WIN32__)
+extern FTcudaGraphicsD3D11RegisterResource FUNC_CUDA(cudaGraphicsD3D11RegisterResource);
+#endif
 extern FTcudaGraphicsUnregisterResource FUNC_CUDA(cudaGraphicsUnregisterResource);
 
 extern FTcudaGraphicsMapResources FUNC_CUDA(cudaGraphicsMapResources);
@@ -107,6 +113,11 @@ static int initCUDA()
 		FUNC_CUDA(cudaFree) = (FTcudaFree)GetProcAddress(hCuda, "cudaFree");
 
 		FUNC_CUDA(cudaGraphicsGLRegisterImage) = (FTcudaGraphicsGLRegisterImage)GetProcAddress(hCuda, "cudaGraphicsGLRegisterImage");
+
+#if defined(__WIN32__)
+		FUNC_CUDA(cudaGraphicsD3D11RegisterResource) = (FTcudaGraphicsD3D11RegisterResource)GetProcAddress(hCuda, "cudaGraphicsD3D11RegisterResource");
+#endif
+
 		FUNC_CUDA(cudaGraphicsUnregisterResource) = (FTcudaGraphicsUnregisterResource)GetProcAddress(hCuda, "cudaGraphicsUnregisterResource");
 
 		FUNC_CUDA(cudaGraphicsMapResources) = (FTcudaGraphicsMapResources)GetProcAddress(hCuda, "cudaGraphicsMapResources");

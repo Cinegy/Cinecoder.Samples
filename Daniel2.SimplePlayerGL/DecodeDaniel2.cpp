@@ -126,6 +126,14 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
+		if (strcmp(m_strStreamType, "Daniel") == 0) 
+		{
+			switch (m_ChromaFormat)
+			{
+			case CC_CHROMA_422:		printf("format        : CHROMA_422 / %d bits\n", m_BitDepth); break;
+			case CC_CHROMA_RGBA:	printf("format        : CHROMA_RGBA / %d bits\n", m_BitDepth); break;
+			}
+		}
 		printf("frame rate    : %g\n", (double)m_FrameRate.num / m_FrameRate.denom);
 		printf("output format : ");
 		switch (m_outputImageFormat)
@@ -308,7 +316,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	if (FAILED(hr = m_piFactory->CreateInstance(clsidDecoder, IID_ICC_VideoDecoder, (IUnknown**)&m_pVideoDec)))
 		return printf("DecodeDaniel2: CreateInstance failed!\n"), hr;
 
-	if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
+	/*if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
 	{
 		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
 
@@ -317,7 +325,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // need call put_TargetColorFormat for using GetFrame when using GPU-pipeline
 			return printf("DecodeDaniel2: put_TargetColorFormat failed!\n"), hr;
-	}
+	}*/
 
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
 	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
@@ -359,7 +367,7 @@ int DecodeDaniel2::DestroyDecoder()
 
 int DecodeDaniel2::InitValues()
 {
-	size_t iCountBlocks = 4; // set count of blocks in queue
+	size_t iCountBlocks = 5; // set count of blocks in queue
 
 	int res = 0;
 
@@ -477,8 +485,26 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				}
 				else
 				{
-					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-					__check_hr
+					if (ChromaFormat == CC_CHROMA_422)
+					{
+						ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(ColorCoefs.MC);
+
+						if (BitDepth == 8)
+						{
+							hr = pVideoProducer->GetFrame(CCF_YUY2, pBlockYUY.DataGPUPtr(), (DWORD)pBlockYUY.Size(), (INT)pBlockYUY.Pitch(), &cb); // get decoded frame from Cinecoder
+							h_convert_YUY2_to_RGBA32_BtB(pBlockYUY.DataGPUPtr(), pBlock->DataGPUPtr(), (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlockYUY.Pitch(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+						}
+						else if (BitDepth > 8)
+						{
+							hr = pVideoProducer->GetFrame(CCF_Y216, pBlockYUY.DataGPUPtr(), (DWORD)pBlockYUY.Size(), (INT)pBlockYUY.Pitch(), &cb); // get decoded frame from Cinecoder
+							h_convert_Y216_to_RGBA64_BtB(pBlockYUY.DataGPUPtr(), pBlock->DataGPUPtr(), (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlockYUY.Pitch(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+						}
+					}
+					else
+					{
+						hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+						__check_hr
+					}
 				}
 			}
 			else
@@ -565,6 +591,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 		CC_COLOR_FMT fmt = CCF_BGR32; // set output format
 
+		if (m_bUseCuda) fmt = CCF_RGB32;
+
+		if (BitDepth > 8) fmt = CCF_RGB64;
+
 #if defined(__APPLE__)
 		fmt = CCF_RGB32; // set output format
 #endif
@@ -588,6 +618,25 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
+
+			m_ChromaFormat = ChromaFormat;
+			m_BitDepth = BitDepth;
+
+			if (m_bUseCuda && ChromaFormat == CC_CHROMA_422)
+			{
+				size_t line_bytes = BitDepth == 8 ? 2 : 4;
+				pBlockYUY.Init(m_width, m_height, m_width * line_bytes, m_width * m_height * line_bytes, true);
+
+				// fix bug with RGBA / BGRA in Cinecoder
+				if (m_outputImageFormat == IMAGE_FORMAT_RGBA8BIT)
+					m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
+				else if (m_outputImageFormat == IMAGE_FORMAT_BGRA8BIT)
+					m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+				else if (m_outputImageFormat == IMAGE_FORMAT_RGBA16BIT)
+					m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
+				else if (m_outputImageFormat == IMAGE_FORMAT_BGRA16BIT)
+					m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			}
 
 			m_bInitDecoder = true; // set init decoder value
 			m_eventInitDecoder.Set(); // set event about decoder was initialized
