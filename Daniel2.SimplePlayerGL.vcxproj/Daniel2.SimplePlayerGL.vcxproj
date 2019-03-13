@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\CUDAConvertLib.1.0.0.3\build\CUDAConvertLib.props" Condition="Exists('..\packages\CUDAConvertLib.1.0.0.3\build\CUDAConvertLib.props')" />
   <Import Project="..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.0.161.169\build\Cinecoder.Plugin.Multiplexers.props')" />
@@ -191,8 +192,12 @@ call get-external-libraries.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\AudioSource.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\BaseGPURender.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\cudaDefines.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\CinecoderErrorHandler.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderDX.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderGL.h" />
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\SimplePlayerGL.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Block.h" />
@@ -203,8 +208,11 @@ call get-external-libraries.bat</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Daniel2.SimplePlayerGL\AudioSource.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\BaseGPURender.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\GPURenderDX.cpp" />
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\GPURenderGL.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Daniel2.SimplePlayerGL.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\stdafx.cpp">
@@ -259,5 +267,6 @@ call get-external-libraries.bat</Command>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.6.20008\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.12.53847\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\CUDAConvertLib.1.0.0.3\build\CUDAConvertLib.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDAConvertLib.1.0.0.3\build\CUDAConvertLib.props'))" />
   </Target>
 </Project>

@@ -19,6 +19,15 @@
     <ClCompile Include="..\Daniel2.SimplePlayerGL\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\BaseGPURender.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\GPURenderDX.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Daniel2.SimplePlayerGL\GPURenderGL.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h">
@@ -51,6 +60,18 @@
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\BaseGPURender.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderDX.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderGL.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Daniel2.SimplePlayerGL\SimplePlayerGL.h">
+      <Filter>Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -64,6 +85,9 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{63d18d0a-5a27-43d1-b717-434f1318009b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{fe0c5d45-6946-43d8-a3ad-40a3ba05f068}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
