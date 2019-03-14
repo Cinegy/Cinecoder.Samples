@@ -4,6 +4,7 @@
 #include "ReadFileDN2.h"
 
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
+enum BUFFER_FORMAT { BUFFER_FORMAT_RGBA32, BUFFER_FORMAT_RGBA64, BUFFER_FORMAT_YUY2, BUFFER_FORMAT_Y216 };
 
 class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
 {
@@ -14,6 +15,7 @@ private:
 	size_t m_height;
 	size_t m_stride;
 	IMAGE_FORMAT m_outputImageFormat;
+	BUFFER_FORMAT m_outputBufferFormat;
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
 
@@ -47,8 +49,6 @@ private:
 	ULONGLONG m_llTimeBase;
 	bool bIntraFormat;
 
-	C_Block pBlockYUY;
-
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();
@@ -61,6 +61,7 @@ public:
 	size_t GetImageWidth() { return m_width; }
 	size_t GetImageHeight() { return m_height; }
 	IMAGE_FORMAT GetImageFormat() { return m_outputImageFormat; }
+	BUFFER_FORMAT GetBufferFormat() { return m_outputBufferFormat; }
 
 	C_Block* MapFrame();
 	void  UnmapFrame(C_Block* pBlock);

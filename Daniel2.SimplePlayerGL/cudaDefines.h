@@ -45,6 +45,10 @@ typedef cudaError_t(*FTcudaMemset)(void *devPtr, int value, size_t count);
 typedef cudaError_t(*FTcudaMemcpy)(void* dst, const void* src, size_t count, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaFree)(void *devPtr);
 
+typedef cudaError_t(*FTcudaStreamCreate)(cudaStream_t *pStream);
+typedef cudaError_t(*FTcudaStreamDestroy)(cudaStream_t stream);
+typedef cudaError_t(*FTcudaStreamSynchronize)(cudaStream_t stream);
+
 typedef cudaError_t(*FTcudaGraphicsGLRegisterImage)(struct cudaGraphicsResource **resource, unsigned int image, unsigned int target, unsigned int flags);
 #if defined(__WIN32__)
 typedef cudaError_t(*FTcudaGraphicsD3D11RegisterResource)(struct cudaGraphicsResource **resource, ID3D11Resource *pD3DResource, unsigned int flags);
@@ -55,6 +59,7 @@ typedef cudaError_t(*FTcudaGraphicsUnmapResources)(int count, cudaGraphicsResour
 
 typedef cudaError_t(*FTcudaGraphicsSubResourceGetMappedArray)(cudaArray_t *array, cudaGraphicsResource_t resource, unsigned int arrayIndex, unsigned int mipLevel);
 typedef cudaError_t(*FTcudaMemcpy2DToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
+typedef cudaError_t(*FTcudaMemcpy2DToArrayAsync)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream);
 
 extern FTcudaGetLastError FUNC_CUDA(cudaGetLastError);
 extern FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString);
@@ -63,6 +68,10 @@ extern FTcudaMalloc FUNC_CUDA(cudaMalloc);
 extern FTcudaMemset FUNC_CUDA(cudaMemset);
 extern FTcudaMemcpy FUNC_CUDA(cudaMemcpy);
 extern FTcudaFree FUNC_CUDA(cudaFree);
+
+extern FTcudaStreamCreate FUNC_CUDA(cudaStreamCreate);
+extern FTcudaStreamDestroy FUNC_CUDA(cudaStreamDestroy);
+extern FTcudaStreamSynchronize FUNC_CUDA(cudaStreamSynchronize);
 
 extern FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage);
 #if defined(__WIN32__)
@@ -74,7 +83,9 @@ extern FTcudaGraphicsMapResources FUNC_CUDA(cudaGraphicsMapResources);
 extern FTcudaGraphicsUnmapResources FUNC_CUDA(cudaGraphicsUnmapResources);
 
 extern FTcudaGraphicsSubResourceGetMappedArray FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray);
+
 extern FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray);
+extern FTcudaMemcpy2DToArrayAsync FUNC_CUDA(cudaMemcpy2DToArrayAsync);
 
 #if defined(_WIN32)
 	#define CUDART32_FILENAME "cudart32_80.dll"
@@ -112,6 +123,10 @@ static int initCUDA()
 		FUNC_CUDA(cudaMemcpy) = (FTcudaMemcpy)GetProcAddress(hCuda, "cudaMemcpy");
 		FUNC_CUDA(cudaFree) = (FTcudaFree)GetProcAddress(hCuda, "cudaFree");
 
+		FUNC_CUDA(cudaStreamCreate) = (FTcudaStreamCreate)GetProcAddress(hCuda, "cudaStreamCreate");
+		FUNC_CUDA(cudaStreamDestroy) = (FTcudaStreamDestroy)GetProcAddress(hCuda, "cudaStreamDestroy");
+		FUNC_CUDA(cudaStreamSynchronize) = (FTcudaStreamSynchronize)GetProcAddress(hCuda, "cudaStreamSynchronize");
+
 		FUNC_CUDA(cudaGraphicsGLRegisterImage) = (FTcudaGraphicsGLRegisterImage)GetProcAddress(hCuda, "cudaGraphicsGLRegisterImage");
 
 #if defined(__WIN32__)
@@ -124,7 +139,9 @@ static int initCUDA()
 		FUNC_CUDA(cudaGraphicsUnmapResources) = (FTcudaGraphicsUnmapResources)GetProcAddress(hCuda, "cudaGraphicsUnmapResources");
 
 		FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) = (FTcudaGraphicsSubResourceGetMappedArray)GetProcAddress(hCuda, "cudaGraphicsSubResourceGetMappedArray");
+
 		FUNC_CUDA(cudaMemcpy2DToArray) = (FTcudaMemcpy2DToArray)GetProcAddress(hCuda, "cudaMemcpy2DToArray");
+		FUNC_CUDA(cudaMemcpy2DToArrayAsync) = (FTcudaMemcpy2DToArrayAsync)GetProcAddress(hCuda, "cudaMemcpy2DToArrayAsync");
 	}
 
 	if (!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) ||

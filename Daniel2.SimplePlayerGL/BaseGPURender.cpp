@@ -40,6 +40,7 @@ BaseGPURender::BaseGPURender() :
 	sizeSquare2 = sizeSquare / 2;
 
 	m_bCopyToTexture = true;
+	m_bShowTexture = true;
 	m_bDecoder = true;
 
 	m_bMaxFPS = false;
@@ -88,8 +89,8 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 	image_width = (unsigned int)m_decodeD2->GetImageWidth();
 	image_height = (unsigned int)m_decodeD2->GetImageHeight();
 
-	int iWinW = GetSystemMetrics(SM_CXSCREEN);
-	int iWinH = GetSystemMetrics(SM_CYSCREEN);
+	int iWinW = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	int iWinH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
 	float fKoeffDiv = (float)image_width / ((float)iWinW / 3.f);
 	// Correction start of window size using global height of monitor
@@ -334,6 +335,17 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 				printf("copy result to texture: on\n");
 			else
 				printf("copy result to texture: off\n");
+
+			break;
+		}
+		else if (wParam == 79) // "o"
+		{
+			m_bShowTexture = !m_bShowTexture;
+
+			if (m_bShowTexture)
+				printf("show texture: on\n");
+			else
+				printf("show texture: off\n");
 
 			break;
 		}
@@ -599,8 +611,21 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	cudaArray *texture_ptr;
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
+	
+	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = pBlock->iMatrixCoeff_YUYtoRGBA;
 
-	cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+	if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_RGBA32 || m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_RGBA64)
+	{
+		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+	}
+	else if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_YUY2)
+	{
+		h_convert_YUY2_to_RGBA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+	}
+	else if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_Y216)
+	{
+		h_convert_Y216_to_RGBA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+	}
 
 	// Unmap the resources
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu

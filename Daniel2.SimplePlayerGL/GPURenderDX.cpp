@@ -108,29 +108,6 @@ int GPURenderDX::RenderWindow()
 
 	//////////////////////////////////////
 
-	HRESULT hr = S_OK;
-
-	D3D11_BUFFER_DESC bd;
-	ID3D11Buffer* pVBufferQueue = nullptr;
-	D3D11_SUBRESOURCE_DATA vertexData = { 0 };
-
-	CheckChangeSwapChainSize();
-
-	//////////////////////////////////////
-	
-	// Set the viewport
-	D3D11_VIEWPORT viewport;
-	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = (float)window_width;
-	viewport.Height = (float)window_height;
-
-	m_pd3dDeviceContext->RSSetViewports(1, &viewport);
-	
-	//////////////////////////////////////
-
 	if (!m_bVSync && !m_bMaxFPS && m_bVSyncHand)
 	{
 		double timestep = 1000.0 / ValueFPS;
@@ -176,6 +153,29 @@ int GPURenderDX::RenderWindow()
 
 	//////////////////////////////////////
 
+	HRESULT hr = S_OK;
+
+	D3D11_BUFFER_DESC bd;
+	ID3D11Buffer* pVBufferQueue = nullptr;
+	D3D11_SUBRESOURCE_DATA vertexData = { 0 };
+
+	CheckChangeSwapChainSize();
+
+	//////////////////////////////////////
+
+	// Set the viewport
+	D3D11_VIEWPORT viewport;
+	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = (float)window_width;
+	viewport.Height = (float)window_height;
+
+	m_pd3dDeviceContext->RSSetViewports(1, &viewport);
+
+	//////////////////////////////////////
+
 	// Clear the back buffer to a deep blue
 	float fColorClear[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	m_pd3dDeviceContext->ClearRenderTargetView(m_pRenderTargetView, fColorClear);
@@ -210,8 +210,11 @@ int GPURenderDX::RenderWindow()
 	// Set shader resources
 	m_pd3dDeviceContext->PSSetShaderResources(0, 1, &m_pTexture_Srv);
 
-	// Draw texture
-	m_pd3dDeviceContext->Draw(4, 0);
+	if (m_bShowTexture)
+	{
+		// Draw texture
+		m_pd3dDeviceContext->Draw(4, 0);
+	}
 
 	if (m_bShowSlider) // draw slider
 	{
@@ -660,6 +663,14 @@ HRESULT GPURenderDX::CreateD3D11()
 
 	/////////////////////////////
 
+	if (m_bUseGPU)
+	{
+		// Register this texture with CUDA
+		cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource, m_pTexture, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
+	}
+
+	/////////////////////////////
+
 	// Alpha Blend State
 
 	D3D11_BLEND_DESC omDesc;
@@ -677,14 +688,6 @@ HRESULT GPURenderDX::CreateD3D11()
 	hr = m_pd3dDevice->CreateBlendState(&omDesc, &m_d3dBlendState); __hr(hr)
 
 	m_pd3dDeviceContext->OMSetBlendState(m_d3dBlendState, 0, 0xffffffff);
-
-	/////////////////////////////
-
-	if (m_bUseGPU)
-	{
-		// Register this texture with CUDA
-		cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource, m_pTexture, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
-	}
 
 	/////////////////////////////
 

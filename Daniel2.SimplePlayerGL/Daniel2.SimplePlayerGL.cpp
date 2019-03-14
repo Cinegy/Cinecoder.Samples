@@ -12,6 +12,7 @@ bool g_useDirectX11 = false;
 
 bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
+bool g_bShowTexture = false;
 
 #if defined(__WIN32__)
 #include "GPURenderGL.h"
@@ -106,6 +107,7 @@ void printHelp(void)
 	printf("'r':                on/off rotate image\n");
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
+	printf("'o':                on/off show texture\n");
 	printf("'d':                on/off decoder\n");
 	printf("'n':                on/off read file\n");
 	printf("'+'/'-':            change audio volume (+/- 10%%)\n");

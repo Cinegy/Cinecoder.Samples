@@ -173,35 +173,38 @@ int GPURenderGL::RenderWindow()
 	// Update GL settings
 	gpu_UpdateGLSettings();
 
-	// Draw texture
-	glBindTexture(GL_TEXTURE_2D, tex_result);
-	glBegin(GL_QUADS);
-
-	if (bRotate)
+	if (m_bShowTexture)
 	{
-		glTexCoord2f(0.0, 0.0);
-		glVertex2f(nCoordL, fTop);
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f(nCoordR, fTop);
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f(nCoordR, fBottom);
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f(nCoordL, fBottom);
-	}
-	else
-	{
-		glTexCoord2f(0.0, 0.0);
-		glVertex2f(nCoordL, fBottom);
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f(nCoordR, fBottom);
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f(nCoordR, fTop);
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f(nCoordL, fTop);
-	}
+		// Draw texture
+		glBindTexture(GL_TEXTURE_2D, tex_result);
+		glBegin(GL_QUADS);
 
-	glEnd();
-	glBindTexture(GL_TEXTURE_2D, 0);
+		if (bRotate)
+		{
+			glTexCoord2f(0.0, 0.0);
+			glVertex2f(nCoordL, fTop);
+			glTexCoord2f(1.0, 0.0);
+			glVertex2f(nCoordR, fTop);
+			glTexCoord2f(1.0, 1.0);
+			glVertex2f(nCoordR, fBottom);
+			glTexCoord2f(0.0, 1.0);
+			glVertex2f(nCoordL, fBottom);
+		}
+		else
+		{
+			glTexCoord2f(0.0, 0.0);
+			glVertex2f(nCoordL, fBottom);
+			glTexCoord2f(1.0, 0.0);
+			glVertex2f(nCoordR, fBottom);
+			glTexCoord2f(1.0, 1.0);
+			glVertex2f(nCoordR, fTop);
+			glTexCoord2f(0.0, 1.0);
+			glVertex2f(nCoordL, fTop);
+		}
+
+		glEnd();
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
 	if (m_bShowSlider) // draw slider
 	{
@@ -488,4 +491,3 @@ int GPURenderGL::gpu_UpdateGLSettings()
 
 	return 0;
 }
-

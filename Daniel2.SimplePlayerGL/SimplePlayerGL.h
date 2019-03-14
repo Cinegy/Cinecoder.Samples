@@ -448,35 +448,38 @@ void RenderWindow()
 	// Update GL settings
 	gpu_UpdateGLSettings();
 
-	// Draw texture
-	glBindTexture(GL_TEXTURE_2D, tex_result);
-	glBegin(GL_QUADS);
-
-	if (bRotate)
+	if (g_bShowTexture)
 	{
-		glTexCoord2f(0.0, 0.0);
-		glVertex2f(nCoordL, fTop);
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f(nCoordR, fTop);
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f(nCoordR, fBottom);
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f(nCoordL, fBottom);
-	}
-	else
-	{
-		glTexCoord2f(0.0, 0.0);
-		glVertex2f(nCoordL, fBottom);
-		glTexCoord2f(1.0, 0.0);
-		glVertex2f(nCoordR, fBottom);
-		glTexCoord2f(1.0, 1.0);
-		glVertex2f(nCoordR, fTop);
-		glTexCoord2f(0.0, 1.0);
-		glVertex2f(nCoordL, fTop);
-	}
+		// Draw texture
+		glBindTexture(GL_TEXTURE_2D, tex_result);
+		glBegin(GL_QUADS);
 
-	glEnd();
-	glDisable(GL_TEXTURE_2D);
+		if (bRotate)
+		{
+			glTexCoord2f(0.0, 0.0);
+			glVertex2f(nCoordL, fTop);
+			glTexCoord2f(1.0, 0.0);
+			glVertex2f(nCoordR, fTop);
+			glTexCoord2f(1.0, 1.0);
+			glVertex2f(nCoordR, fBottom);
+			glTexCoord2f(0.0, 1.0);
+			glVertex2f(nCoordL, fBottom);
+		}
+		else
+		{
+			glTexCoord2f(0.0, 0.0);
+			glVertex2f(nCoordL, fBottom);
+			glTexCoord2f(1.0, 0.0);
+			glVertex2f(nCoordR, fBottom);
+			glTexCoord2f(1.0, 1.0);
+			glVertex2f(nCoordR, fTop);
+			glTexCoord2f(0.0, 1.0);
+			glVertex2f(nCoordL, fTop);
+		}
+
+		glEnd();
+		glDisable(GL_TEXTURE_2D);
+	}
 
 	if (decodeAudio && decodeAudio->IsInitialize())
 		decodeAudio->PlayFrame(iCurPlayFrameNumber); // play audio
@@ -752,6 +755,18 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			printf("copy result to texture: on\n");
 		else
 			printf("copy result to texture: off\n");
+
+		break;
+	}
+
+	case 'o':
+	{
+		g_bShowTexture = !g_bShowTexture;
+
+		if (g_bShowTexture)
+			printf("show texture: on\n");
+		else
+			printf("show texture: off\n");
 
 		break;
 	}

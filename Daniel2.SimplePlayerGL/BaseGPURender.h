@@ -37,6 +37,7 @@ protected:
 	float sizeSquare2;
 
 	bool m_bCopyToTexture;
+	bool m_bShowTexture;
 	bool m_bDecoder;
 
 	bool m_bMaxFPS;
