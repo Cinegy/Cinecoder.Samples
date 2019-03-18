@@ -26,7 +26,7 @@ private:
 public:
 	size_t			iFrameNumber;
 
-	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA;
+	size_t			iMatrixCoeff_YUYtoRGBA;
 
 private:
 	std::vector<unsigned char> frame_buffer;

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "GPURenderDX.h"
 #include "DecodeDaniel2.h"
 
 // Cinecoder
@@ -487,7 +486,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				else
 				{
 					if (ChromaFormat == CC_CHROMA_422)
-						pBlock->iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(ColorCoefs.MC); // need for CC_CHROMA_422
+						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
 
 					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 					__check_hr

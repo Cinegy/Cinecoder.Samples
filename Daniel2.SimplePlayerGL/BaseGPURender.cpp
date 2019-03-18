@@ -612,7 +612,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
 	
-	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = pBlock->iMatrixCoeff_YUYtoRGBA;
+	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
 
 	IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
 	BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
