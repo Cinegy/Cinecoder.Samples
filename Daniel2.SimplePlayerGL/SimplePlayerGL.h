@@ -54,6 +54,8 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 #define GL_UNSIGNED_INT_2_10_10_10_REV 0x8368
 #define GL_UNSIGNED_INT_10_10_10_2 0x8036
 
+#define GL_TEXTURE_SWIZZLE_RGBA 0x8E46
+
 ///////////////////////////////////////////////////////
 
 #define TITLE_WINDOW_APP "TestApp OGL(Decode Daniel2)"

@@ -667,16 +667,19 @@ long DecodeDaniel2::ThreadProc()
 
 			if (m_bDecode)
 			{
+				CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
+
 				if (frame_number == 0 || frame->flags == 1) // seek
 				{
-					CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
-
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
-					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
+					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 				}
 				else
 				{
-					hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
+					if (bIntraFormat)
+						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
+					else
+						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
 				}
 
 				if (FAILED(hr)) // add coded frame to decoder
