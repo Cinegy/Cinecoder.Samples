@@ -582,7 +582,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #endif
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
 
-		if (m_bUseCuda)	fmt = BitDepth == 8 ? CCF_B8G8R8A8 : CCF_B16G16R16A16;
+		if (m_bUseCuda && ChromaFormat == CC_CHROMA_422) fmt = BitDepth == 8 ? CCF_YUY2 : CCF_Y216;
 
 		CC_BOOL bRes = CC_FALSE;
 		hr = pVideoProducer->IsFormatSupported(fmt, &bRes);
@@ -614,6 +614,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
+			else if (m_fmt == CCF_YUY2)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+			else if (m_fmt == CCF_Y216)
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
 
 			m_ChromaFormat = ChromaFormat;
 			m_BitDepth = BitDepth;
@@ -622,11 +626,6 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			if (m_bUseCuda && ChromaFormat == CC_CHROMA_422)
 			{
-				size_t line_bytes = BitDepth == 8 ? 2 : 4;
-				m_stride = m_width * line_bytes;
-
-				m_fmt = BitDepth == 8 ? CCF_YUY2 : CCF_Y216;
-				m_outputImageFormat = BitDepth == 8 ? IMAGE_FORMAT_RGBA8BIT : IMAGE_FORMAT_RGBA16BIT; // CUDAConvertLib convert to RGBA
 				m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_YUY2 : BUFFER_FORMAT_Y216; // need for convert to D3DX11/OpenGL texture
 			}
 

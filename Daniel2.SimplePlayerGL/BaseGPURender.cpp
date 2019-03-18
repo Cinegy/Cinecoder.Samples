@@ -614,17 +614,34 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	
 	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = pBlock->iMatrixCoeff_YUYtoRGBA;
 
-	if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_RGBA32 || m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_RGBA64)
+	IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
+	BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
+
+	if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 	{
 		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
 	}
-	else if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_YUY2)
+	else if (buffer_format == BUFFER_FORMAT_YUY2)
 	{
-		h_convert_YUY2_to_RGBA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_YUY2_to_RGBA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			h_convert_YUY2_to_BGRA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		}
 	}
-	else if (m_decodeD2->GetBufferFormat() == BUFFER_FORMAT_Y216)
+	else if (buffer_format == BUFFER_FORMAT_Y216)
 	{
-		h_convert_Y216_to_RGBA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		if (output_format == IMAGE_FORMAT_RGBA16BIT)
+		{
+			h_convert_Y216_to_RGBA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+		{
+			h_convert_Y216_to_BGRA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+		}
 	}
 
 	// Unmap the resources
