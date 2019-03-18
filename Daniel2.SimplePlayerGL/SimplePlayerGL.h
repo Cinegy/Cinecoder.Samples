@@ -275,7 +275,7 @@ void gpu_initGLBuffers()
 		g_internalFormat = GL_RGBA;
 		g_type = GL_UNSIGNED_BYTE;
 		//g_format = GL_RGBA;      // this one is 2x faster
-		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) g_format = GL_RGBA;
+		//if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) g_format = GL_RGBA;
 	}
 	else if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30) // R10G10B10A2 fromat
 	{
@@ -288,7 +288,7 @@ void gpu_initGLBuffers()
 	{
 		g_internalFormat = GL_RGBA16;
 		g_type = GL_UNSIGNED_SHORT;
-		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) g_format = GL_RGBA;
+		//if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) g_format = GL_RGBA;
 	}
 	else
 	{
@@ -296,6 +296,12 @@ void gpu_initGLBuffers()
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
+
+	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
+	{
+		GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
+		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 

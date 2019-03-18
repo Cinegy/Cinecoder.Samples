@@ -643,10 +643,27 @@ int BaseGPURender::ComputeFPS()
 	{
 		double fps = (fpsCount / (time / 1000.0f));
 
-		static wchar_t sTitle[256];
-		swprintf_s(sTitle, L"%s (%d x %d): %.0f fps", m_windowCaption.c_str(), window_width, window_height, fps);
+		static wchar_t cString[256];
+		std::wstring cTitle;
+		swprintf_s(cString, L"%s (%d x %d): %.0f fps", m_windowCaption.c_str(), window_width, window_height, fps);
 		
-		SetWindowText(m_hWnd, sTitle);
+		cTitle = cString;
+
+		IMAGE_FORMAT img_frm = m_decodeD2->GetImageFormat();
+		switch (img_frm)
+		{
+		case IMAGE_FORMAT_RGBA8BIT: cTitle += L" fmt=RGBA32"; break;
+		case IMAGE_FORMAT_BGRA8BIT: cTitle += L" fmt=BGRA32"; break;
+		case IMAGE_FORMAT_RGBA16BIT: cTitle += L" fmt=RGBA64"; break;
+		case IMAGE_FORMAT_BGRA16BIT: cTitle += L" fmt=BGRA64"; break;
+		case IMAGE_FORMAT_RGB30: cTitle += L" fmt=RGB30"; break;
+		default: break;
+		}
+
+		cTitle += L" cur_frm=";
+		cTitle += std::to_wstring((long long)iCurPlayFrameNumber); // print current frame number
+
+		SetWindowText(m_hWnd, cTitle.c_str());
 		
 		fpsCount = 0;
 		timer.StartTimer();

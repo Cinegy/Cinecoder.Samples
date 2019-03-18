@@ -487,25 +487,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				else
 				{
 					if (ChromaFormat == CC_CHROMA_422)
-					{
-						pBlock->iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(ColorCoefs.MC);
+						pBlock->iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(ColorCoefs.MC); // need for CC_CHROMA_422
 
-						if (BitDepth == 8)
-						{
-							hr = pVideoProducer->GetFrame(CCF_YUY2, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-							__check_hr
-						}
-						else if (BitDepth > 8)
-						{
-							hr = pVideoProducer->GetFrame(CCF_Y216, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-							__check_hr
-						}
-					}
-					else
-					{
-						hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-						__check_hr
-					}
+					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+					__check_hr
 				}
 			}
 			else
@@ -590,17 +575,27 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		}
 #endif
 
-		CC_COLOR_FMT fmt = CCF_BGR32; // set output format
-
-		if (m_bUseCuda) fmt = CCF_RGB32;
-
-		if (BitDepth > 8) fmt = CCF_RGB64;
+		CC_COLOR_FMT fmt = CCF_B8G8R8A8; // set output format
 
 #if defined(__APPLE__)
-		fmt = CCF_RGB32; // set output format
+		fmt = CCF_R8G8B8A8; // set output format
 #endif
+		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
+
+		if (m_bUseCuda)	fmt = BitDepth == 8 ? CCF_B8G8R8A8 : CCF_B16G16R16A16;
+
 		CC_BOOL bRes = CC_FALSE;
-		pVideoProducer->IsFormatSupported(fmt, &bRes);
+		hr = pVideoProducer->IsFormatSupported(fmt, &bRes);
+		if (!bRes || hr != S_OK)
+		{
+			static bool err = true;
+			if (err)
+			{
+				err = false;
+				return printf("IsFormatSupported failed!\n"), hr;
+			}
+		}
+
 		if (bRes)
 		{
 			DWORD iStride = 0;
@@ -609,13 +604,13 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 			m_fmt = fmt;
 
-			if (m_fmt == CCF_RGB32)
+			if (m_fmt == CCF_R8G8B8A8)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
-			else if (m_fmt == CCF_BGR32)
+			else if (m_fmt == CCF_B8G8R8A8)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
-			else if (m_fmt == CCF_RGB64)
+			else if (m_fmt == CCF_R16G16B16A16)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
-			else if (m_fmt == CCF_BGR64)
+			else if (m_fmt == CCF_B16G16R16A16)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
@@ -628,19 +623,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			if (m_bUseCuda && ChromaFormat == CC_CHROMA_422)
 			{
 				size_t line_bytes = BitDepth == 8 ? 2 : 4;
-
-				// fix bug with RGBA / BGRA in Cinecoder
-				if (m_outputImageFormat == IMAGE_FORMAT_RGBA8BIT)
-					m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
-				else if (m_outputImageFormat == IMAGE_FORMAT_BGRA8BIT)
-					m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
-				else if (m_outputImageFormat == IMAGE_FORMAT_RGBA16BIT)
-					m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
-				else if (m_outputImageFormat == IMAGE_FORMAT_BGRA16BIT)
-					m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
-
-				m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_YUY2 : BUFFER_FORMAT_Y216;
 				m_stride = m_width * line_bytes;
+
+				m_fmt = BitDepth == 8 ? CCF_YUY2 : CCF_Y216;
+				m_outputImageFormat = BitDepth == 8 ? IMAGE_FORMAT_RGBA8BIT : IMAGE_FORMAT_RGBA16BIT; // CUDAConvertLib convert to RGBA
+				m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_YUY2 : BUFFER_FORMAT_Y216; // need for convert to D3DX11/OpenGL texture
 			}
 
 			m_bInitDecoder = true; // set init decoder value

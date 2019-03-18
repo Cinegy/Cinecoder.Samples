@@ -12,7 +12,7 @@ bool g_useDirectX11 = false;
 
 bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
-bool g_bShowTexture = false;
+bool g_bShowTexture = true;
 
 #if defined(__WIN32__)
 #include "GPURenderGL.h"

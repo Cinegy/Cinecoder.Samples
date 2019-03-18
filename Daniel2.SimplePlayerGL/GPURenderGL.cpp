@@ -399,7 +399,7 @@ int GPURenderGL::gpu_InitGLBuffers()
 		internalFormat = GL_RGBA;
 		type = GL_UNSIGNED_BYTE;
 		//g_format = GL_RGBA;      // this one is 2x faster
-		if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) format = GL_RGBA;
+		//if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) format = GL_RGBA;
 	}
 	else if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_RGB30) // R10G10B10A2 fromat
 	{
@@ -412,7 +412,7 @@ int GPURenderGL::gpu_InitGLBuffers()
 	{
 		internalFormat = GL_RGBA16;
 		type = GL_UNSIGNED_SHORT;
-		if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) format = GL_RGBA;
+		//if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT) format = GL_RGBA;
 	}
 	else
 	{
