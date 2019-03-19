@@ -316,7 +316,8 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	if (FAILED(hr = m_piFactory->CreateInstance(clsidDecoder, IID_ICC_VideoDecoder, (IUnknown**)&m_pVideoDec)))
 		return printf("DecodeDaniel2: CreateInstance failed!\n"), hr;
 
-	/*if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
+#if !defined(__WIN32__)
+	if (useCuda && clsidDecoder == CLSID_CC_DanielVideoDecoder_CUDA) //CUDA decoder needs a little extra help getting the color format correct
 	{
 		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
 
@@ -325,7 +326,8 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // need call put_TargetColorFormat for using GetFrame when using GPU-pipeline
 			return printf("DecodeDaniel2: put_TargetColorFormat failed!\n"), hr;
-	}*/
+	}
+#endif
 
 	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
 	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
@@ -581,7 +583,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #endif
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
 
+#if defined(__WIN32__)
 		if (m_bUseCuda && ChromaFormat == CC_CHROMA_422) fmt = BitDepth == 8 ? CCF_YUY2 : CCF_Y216;
+#endif
 
 		CC_BOOL bRes = CC_FALSE;
 		hr = pVideoProducer->IsFormatSupported(fmt, &bRes);
