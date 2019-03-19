@@ -419,9 +419,11 @@ int GPURenderGL::gpu_InitGLBuffers()
 		printf("Image format is invalid!\n");
 	}
 
+	format = GL_RGBA;
+
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, NULL);
 
-	if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || m_decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
+	if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 	{
 		GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
 		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
