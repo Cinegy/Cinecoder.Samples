@@ -111,8 +111,8 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 			}
 		}
 
-		m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
-		m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
+		//m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
+		//m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
 	}
 
 	int res = m_decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, useCuda);
