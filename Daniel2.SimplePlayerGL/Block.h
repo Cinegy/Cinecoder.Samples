@@ -28,6 +28,25 @@ public:
 
 	size_t			iMatrixCoeff_YUYtoRGBA;
 
+#if defined(__WIN32__)
+private:
+	ID3D11Buffer*	m_pBuffer;
+public:
+	ID3D11Buffer* GetD3DPtr() { return m_pBuffer; }
+	void InitD3DBuffer(ID3D11Buffer* pBuffer, size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize) 
+	{ 
+		Destroy();
+
+		iWidth = _iWidth;
+		iHeight = _iHeight;
+
+		iPitch = _iStride;
+		iSizeFrame = iPitch * iHeight;
+
+		m_pBuffer = pBuffer; 
+	}
+#endif
+
 private:
 	std::vector<unsigned char> frame_buffer;
 

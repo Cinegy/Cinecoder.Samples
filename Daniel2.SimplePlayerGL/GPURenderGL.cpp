@@ -49,6 +49,8 @@ GPURenderGL::GPURenderGL()
 	type = GL_UNSIGNED_BYTE;
 
 	m_windowCaption = L"TestApp (Decode Daniel2) GL"; // Set window caption
+
+	gpu_render_type = GPU_RENDER_OPENGL;
 }
 
 GPURenderGL::~GPURenderGL()

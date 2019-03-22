@@ -6,6 +6,10 @@
 enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
 enum BUFFER_FORMAT { BUFFER_FORMAT_RGBA32, BUFFER_FORMAT_RGBA64, BUFFER_FORMAT_YUY2, BUFFER_FORMAT_Y216 };
 
+#if defined(__WIN32__)
+class GPURenderDX;
+#endif
+
 class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
 {
 private:
@@ -85,6 +89,31 @@ public:
 
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
 	CC_FRAME_RATE GetFrameRateValue() { return m_FrameRate; }
+
+#if defined(__WIN32__)
+private:
+	GPURenderDX* m_pRender;
+	IDXGIAdapter1* m_pCapableAdapter;
+	com_ptr<ICC_D3D11VideoProducer> m_pVideoDecD3D11;
+public:
+	void InitD3DX11Render(GPURenderDX *pRender) { m_pRender = pRender; }
+	void InitD3DXAdapter(IDXGIAdapter1* pCapableAdapter) { m_pCapableAdapter = pCapableAdapter; }
+	bool IsD3DX11Acc() { return m_pVideoDecD3D11 ? true : false; }
+	void RegisterResourceD3DX11(ID3D11Buffer* pBuffer)
+	{
+		HRESULT hr = S_OK;
+		
+		if (pBuffer)
+			hr = m_pVideoDecD3D11->RegisterResource(pBuffer); __check_hr
+	}
+	void UnregisterResourceD3DX11(ID3D11Buffer* pBuffer)
+	{
+		HRESULT hr = S_OK;
+
+		if (pBuffer)
+			hr = m_pVideoDecD3D11->UnregisterResource(pBuffer); __check_hr
+	}
+#endif
 
 private:
 	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);

@@ -18,6 +18,10 @@ void C_Block::Initialize()
 	bRotateFrame = false;
 
 	pKernelDataOut = nullptr;
+
+#if defined(__WIN32__)
+	m_pBuffer = nullptr;
+#endif
 }
 
 long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize, bool bUseCuda)

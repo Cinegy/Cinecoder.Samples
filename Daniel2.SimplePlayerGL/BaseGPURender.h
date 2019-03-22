@@ -10,6 +10,8 @@
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
 
+enum GPU_RENDER_TYPE { GPU_RENDER_UNKNOWN, GPU_RENDER_D3DX11, GPU_RENDER_OPENGL };
+
 class BaseGPURender
 {
 protected:
@@ -63,6 +65,9 @@ protected:
 	unsigned int image_width;
 	unsigned int image_height;
 
+	// Buffer
+	cudaGraphicsResource* cuda_tex_result_resource_buff;
+
 	// Timer
 	int fpsCount;
 	C_Timer timer;
@@ -78,6 +83,12 @@ protected:
 	size_t iAllFrames;
 	size_t iCurPlayFrameNumber;
 
+	GPU_RENDER_TYPE gpu_render_type;
+
+	// use DirectX 11
+	com_ptr<ID3D10Multithread>	m_pMulty;
+	IDXGIAdapter1* m_pCapableAdapter;
+
 public:
 	BaseGPURender();
 	virtual ~BaseGPURender();
@@ -90,6 +101,9 @@ public:
 	int StopPipe();
 
 	bool IsInit() { return m_bInitRender; }
+
+	int MultithreadSyncBegin();
+	int MultithreadSyncEnd();
 
 protected:
 	int CreateWnd();
@@ -104,7 +118,8 @@ protected:
 	virtual int GenerateCUDAImage(bool & bRotateFrame);
 	virtual int CopyBufferToTexture(C_Block *pBlock) = 0;
 
-	int CopyCUDAImage(C_Block *pBlock);
+	virtual int CopyCUDAImage(C_Block *pBlock);
+
 	int ComputeFPS();
 	void SetPause(bool bPause);
 

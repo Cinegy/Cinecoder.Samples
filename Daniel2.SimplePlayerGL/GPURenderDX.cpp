@@ -10,6 +10,8 @@ GPURenderDX::GPURenderDX() :
 	m_windowCaption = L"TestApp (Decode Daniel2) DX"; // Set window caption
 
 	InitValues(); // Init values
+
+	gpu_render_type = GPU_RENDER_D3DX11;
 }
 
 GPURenderDX::~GPURenderDX()
@@ -152,6 +154,8 @@ int GPURenderDX::RenderWindow()
 		m_decodeAudio->PlayFrame(iCurPlayFrameNumber); // play audio
 
 	//////////////////////////////////////
+
+	MultithreadSyncBegin();
 
 	HRESULT hr = S_OK;
 
@@ -345,19 +349,9 @@ int GPURenderDX::RenderWindow()
 		m_pd3dDeviceContext->Draw(5, 0);
 
 		/////////////////////
-
-		//stride = sizeof(VERTEX); offset = 0;
-		//m_pd3dDeviceContext->IASetVertexBuffers(0, 1, &m_pVBufferNonRotate, &stride, &offset);
-
-		//m_pd3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
-		//hr = m_pd3dDeviceContext->Map(m_pConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource); __hr(hr)
-		//pcb = (ConstantBuffer*)mappedResource.pData;
-		//pcb->UseCase = 0;
-		//m_pd3dDeviceContext->Unmap(m_pConstantBuffer, 0);
-
-		/////////////////////
 	}
+
+	MultithreadSyncEnd();
 
 	// Switch the back buffer and the front buffer
 	if (m_bVSync)
@@ -480,11 +474,24 @@ HRESULT GPURenderDX::CreateD3D11()
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 	// Create device and swapchain
-	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION,
-		&sd, &m_pSwapChain, &m_pd3dDevice, &featureLevel, &m_pd3dDeviceContext); __hr(hr)
+	if (m_pCapableAdapter)
+	{
+		hr = D3D11CreateDeviceAndSwapChain(m_pCapableAdapter, D3D_DRIVER_TYPE_UNKNOWN, NULL, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION,
+			&sd, &m_pSwapChain, &m_pd3dDevice, &featureLevel, &m_pd3dDeviceContext);
+	}
+	else
+	{
+		hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION,
+			&sd, &m_pSwapChain, &m_pd3dDevice, &featureLevel, &m_pd3dDeviceContext); __hr(hr)
+	}
 
 	if (FAILED(hr))
 		return hr;
+
+	/////////////////////////
+
+	if (SUCCEEDED(hr)) hr = m_pd3dDeviceContext->QueryInterface(IID_ID3D10Multithread, (void**)&m_pMulty);
+	if (SUCCEEDED(hr)) hr = m_pMulty->SetMultithreadProtected(TRUE);
 
 	/////////////////////////
 
@@ -617,37 +624,8 @@ HRESULT GPURenderDX::CreateD3D11()
 
 	/////////////////////////////
 	
-	// Create texture
-	D3D11_TEXTURE2D_DESC texDesc = { 0 };
-
-	texDesc.Width = image_width;
-	texDesc.Height = image_height;
-	texDesc.MipLevels = 1;
-	texDesc.ArraySize = 1;
-	texDesc.Format = m_formatTexture;
-	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-
-	if (m_bUseGPU)
-	{
-		texDesc.Usage = D3D11_USAGE_DEFAULT;
-		texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
-		texDesc.CPUAccessFlags = 0;
-	}
-	else
-	{
-		texDesc.Usage = D3D11_USAGE_DYNAMIC;
-		texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	}
-
-	hr = m_pd3dDevice->CreateTexture2D(&texDesc, NULL, &m_pTexture); __hr(hr)
-
-	if (FAILED(hr))
-		return hr;
-
-	hr = m_pd3dDevice->CreateShaderResourceView(m_pTexture, NULL, &m_pTexture_Srv); __hr(hr)
+	D3D11_USAGE Usage = m_bUseGPU ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+	hr = CreateD3DXTexture(m_formatTexture, Usage, image_width, image_height, &m_pTexture, &m_pTexture_Srv);
 
 	if (FAILED(hr))
 		return hr;
@@ -808,4 +786,144 @@ void GPURenderDX::CheckChangeSwapChainSize()
 	// Set size
 	window_width = width;
 	window_height = height;
+}
+
+HRESULT GPURenderDX::CreateD3DXTexture(DXGI_FORMAT format, D3D11_USAGE Usage, int iWidthTex, int iHeightTex, ID3D11Texture2D** pTexture, ID3D11ShaderResourceView** pTexture_Srv)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_TEXTURE2D_DESC texDesc = { 0 };
+
+	texDesc.Width = iWidthTex;
+	texDesc.Height = iHeightTex;
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 1;
+	texDesc.Format = format;
+	texDesc.SampleDesc.Count = 1;
+	texDesc.SampleDesc.Quality = 0;
+
+	texDesc.Usage = Usage;
+	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+
+	if (texDesc.Usage == D3D11_USAGE_DEFAULT)
+		texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+
+	if (texDesc.Usage == D3D11_USAGE_DYNAMIC)
+		texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+	hr = m_pd3dDevice->CreateTexture2D(&texDesc, NULL, pTexture); __hr(hr)
+	if (SUCCEEDED(hr)) hr = m_pd3dDevice->CreateShaderResourceView(*pTexture, NULL, pTexture_Srv); __hr(hr)
+
+	if (!SUCCEEDED(hr))
+	{
+		printf("CreateD3DXTexture failed: width = %d weight = %d\n", iWidthTex, iHeightTex);
+		return hr;
+	}
+
+	return hr;
+}
+
+int GPURenderDX::CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_BUFFER_DESC desc = {};
+
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+
+	desc.ByteWidth = static_cast<UINT>(iSizeBuffer);
+
+	hr = m_pd3dDevice->CreateBuffer(&desc, NULL, pBuffer); __hr(hr)
+
+	if (!SUCCEEDED(hr))
+	{
+		printf("CreateD3DXBuffer failed: size of buffer = %zu\n", iSizeBuffer);
+		return -1;
+	}
+
+	return 0;
+}
+
+int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
+{
+	if (!m_bCopyToTexture)
+		return 0;
+
+	if (m_decodeD2->IsD3DX11Acc())
+	{ 
+		MultithreadSyncBegin();
+
+		// We want to copy image data to the texture
+		// map buffer objects to get CUDA device pointers
+		cudaError_t err;
+		cudaArray *texture_ptr = nullptr;
+		err = cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
+		err = cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
+
+		// Unregister the resources of buffer in Cinecoder
+		m_decodeD2->UnregisterResourceD3DX11(pBlock->GetD3DPtr());
+		// Register the resources of buffer
+		err = cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource_buff, pBlock->GetD3DPtr(), cudaGraphicsRegisterFlagsNone); __vrcu
+
+		void *buffer_ptr = nullptr;
+		size_t buffer_size = 0;
+		// Map the resources of buffer
+		err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+		// Get pointer of buffer
+		err = cudaGraphicsResourceGetMappedPointer(&buffer_ptr, &buffer_size, cuda_tex_result_resource_buff); __vrcu
+
+		ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
+
+		IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
+		BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
+
+		if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
+		{
+			cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+		}
+		else if (buffer_format == BUFFER_FORMAT_YUY2)
+		{
+			if (output_format == IMAGE_FORMAT_RGBA8BIT)
+			{
+				h_convert_YUY2_to_RGBA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			}
+			else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+			{
+				h_convert_YUY2_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			}
+		}
+		else if (buffer_format == BUFFER_FORMAT_Y216)
+		{
+			if (output_format == IMAGE_FORMAT_RGBA16BIT)
+			{
+				h_convert_Y216_to_RGBA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			}
+			else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+			{
+				h_convert_Y216_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			}
+		}
+
+		// Unmap the resources of texture
+		err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
+
+		// Unmap the resources of buffer
+		err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+		// Unregister the resources of buffer
+		err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
+
+		// Register the resources of buffer in Cinecoder
+		m_decodeD2->RegisterResourceD3DX11(pBlock->GetD3DPtr()); 
+
+		MultithreadSyncEnd();
+	}
+	else
+	{
+		BaseGPURender::CopyCUDAImage(pBlock);
+	}
+
+	return 0;
 }

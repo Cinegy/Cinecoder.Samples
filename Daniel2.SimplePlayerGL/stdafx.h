@@ -59,10 +59,10 @@ using namespace cinegy::threading_std;
 
 #if defined(__WIN32__) // use DirectX 11
 #include <d3d11.h>
-//#include <dxgi.h>
+#include <dxgi.h>
 
 #pragma comment(lib, "d3d11.lib")
-//#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 #include "cudaDefines.h"
@@ -90,5 +90,10 @@ using namespace cinegy::threading_std;
 		hr, __FILE__,__LINE__); \
 	} \
 }
+
+#if defined(__WIN32__)
+#include "GPURenderGL.h"
+#include "GPURenderDX.h"
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

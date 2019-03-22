@@ -32,6 +32,7 @@ BaseGPURender::BaseGPURender() :
 	m_decodeAudio = nullptr;
 
 	cuda_tex_result_resource = nullptr;
+	cuda_tex_result_resource_buff = nullptr;
 
 	m_bShowSlider = false;
 	edgeLineX = 20.f;
@@ -47,6 +48,8 @@ BaseGPURender::BaseGPURender() :
 	m_bVSyncHand = true;
 
 	timeStartFPSMode = 0;
+
+	gpu_render_type = GPU_RENDER_UNKNOWN;
 }
 
 BaseGPURender::~BaseGPURender()
@@ -76,6 +79,40 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 	{
 		printf("Cannot create create decoder!\n");
 		return -1;
+	}
+
+	if (gpu_render_type == GPU_RENDER_D3DX11)
+	{
+		HRESULT hr = S_OK;
+
+		IDXGIFactory* pDXGIFactory;
+		CreateDXGIFactory(IID_IDXGIFactory, (void**)&pDXGIFactory);
+
+		m_pCapableAdapter = nullptr;
+
+		for (UINT adapter = 0; pDXGIFactory; adapter++)
+		{
+			// Get a candidate DXGI adapter
+			com_ptr<IDXGIAdapter> pAdapter = nullptr;
+			hr = pDXGIFactory->EnumAdapters(adapter, (IDXGIAdapter**)&pAdapter);
+
+			if (!pAdapter)
+				break;
+
+			DXGI_ADAPTER_DESC adapterDesc;
+			pAdapter->GetDesc(&adapterDesc);
+
+			std::wstring dev_name(adapterDesc.Description);
+
+			if (dev_name.find(L"NVIDIA") != std::string::npos)
+			{
+				pAdapter->QueryInterface(IID_IDXGIAdapter1, (void**)&m_pCapableAdapter);
+				break;
+			}
+		}
+
+		m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
+		m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
 	}
 
 	int res = m_decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, useCuda);
@@ -605,6 +642,8 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 {
 	if (!m_bCopyToTexture)
 		return 0;
+	
+	MultithreadSyncBegin();
 
 	// We want to copy image data to the texture
 	// map buffer objects to get CUDA device pointers
@@ -646,6 +685,24 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 
 	// Unmap the resources
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
+
+	MultithreadSyncEnd();
+
+	return 0;
+}
+
+int BaseGPURender::MultithreadSyncBegin()
+{
+	if (gpu_render_type == GPU_RENDER_D3DX11)
+		m_pMulty->Enter();
+
+	return 0;
+}
+
+int BaseGPURender::MultithreadSyncEnd()
+{
+	if (gpu_render_type == GPU_RENDER_D3DX11)
+		m_pMulty->Leave();
 
 	return 0;
 }
@@ -816,3 +873,4 @@ DWORD BaseGPURender::ThreadProc()
 
 	return 0;
 }
+

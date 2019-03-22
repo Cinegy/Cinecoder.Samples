@@ -5,6 +5,7 @@
 #include <Cinecoder_i.c>
 #if defined(__WIN32__)
 #include <Cinecoder.Plugin.GpuCodecs_i.c>
+#pragma comment(lib, "windowscodecs.lib") // for IID_IDXGIFactory
 #endif
 #include "CinecoderErrorHandler.h"
 
@@ -36,6 +37,12 @@ DecodeDaniel2::DecodeDaniel2() :
 {
 	m_FrameRate.num = 60;
 	m_FrameRate.denom = 1;
+
+#if defined(__WIN32__)
+	m_pVideoDecD3D11 = nullptr;
+	m_pRender = nullptr;
+	m_pCapableAdapter = nullptr;
+#endif
 }
 
 DecodeDaniel2::~DecodeDaniel2()
@@ -152,6 +159,12 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			else
 				printf("pipeline: cuda (device to device)\n");
 		}
+#if defined(__WIN32__)
+		if (m_pVideoDecD3D11)
+		{
+			printf("Cinecoder + DirectX11: yes\n");
+		}
+#endif
 		printf("-------------------------------------\n");
 	}
 
@@ -348,6 +361,18 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	if (FAILED(hr = m_pVideoDec->put_OutputCallback((ICC_DataReadyCallback *)this)))
 		return printf("DecodeDaniel2: put_OutputCallback failed!\n"), hr;
 
+#if defined(__WIN32__)
+	m_pVideoDec->QueryInterface(IID_ICC_D3D11VideoProducer, (void**)&m_pVideoDecD3D11);
+	if (m_bUseCuda && m_pVideoDecD3D11 && m_pRender)
+	{
+		IDXGIAdapter1* pCapableAdapter = m_pCapableAdapter;
+
+		if (FAILED(hr = m_pVideoDecD3D11->AssignAdapter(pCapableAdapter)))
+			return printf("DecodeDaniel2: AssignAdapter failed!\n"), hr;
+	}
+	else m_pVideoDecD3D11 = nullptr;
+#endif
+
 	// init decoder
 	if (FAILED(hr = m_pVideoDec->Init()))
 		return printf("DecodeDaniel2: Init failed!\n"), hr;
@@ -390,7 +415,7 @@ int DecodeDaniel2::InitValues()
 			return res;
 		}
 
-		m_queueFrames_free.Queue(&m_listBlocks.back()); // add free pointers to queue
+		//m_queueFrames_free.Queue(&m_listBlocks.back()); // add free pointers to queue
 	}
 
 	return 0;
@@ -402,6 +427,18 @@ int DecodeDaniel2::DestroyValues()
 
 	m_queueFrames.Free();
 	m_queueFrames_free.Free();
+
+#if defined(__WIN32__)
+	if (m_pVideoDecD3D11)
+	{
+		HRESULT hr = S_OK;
+		for (auto it = m_listBlocks.begin(); it != m_listBlocks.end(); ++it)
+			UnregisterResourceD3DX11(it->GetD3DPtr());
+	}
+	m_pVideoDecD3D11 = nullptr;
+	m_pRender = nullptr;
+	m_pCapableAdapter = nullptr;
+#endif
 
 	m_listBlocks.clear();
 
@@ -490,8 +527,30 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					if (ChromaFormat == CC_CHROMA_422)
 						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
 
-					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
-					__check_hr
+#if defined(__WIN32__)
+					if (m_pVideoDecD3D11)
+					{
+						CC_VA_STATUS vaStatus = CC_VA_STATUS_OFF;
+						CC_VIDEO_FRAME_DESCR frameDesc = {};
+
+						m_pVideoDecD3D11->get_VA_Status(&vaStatus);
+						if (vaStatus == CC_VA_STATUS_ON) m_pVideoDecD3D11->GetVideoFrameDescr(&frameDesc);
+
+						ID3D11Buffer* pBuffer = pBlock->GetD3DPtr();
+						if (pBuffer)
+						{
+							m_pRender->MultithreadSyncBegin();
+							hr = m_pVideoDecD3D11->GetFrame(pBuffer, &frameDesc);
+							m_pRender->MultithreadSyncEnd();
+							__check_hr
+						}
+					}
+					else
+#endif
+					{
+						hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataGPUPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
+						__check_hr
+					}
 				}
 			}
 			else
@@ -632,6 +691,22 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_YUY2 : BUFFER_FORMAT_Y216; // need for convert to D3DX11/OpenGL texture
 			}
 
+#if defined(__WIN32__)
+			if (m_pVideoDecD3D11)
+			{
+				// check actual decoder HW state
+				CC_VA_STATUS vaStatus = CC_VA_STATUS_OFF;
+				CC_VIDEO_FRAME_DESCR frameDesc = {};
+
+				if (m_pVideoDecD3D11)
+				{
+					m_pVideoDecD3D11->get_VA_Status(&vaStatus);
+					if (vaStatus == CC_VA_STATUS_ON) 
+						hr = m_pVideoDecD3D11->GetVideoFrameDescr(&frameDesc);
+					else m_pVideoDecD3D11 = nullptr;
+				}
+			}
+#endif
 			m_bInitDecoder = true; // set init decoder value
 			m_eventInitDecoder.Set(); // set event about decoder was initialized
 		}
@@ -651,6 +726,21 @@ long DecodeDaniel2::ThreadProc()
 	size_t frame_number = 0;
 
 	HRESULT hr = S_OK;
+
+	for (auto it = m_listBlocks.begin(); it != m_listBlocks.end(); ++it)
+	{
+#if defined(__WIN32__)
+		if (m_pVideoDecD3D11)
+		{
+			ID3D11Buffer* buffer = nullptr;
+			size_t buffer_size = m_stride * m_width;
+			m_pRender->CreateD3DXBuffer(&buffer, m_stride * m_width);
+			RegisterResourceD3DX11(buffer);
+			it->InitD3DBuffer(buffer, m_width, m_height, m_stride, buffer_size);
+		}
+#endif
+		m_queueFrames_free.Queue(&(*it)); // add free pointers to queue
+	}
 
 	while (m_bProcess)
 	{
