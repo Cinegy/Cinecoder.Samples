@@ -418,14 +418,12 @@ void RenderWindow()
 
 		double ms_elapsed = timerqFPSMode.GetElapsedTime();
 
-		if (ms_elapsed < timestep)
-		{
-			return;
-		}
-		else
-		{
-			timerqFPSMode.StartTimer();
-		}
+		int dT = (int)(timestep - ms_elapsed);
+
+		if (dT > 1)
+			std::this_thread::sleep_for(std::chrono::milliseconds(dT-1));
+
+		timerqFPSMode.StartTimer();
 	}
 
 	bool bRotate = g_bRotate;
@@ -438,11 +436,11 @@ void RenderWindow()
 		res = gpu_generateImage(bRotate);
 
 		if (res < 0)
-			return;
+			printf("Load texture from decoder failed!\n");
 	}
 	else
 	{
-		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // for unload CPU when set pause
+		std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
 	}
 
 	if (res != 0)
@@ -577,7 +575,7 @@ void ComputeFPS()
 		if (g_bPause)
 			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.0f fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.2f fps", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)
