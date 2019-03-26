@@ -65,10 +65,9 @@ private:
 	void InitValues();
 	void CheckChangeSwapChainSize();
 
-	HRESULT CreateD3DXTexture(DXGI_FORMAT format, D3D11_USAGE Usage, int iWidthTex, int iHeightTex, ID3D11Texture2D** pTexture, ID3D11ShaderResourceView** pTexture_Srv);
-
 public:
-	int CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer);
+	HRESULT CreateD3DXTexture(DXGI_FORMAT format, D3D11_USAGE Usage, int iWidthTex, int iHeightTex, ID3D11Texture2D** pTexture, ID3D11ShaderResourceView** pTexture_Srv);
+	HRESULT CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer);
 };
 
 // D3DX10math.inl

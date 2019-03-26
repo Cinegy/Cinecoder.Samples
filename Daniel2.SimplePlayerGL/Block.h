@@ -30,10 +30,10 @@ public:
 
 #if defined(__WIN32__)
 private:
-	ID3D11Buffer*	m_pBuffer;
+	ID3D11Resource*		m_pResource;
 public:
-	ID3D11Buffer* GetD3DPtr() { return m_pBuffer; }
-	void InitD3DBuffer(ID3D11Buffer* pBuffer, size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize) 
+	ID3D11Resource* GetD3DX11ResourcePtr() { return m_pResource; }
+	void InitD3DResource(ID3D11Resource* pResource, size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize)
 	{ 
 		Destroy();
 
@@ -43,7 +43,7 @@ public:
 		iPitch = _iStride;
 		iSizeFrame = iPitch * iHeight;
 
-		m_pBuffer = pBuffer; 
+		m_pResource = pResource;
 	}
 #endif
 

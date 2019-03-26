@@ -99,19 +99,20 @@ public:
 	void InitD3DX11Render(GPURenderDX *pRender) { m_pRender = pRender; }
 	void InitD3DXAdapter(IDXGIAdapter1* pCapableAdapter) { m_pCapableAdapter = pCapableAdapter; }
 	bool IsD3DX11Acc() { return m_pVideoDecD3D11 ? true : false; }
-	void RegisterResourceD3DX11(ID3D11Buffer* pBuffer)
+private:
+	void RegisterResourceD3DX11(ID3D11Resource* pResource)
 	{
 		HRESULT hr = S_OK;
 		
-		if (pBuffer)
-			hr = m_pVideoDecD3D11->RegisterResource(pBuffer); __check_hr
+		if (pResource)
+			hr = m_pVideoDecD3D11->RegisterResource(pResource); __check_hr
 	}
-	void UnregisterResourceD3DX11(ID3D11Buffer* pBuffer)
+	void UnregisterResourceD3DX11(ID3D11Resource* pResource)
 	{
 		HRESULT hr = S_OK;
 
-		if (pBuffer)
-			hr = m_pVideoDecD3D11->UnregisterResource(pBuffer); __check_hr
+		if (pResource)
+			hr = m_pVideoDecD3D11->UnregisterResource(pResource); __check_hr
 	}
 #endif
 

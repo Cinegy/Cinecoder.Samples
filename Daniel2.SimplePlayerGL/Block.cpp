@@ -20,7 +20,7 @@ void C_Block::Initialize()
 	pKernelDataOut = nullptr;
 
 #if defined(__WIN32__)
-	m_pBuffer = nullptr;
+	m_pResource = nullptr;
 #endif
 }
 

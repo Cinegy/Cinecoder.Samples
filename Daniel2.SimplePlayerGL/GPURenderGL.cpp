@@ -150,7 +150,7 @@ int GPURenderGL::RenderWindow()
 			res = GenerateImage(bRotate); // Copy data from host to device
 
 		if (res < 0)
-			return 0;
+			printf("Load texture from decoder failed!\n");
 	}
 	else
 	{

@@ -138,7 +138,7 @@ int GPURenderDX::RenderWindow()
 			res = GenerateImage(bRotate); // Copy data from host to device
 
 		if (res < 0)
-			return 0;
+			printf("Load texture from decoder failed!\n");
 	}
 	else
 	{
@@ -824,7 +824,7 @@ HRESULT GPURenderDX::CreateD3DXTexture(DXGI_FORMAT format, D3D11_USAGE Usage, in
 	return hr;
 }
 
-int GPURenderDX::CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer)
+HRESULT GPURenderDX::CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer)
 {
 	HRESULT hr = S_OK;
 
@@ -841,10 +841,10 @@ int GPURenderDX::CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer)
 	if (!SUCCEEDED(hr))
 	{
 		printf("CreateD3DXBuffer failed: size of buffer = %zu\n", iSizeBuffer);
-		return -1;
+		return hr;
 	}
 
-	return 0;
+	return hr;
 }
 
 int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
@@ -853,70 +853,131 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 		return 0;
 
 	if (m_decodeD2->IsD3DX11Acc())
-	{ 
+	{
+		ID3D11Resource* pResourceDXD11 = pBlock->GetD3DX11ResourcePtr();
+		D3D11_RESOURCE_DIMENSION resDim;
+		pResourceDXD11->GetType(&resDim);
+
 		MultithreadSyncBegin();
 
-		// We want to copy image data to the texture
-		// map buffer objects to get CUDA device pointers
-		cudaError_t err;
-		cudaArray *texture_ptr = nullptr;
-		err = cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
-		err = cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
-
-		// Unregister the resources of buffer in Cinecoder
-		m_decodeD2->UnregisterResourceD3DX11(pBlock->GetD3DPtr());
-		// Register the resources of buffer
-		err = cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource_buff, pBlock->GetD3DPtr(), cudaGraphicsRegisterFlagsNone); __vrcu
-
-		void *buffer_ptr = nullptr;
-		size_t buffer_size = 0;
-		// Map the resources of buffer
-		err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
-		// Get pointer of buffer
-		err = cudaGraphicsResourceGetMappedPointer(&buffer_ptr, &buffer_size, cuda_tex_result_resource_buff); __vrcu
-
-		ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
-
-		IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
-		BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
-
-		if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
+		if (resDim == D3D11_RESOURCE_DIMENSION_BUFFER)
 		{
-			cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+			// We want to copy image data to the texture
+			// map buffer objects to get CUDA device pointers
+			cudaError_t err;
+			cudaArray *texture_ptr = nullptr;
+			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
+			err = cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
+
+			// Register the resources of buffer
+			err = cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource_buff, pBlock->GetD3DX11ResourcePtr(), cudaGraphicsRegisterFlagsNone); __vrcu
+
+			void *buffer_ptr = nullptr;
+			size_t buffer_size = 0;
+			// Map the resources of buffer
+			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+			// Get pointer of buffer
+			err = cudaGraphicsResourceGetMappedPointer(&buffer_ptr, &buffer_size, cuda_tex_result_resource_buff); __vrcu
+
+			ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
+
+			IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
+			BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
+
+			if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
+			{
+				cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+			}
+			else if (buffer_format == BUFFER_FORMAT_YUY2)
+			{
+				if (output_format == IMAGE_FORMAT_RGBA8BIT)
+				{
+					h_convert_YUY2_to_RGBA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+				{
+					h_convert_YUY2_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+			}
+			else if (buffer_format == BUFFER_FORMAT_Y216)
+			{
+				if (output_format == IMAGE_FORMAT_RGBA16BIT)
+				{
+					h_convert_Y216_to_RGBA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+				{
+					h_convert_Y216_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+			}
+
+			// Unmap the resources of texture
+			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
+
+			// Unmap the resources of buffer
+			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+			// Unregister the resources of buffer
+			err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
 		}
-		else if (buffer_format == BUFFER_FORMAT_YUY2)
+		else if (resDim == D3D11_RESOURCE_DIMENSION_TEXTURE2D)
 		{
-			if (output_format == IMAGE_FORMAT_RGBA8BIT)
+			// We want to copy image data to the texture
+			// map buffer objects to get CUDA device pointers
+			cudaError_t err;
+			cudaArray *texture_ptr = nullptr;
+			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
+			err = cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
+
+			// Register the resources of buffer
+			err = cudaGraphicsD3D11RegisterResource(&cuda_tex_result_resource_buff, pBlock->GetD3DX11ResourcePtr(), cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
+
+			cudaArray *buffer_ptr = nullptr;
+			size_t buffer_size = 0;
+			// Map the resources of buffer
+			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+			// Get pointer of buffer
+			err = cudaGraphicsSubResourceGetMappedArray(&buffer_ptr, cuda_tex_result_resource_buff, 0, 0); __vrcu
+
+			ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
+
+			IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
+			BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
+
+			if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 			{
-				h_convert_YUY2_to_RGBA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				cudaMemcpyArrayToArray(texture_ptr, 0, 0, buffer_ptr, 0, 0, pBlock->Size(), cudaMemcpyDeviceToDevice); __vrcu
 			}
-			else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+			else if (buffer_format == BUFFER_FORMAT_YUY2)
 			{
-				h_convert_YUY2_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				if (output_format == IMAGE_FORMAT_RGBA8BIT)
+				{
+					h_convert_YUY2_to_RGBA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+				{
+					h_convert_YUY2_to_BGRA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
 			}
+			else if (buffer_format == BUFFER_FORMAT_Y216)
+			{
+				if (output_format == IMAGE_FORMAT_RGBA16BIT)
+				{
+					h_convert_Y216_to_RGBA64_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+				{
+					h_convert_Y216_to_BGRA64_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+			}
+
+			// Unmap the resources of texture
+			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
+
+			// Unmap the resources of buffer
+			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
+			// Unregister the resources of buffer
+			err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
 		}
-		else if (buffer_format == BUFFER_FORMAT_Y216)
-		{
-			if (output_format == IMAGE_FORMAT_RGBA16BIT)
-			{
-				h_convert_Y216_to_RGBA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
-			}
-			else if (output_format == IMAGE_FORMAT_BGRA16BIT)
-			{
-				h_convert_Y216_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
-			}
-		}
-
-		// Unmap the resources of texture
-		err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
-
-		// Unmap the resources of buffer
-		err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
-		// Unregister the resources of buffer
-		err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
-
-		// Register the resources of buffer in Cinecoder
-		m_decodeD2->RegisterResourceD3DX11(pBlock->GetD3DPtr()); 
 
 		MultithreadSyncEnd();
 	}

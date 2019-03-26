@@ -33,4 +33,5 @@ FTcudaGraphicsResourceGetMappedPointer FUNC_CUDA(cudaGraphicsResourceGetMappedPo
 
 FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray) = nullptr;
 FTcudaMemcpy2DToArrayAsync FUNC_CUDA(cudaMemcpy2DToArrayAsync) = nullptr;
+FTcudaMemcpyArrayToArray FUNC_CUDA(cudaMemcpyArrayToArray) = nullptr;
 #endif

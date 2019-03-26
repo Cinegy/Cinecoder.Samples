@@ -226,7 +226,6 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 	}
 	else return E_FAIL;
 
-
 	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR(strPluginDLL.c_str());
 	return m_piFactory->LoadPlugin(plugin_filename_str); // no error here
 }
@@ -429,12 +428,6 @@ int DecodeDaniel2::DestroyValues()
 	m_queueFrames_free.Free();
 
 #if defined(__WIN32__)
-	if (m_pVideoDecD3D11)
-	{
-		HRESULT hr = S_OK;
-		for (auto it = m_listBlocks.begin(); it != m_listBlocks.end(); ++it)
-			UnregisterResourceD3DX11(it->GetD3DPtr());
-	}
 	m_pVideoDecD3D11 = nullptr;
 	m_pRender = nullptr;
 	m_pCapableAdapter = nullptr;
@@ -536,11 +529,14 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 						m_pVideoDecD3D11->get_VA_Status(&vaStatus);
 						if (vaStatus == CC_VA_STATUS_ON) m_pVideoDecD3D11->GetVideoFrameDescr(&frameDesc);
 
-						ID3D11Buffer* pBuffer = pBlock->GetD3DPtr();
-						if (pBuffer)
+						ID3D11Buffer* pResourceDXD11 = (ID3D11Buffer*)pBlock->GetD3DX11ResourcePtr();
+						//ID3D11Texture2D* pResourceDXD11 = (ID3D11Texture2D*)pBlock->GetD3DX11ResourcePtr();
+						if (pResourceDXD11)
 						{
 							m_pRender->MultithreadSyncBegin();
-							hr = m_pVideoDecD3D11->GetFrame(pBuffer, &frameDesc);
+							RegisterResourceD3DX11(pResourceDXD11); // Register the resources of D3DX11 in Cinecoder
+							hr = m_pVideoDecD3D11->GetFrame(pResourceDXD11, &frameDesc); // Copy frame to resources of D3DX11
+							UnregisterResourceD3DX11(pResourceDXD11); // Unregister the resources of D3DX11 in Cinecoder
 							m_pRender->MultithreadSyncEnd();
 							__check_hr
 						}
@@ -732,11 +728,31 @@ long DecodeDaniel2::ThreadProc()
 #if defined(__WIN32__)
 		if (m_pVideoDecD3D11)
 		{
-			ID3D11Buffer* buffer = nullptr;
+			ID3D11Buffer* pResourceDXD11 = nullptr;
+			//ID3D11Texture2D* pResourceDXD11 = nullptr;
+
+			if (true)
+			{
+				hr = m_pRender->CreateD3DXBuffer(&pResourceDXD11, m_stride * m_width); __check_hr
+			}
+			//else
+			//{
+			//	D3D11_USAGE Usage = m_bUseCuda ? D3D11_USAGE_DEFAULT : D3D11_USAGE_DYNAMIC;
+			//	DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_UNORM;
+			//	switch (m_outputImageFormat) {
+			//	case IMAGE_FORMAT_RGBA8BIT: { format = DXGI_FORMAT_R8G8B8A8_UNORM; break; }
+			//	case IMAGE_FORMAT_BGRA8BIT: { format = DXGI_FORMAT_B8G8R8A8_UNORM; break; }
+			//	case IMAGE_FORMAT_RGBA16BIT:
+			//	case IMAGE_FORMAT_BGRA16BIT: { format = DXGI_FORMAT_R16G16B16A16_UNORM; break; }
+			//	default: { format = DXGI_FORMAT_R8G8B8A8_UNORM; }
+			//	}
+
+			//	ID3D11ShaderResourceView* pTexture_Srv = nullptr;
+			//	hr = m_pRender->CreateD3DXTexture(format, Usage, m_width, m_height, &pResourceDXD11, &pTexture_Srv); __check_hr
+			//}
+
 			size_t buffer_size = m_stride * m_width;
-			m_pRender->CreateD3DXBuffer(&buffer, m_stride * m_width);
-			RegisterResourceD3DX11(buffer);
-			it->InitD3DBuffer(buffer, m_width, m_height, m_stride, buffer_size);
+			it->InitD3DResource(pResourceDXD11, m_width, m_height, m_stride, buffer_size);
 		}
 #endif
 		m_queueFrames_free.Queue(&(*it)); // add free pointers to queue
