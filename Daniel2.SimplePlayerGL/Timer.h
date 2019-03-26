@@ -7,7 +7,10 @@
 
 class C_Timer
 {
-	typedef std::chrono::time_point<std::chrono::system_clock> timer;
+	typedef std::chrono::time_point<std::chrono::high_resolution_clock> timer;
+
+	typedef std::chrono::high_resolution_clock clock;
+	typedef std::chrono::duration<double, std::milli> duration;
 
 private:
 	timer m_start_time;
@@ -16,23 +19,29 @@ private:
 public:
 	void StartTimer()
 	{
-		m_start_time = std::chrono::system_clock::now();
+		m_start_time = clock::now();
 	}
 
 	void StopTimer()
 	{
-		m_end_time = std::chrono::system_clock::now();
+		m_end_time = clock::now();
 	}
 
 	double GetTime() // ms
 	{
-		return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(m_end_time - m_start_time).count());
+		return (double)(((duration)(m_end_time - m_start_time)).count());
+
+		//duration elapsed = m_end_time - m_start_time;
+		//return (double)elapsed.count();
 	}
 
 	double GetElapsedTime() // ms
 	{
-		timer end_time = std::chrono::system_clock::now();
+		timer end_time = clock::now();
 
-		return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(end_time - m_start_time).count());
+		return (double)(((duration)(end_time - m_start_time)).count());
+
+		//duration elapsed = end_time - m_start_time;
+		//return (double)elapsed.count();
 	}
 };

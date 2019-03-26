@@ -421,7 +421,7 @@ void RenderWindow()
 		int dT = (int)(timestep - ms_elapsed);
 
 		if (dT > 1)
-			std::this_thread::sleep_for(std::chrono::milliseconds(dT-1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(dT));
 
 		timerqFPSMode.StartTimer();
 	}
@@ -575,7 +575,7 @@ void ComputeFPS()
 		if (g_bPause)
 			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.2f fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.0f fps", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)

@@ -73,7 +73,6 @@ protected:
 	C_Timer timer;
 
 	C_Timer timerqFPSMode;
-	double timeStartFPSMode;
 	double ValueFPS;
 
 	bool m_bInitRender;

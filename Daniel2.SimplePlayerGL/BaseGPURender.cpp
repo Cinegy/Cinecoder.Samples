@@ -47,8 +47,6 @@ BaseGPURender::BaseGPURender() :
 	m_bMaxFPS = false;
 	m_bVSyncHand = true;
 
-	timeStartFPSMode = 0;
-
 	gpu_render_type = GPU_RENDER_UNKNOWN;
 }
 
@@ -316,8 +314,6 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		else if (wParam == 77) // "m"
 		{
 			m_bMaxFPS = !m_bMaxFPS;
-
-			timeStartFPSMode = timerqFPSMode.GetTime();
 
 			if (m_bMaxFPS)
 				printf("maximum playing fps: on\n");
