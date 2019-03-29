@@ -4,6 +4,7 @@ pull_requests:
 configuration: Release
 platform: x64
 before_build:
+- cmd: get-external-libraries.bat
 - cmd: nuget restore
 build:
   project: Cinecoder.Samples.sln
