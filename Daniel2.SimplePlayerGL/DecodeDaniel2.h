@@ -58,7 +58,7 @@ public:
 	~DecodeDaniel2();
 
 public:
-	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2,bool useCuda = false);
+	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false);
 	int StartDecode();
 	int StopDecode();
 
@@ -76,7 +76,7 @@ public:
 
 	void SetPause(bool bPause) { m_bPause = bPause; }
 	void SetDecode(bool bDecode) { m_bDecode = bDecode; }
-	
+
 	void SeekFrame(size_t nFrame) { m_file.SeekFrame(nFrame); }
 
 	void SetSpeed(int iSpeed) { if (bIntraFormat) m_file.SetSpeed(iSpeed); }
@@ -86,6 +86,7 @@ public:
 	bool GetReadFile() { return m_file.GetReadFile(); }
 
 	size_t GetCountFrames() { return m_file.GetCountFrames(); }
+	size_t GetDataRate(bool bClearData) { return m_file.GetDataRate(bClearData); }
 
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
 	CC_FRAME_RATE GetFrameRateValue() { return m_FrameRate; }

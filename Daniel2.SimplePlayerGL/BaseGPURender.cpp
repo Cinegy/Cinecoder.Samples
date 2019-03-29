@@ -707,15 +707,20 @@ int BaseGPURender::ComputeFPS()
 {
 	// Update fps counter, fps/title display
 	fpsCount++;
-	double time = timer.GetElapsedTime();
+	double ms_elapsed = timer.GetElapsedTime();
 
-	if (time > 1000.0f)
+	if (ms_elapsed > 1000.0f)
 	{
-		double fps = (fpsCount / (time / 1000.0f));
+		static bool bInit = true;
+
+		double fps = (fpsCount / (ms_elapsed / 1000.0f));
+
+		size_t data_rate = m_decodeD2->GetDataRate(true);
+		double fDataRate = bInit ? 0.0, bInit = false : (data_rate * 1000) / ms_elapsed / (1024 * 1024);
 
 		static wchar_t cString[256];
 		std::wstring cTitle;
-		swprintf_s(cString, L"%s (%d x %d): %.0f fps", m_windowCaption.c_str(), window_width, window_height, fps);
+		swprintf_s(cString, L"%s (%d x %d): %.0f fps data_rate = %.2f MB/s", m_windowCaption.c_str(), window_width, window_height, fps, fDataRate);
 		
 		cTitle = cString;
 
