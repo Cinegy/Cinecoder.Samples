@@ -560,11 +560,16 @@ void ComputeFPS()
 {
 	// Update fps counter, fps/title display
 	fpsCount++;
-	double time = timer.GetElapsedTime();
+	double ms_elapsed = timer.GetElapsedTime();
 
-	if (time >= 1000.0f)
+	if (ms_elapsed >= 1000.0f)
 	{
-		double fps = (fpsCount / (time / 1000.0));
+		static bool bInit = true;
+
+		double fps = (fpsCount / (ms_elapsed / 1000.0));
+
+		size_t data_rate = decodeD2->GetDataRate(true);
+		double fDataRate = bInit ? 0.0, bInit = false : (data_rate * 1000) / ms_elapsed / (1024 * 1024);
 
 		char cString[256];
 		std::string cTitle;
@@ -575,7 +580,7 @@ void ComputeFPS()
 		if (g_bPause)
 			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.0f fps", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.0f fps data_rate = %.2f MB/s", TITLE_WINDOW_APP, w, h, fps);
 
 		cTitle = cString;
 		switch (g_internalFormat)

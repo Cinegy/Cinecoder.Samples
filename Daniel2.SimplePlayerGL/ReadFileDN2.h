@@ -2,6 +2,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+//#define __STD_READ__ 1
+#define __FILE_READ__ 1
+
 // Cinecoder
 #include <Cinecoder_h.h>
 
@@ -39,7 +42,11 @@ public:
 class ReadFileDN2 : public C_SimpleThread<ReadFileDN2>
 {
 private:
+#ifdef __STD_READ__
 	std::ifstream m_file;
+#elif __FILE_READ__
+	FILE *m_file;
+#endif
 	size_t m_frames;
 
 	com_ptr<ICC_MvxFile> m_fileMvx;
@@ -58,6 +65,8 @@ private:
 	bool m_bSeek;
 	size_t m_iSeekFrame;
 	int m_iSpeed;
+
+	std::atomic<size_t> data_rate;
 
 public:
 	ReadFileDN2();
@@ -108,6 +117,8 @@ public:
 	}
 	void SetReadFile(bool bReadFile) { m_bReadFile = bReadFile; }
 	bool GetReadFile() { return m_bReadFile; }
+
+	size_t GetDataRate(bool bClearData) { size_t ret = data_rate; if (bClearData) data_rate = 0; return ret; }
 
 public:
 	CodedFrame* MapFrame();

@@ -7,6 +7,9 @@ ReadFileDN2::ReadFileDN2() :
 	m_bSeek(false),
 	m_iSpeed(1)
 {
+#ifdef __FILE_READ__
+	m_file = nullptr;
+#endif
 }
 
 ReadFileDN2::~ReadFileDN2()
@@ -27,10 +30,17 @@ int ReadFileDN2::OpenFile(const char* filename)
 
 	////////////////////////////
 
+#ifdef __STD_READ__
 	m_file.open(filename, std::ofstream::in | std::ifstream::binary);
 
 	if (!m_file.is_open())
 		return -1;
+#elif __FILE_READ__
+	fopen_s(&m_file, filename, "rb");
+
+	if (!m_file)
+		return -1;
+#endif
 
 	////////////////////////////
 
@@ -77,8 +87,12 @@ int ReadFileDN2::CloseFile()
 	if (m_fileMvx)
 		m_fileMvx->Close();
 
+#ifdef __STD_READ__
 	m_file.close();
-
+#elif __FILE_READ__
+	if (m_file) 
+		fclose(m_file);
+#endif
 	return 0;
 }
 
@@ -106,7 +120,11 @@ int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, si
 	if (frame >= m_frames)
 		return -1;
 
+#ifdef __STD_READ__
 	if (m_file.is_open())
+#elif __FILE_READ__
+	if (m_file)
+#endif
 	{
 		CC_MVX_ENTRY Idx;
 		if (!SUCCEEDED(m_fileMvx->FindEntryByCodingNumber((CC_UINT)frame, &Idx)))
@@ -118,9 +136,13 @@ int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, si
 		if (buffer.size() < size)
 			buffer.resize(size);
 
+#ifdef __STD_READ__
 		m_file.seekg(offset, m_file.beg);
 		m_file.read((char*)buffer.data(), size);
-
+#elif __FILE_READ__
+		_fseeki64(m_file, offset, SEEK_SET);
+		fread(buffer.data(), size, 1, m_file);
+#endif
 		return 0;
 	}
 
@@ -155,6 +177,8 @@ long ReadFileDN2::ThreadProc()
 	m_bProcess = true;
 	m_bReadFile = true;
 
+	data_rate = 0;
+
 	int res = 0;
 	bool bSeek = false;
 
@@ -171,6 +195,7 @@ long ReadFileDN2::ThreadProc()
 			if (m_bReadFile)
 			{
 				res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size);
+				data_rate += frame->coded_frame_size;
 			}
 			
 			frame->flags = 0;
