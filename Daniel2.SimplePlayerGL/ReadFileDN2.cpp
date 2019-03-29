@@ -36,7 +36,10 @@ int ReadFileDN2::OpenFile(const char* filename)
 	if (!m_file.is_open())
 		return -1;
 #elif __FILE_READ__
-	fopen_s(&m_file, filename, "rb");
+	std::string strA(filename);
+	std::wstring strW(strA.begin(), strA.end());
+
+	_wfopen_s(&m_file, strW.c_str(), L"rb");
 
 	if (!m_file)
 		return -1;

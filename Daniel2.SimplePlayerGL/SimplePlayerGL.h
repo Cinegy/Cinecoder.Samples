@@ -580,7 +580,7 @@ void ComputeFPS()
 		if (g_bPause)
 			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
 		else
-			sprintf_s(cString, "%s (%d x %d): %.0f fps data_rate = %.2f MB/s", TITLE_WINDOW_APP, w, h, fps);
+			sprintf_s(cString, "%s (%d x %d): %.0f fps data_rate = %.2f MB/s", TITLE_WINDOW_APP, w, h, fps, fDataRate);
 
 		cTitle = cString;
 		switch (g_internalFormat)
