@@ -74,7 +74,7 @@ public:
 #if defined(__WIN32__)
 			m_pBuffer = (LPBYTE)VirtualAlloc(NULL, m_page_aligned_size, MEM_COMMIT, PAGE_READWRITE);
 #elif defined(__APPLE__)
-			m_pBuffer = (LPBYTE)malloc(page_aligned_size);
+			m_pBuffer = (LPBYTE)malloc(m_page_aligned_size);
 #else
 			m_pBuffer = (LPBYTE)aligned_alloc(4096, m_page_aligned_size);
 #endif	
