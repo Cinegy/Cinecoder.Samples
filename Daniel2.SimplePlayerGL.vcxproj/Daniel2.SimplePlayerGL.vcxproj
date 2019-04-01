@@ -198,13 +198,11 @@ call get-external-libraries.bat</Command>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderDX.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderGL.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\SimplePlayerGL.h" />
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\Block.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\DecodeDaniel2.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h" />
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Daniel2.SimplePlayerGL\AudioSource.cpp" />

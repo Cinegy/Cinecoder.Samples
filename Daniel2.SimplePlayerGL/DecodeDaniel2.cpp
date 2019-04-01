@@ -72,19 +72,17 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
 
-	std::vector<unsigned char> buffer;
+	CodedFrame buffer;
 
 	if (res == 0)
 	{
 		coded_frame_size = 0;
-		res = m_file.ReadFrame(0, buffer, coded_frame_size); // get 0-coded frame for add decoder and init values after decode first frame
-
-		buffer.resize(coded_frame_size); // set size for coded frame
+		res = m_file.ReadFrame(0, buffer.coded_frame, coded_frame_size); // get 0-coded frame for add decoder and init values after decode first frame
 	}
 
 	if (res == 0)
 	{
-		coded_frame = buffer.data(); // poiter to 0-coded frame
+		coded_frame = buffer.GetPtr(); // poiter to 0-coded frame
 
 		HRESULT hr = S_OK;
 
@@ -771,7 +769,7 @@ long DecodeDaniel2::ThreadProc()
 
 		if (frame)
 		{
-			coded_frame = frame->coded_frame.data(); // poiter to coded frame
+			coded_frame = frame->GetPtr(); // poiter to coded frame
 			coded_frame_size = frame->coded_frame_size; // size of coded frame
 			frame_number = frame->frame_number; // number of coded frame
 

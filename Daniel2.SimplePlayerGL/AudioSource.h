@@ -6,9 +6,6 @@
 // License
 #include "../common/cinecoder_license_string.h"
 
-// Cinegy utils
-#include "utils/comptr.h"
-
 #if defined(__WIN32__)
 #include <Al/al.h>
 #include <Al/alc.h>

@@ -6,7 +6,6 @@
 // DirectX includes
 #include <d3d11.h>
 
-#include "Timer.h"
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
 

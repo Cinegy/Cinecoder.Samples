@@ -14,7 +14,6 @@
 #include <GL/freeglut.h> // GLUT framework
 #endif
 
-#include "Timer.h"
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
 

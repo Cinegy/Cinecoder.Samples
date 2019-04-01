@@ -43,6 +43,9 @@ int ReadFileDN2::OpenFile(const char* filename)
 #endif
 	if (!m_file)
 		return -1;
+#elif __UNBUFF_READ__
+	if (m_file.OpenFile(filename, true) != 0)
+		return -1;
 #endif
 
 	////////////////////////////
@@ -95,6 +98,9 @@ int ReadFileDN2::CloseFile()
 #elif __FILE_READ__
 	if (m_file) 
 		fclose(m_file);
+#elif __UNBUFF_READ__
+	if (m_file.isValid())
+		m_file.CloseFile();
 #endif
 	return 0;
 }
@@ -116,7 +122,7 @@ int ReadFileDN2::StopPipe()
 	return 0;
 }
 
-int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, size_t & size)
+int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
 {
 	C_AutoLock lock(&m_critical_read);
 
@@ -127,6 +133,8 @@ int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, si
 	if (m_file.is_open())
 #elif __FILE_READ__
 	if (m_file)
+#elif __UNBUFF_READ__
+	if (m_file.isValid())
 #endif
 	{
 		CC_MVX_ENTRY Idx;
@@ -136,15 +144,26 @@ int ReadFileDN2::ReadFrame(size_t frame, std::vector<unsigned char> & buffer, si
 		size_t offset = (size_t)Idx.Offset;
 		size = Idx.Size;
 
-		if (buffer.size() < size)
-			buffer.resize(size);
-
 #ifdef __STD_READ__
+		buffer.Resize(size);
 		m_file.seekg(offset, m_file.beg);
-		m_file.read((char*)buffer.data(), size);
+		m_file.read((char*)buffer.GetPtr(), size);
 #elif __FILE_READ__
+		buffer.Resize(size);
 		_fseeki64(m_file, offset, SEEK_SET);
-		fread(buffer.data(), size, 1, m_file);
+		fread(buffer.GetPtr(), size, 1, m_file);
+#elif __UNBUFF_READ__
+		DWORD rcb = 0;
+		size_t new_offset = offset & ~4095;
+		size_t diff = (offset - new_offset);
+		
+		DWORD dwsize = ((size + diff) + 4095) & ~4095;
+		buffer.Resize((size_t)dwsize);
+
+		m_file.SetFilePos(new_offset); 
+		m_file.ReadFile(buffer.GetPtr(), dwsize, &rcb);
+
+		buffer.SetDiff(diff);
 #endif
 		return 0;
 	}
@@ -210,7 +229,7 @@ long ReadFileDN2::ThreadProc()
 			if (res != 0)
 			{
 				assert(0);
-				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=%p\n", res, frame->coded_frame_size, frame->coded_frame.data());
+				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=%p\n", res, frame->coded_frame_size, frame->coded_frame.GetPtr());
 			}
 		}
 

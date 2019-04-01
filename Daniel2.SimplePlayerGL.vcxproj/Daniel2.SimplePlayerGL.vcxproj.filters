@@ -36,9 +36,6 @@
     <ClInclude Include="..\Daniel2.SimplePlayerGL\CinecoderErrorHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\comptr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -55,9 +52,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\ReadFileDN2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\BaseGPURender.h">

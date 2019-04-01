@@ -3,7 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //#define __STD_READ__ 1
-#define __FILE_READ__ 1
+//#define __FILE_READ__ 1
+#define __UNBUFF_READ__ 1
 
 // Cinecoder
 #include <Cinecoder_h.h>
@@ -11,24 +12,82 @@
 // License
 #include "../common/cinecoder_license_string.h"
 
-// Cinegy utils
-#include "utils/comptr.h"
-
 ///////////////////////////////////////////////////////////////////////////////
+
+#if defined (__STD_READ__) || defined (__FILE_READ__)
+class C_Buffer
+{
+private:
+	std::vector<unsigned char> buffer;
+
+public:
+	size_t GetSize() { return buffer.size(); }
+	unsigned char* GetPtr() { return buffer.data(); }
+	void Resize(size_t size) { if (size > buffer.size()) buffer.resize(size); }
+
+	void SetDiff(size_t diff) { }
+	size_t GetDiff() { return 0; }
+};
+#elif __UNBUFF_READ__
+class C_Buffer
+{
+private:
+	LPBYTE m_pBuffer {nullptr};
+	size_t m_page_aligned_size {};
+	size_t m_diff {};
+
+	void Destroy()
+	{
+		if (m_pBuffer)
+#if defined(__WIN32__)
+			VirtualFree(m_pBuffer, 0, MEM_RELEASE);
+#else
+			free(m_pBuffer);
+#endif	
+		m_pBuffer = nullptr;
+		m_page_aligned_size = 0;
+		m_diff = 0;
+	}
+public:
+	~C_Buffer() { Destroy(); }
+	
+	void SetDiff(size_t diff) { m_diff = diff; }
+	size_t GetDiff() { return m_diff; }
+
+	size_t GetSize() { return m_page_aligned_size; }
+	LPBYTE GetPtr() { return m_pBuffer; }
+	void Resize(size_t size)
+	{
+		if (size > m_page_aligned_size)
+		{
+			Destroy();
+
+			m_page_aligned_size = (size + 4095) & ~4095;
+#if defined(__WIN32__)
+			m_pBuffer = (LPBYTE)VirtualAlloc(NULL, m_page_aligned_size, MEM_COMMIT, PAGE_READWRITE);
+#else
+			m_pBuffer = (LPBYTE)aligned_alloc(4096, m_page_aligned_size);
+#endif	
+		}
+	}
+};
+#endif
 
 class CodedFrame
 {
 public:
-	CodedFrame() { coded_frame_size = 25 * 1024 * 1024; coded_frame.resize(coded_frame_size); }
+	CodedFrame() {}
 	~CodedFrame() {}
 
-	std::vector<unsigned char> coded_frame;
+	C_Buffer coded_frame;
 	size_t coded_frame_size;
 	size_t frame_number;
 	size_t flags;
 
 	CodedFrame(const CodedFrame&) = default;
 	CodedFrame(CodedFrame&&) = default;
+
+	unsigned char* GetPtr() { return coded_frame.GetPtr() + coded_frame.GetDiff(); }
 
 private:
 	//CodedFrame(const CodedFrame&);
@@ -46,6 +105,8 @@ private:
 	std::ifstream m_file;
 #elif __FILE_READ__
 	FILE *m_file;
+#elif __UNBUFF_READ__
+	C_ReadFile m_file;
 #endif
 	size_t m_frames;
 
@@ -79,7 +140,8 @@ public:
 	int StartPipe();
 	int StopPipe();
 
-	int ReadFrame(size_t frame, std::vector<unsigned char> & buffer, size_t & size);
+	int ReadFrame(size_t frame, C_Buffer & buffer, size_t & size);
+
 	size_t GetCountFrames()
 	{ 
 		CC_UINT frames = 0; 
