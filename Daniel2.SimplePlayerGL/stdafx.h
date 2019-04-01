@@ -23,7 +23,6 @@ using namespace cinegy::threading_std;
 
 #include "../common/com_ptr.h"
 #include "../common/timer.h"
-#include "../common/read_file.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

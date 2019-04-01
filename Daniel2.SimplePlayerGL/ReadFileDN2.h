@@ -12,6 +12,9 @@
 // License
 #include "../common/cinecoder_license_string.h"
 
+// Read file
+#include "../common/read_file.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined (__STD_READ__) || defined (__FILE_READ__)
