@@ -25,7 +25,6 @@ set(HEADERS
 	cudaDefines.h
 	DecodeDaniel2.h
 	ReadFileDN2.h
-	Timer.h
 )
 
 include_directories("../common")
