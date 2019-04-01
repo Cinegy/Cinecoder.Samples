@@ -161,7 +161,7 @@ int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
 		buffer.Resize((size_t)dwsize);
 
 		m_file.SetFilePos(new_offset); 
-		m_file.ReadFile(buffer.GetPtr(), dwsize, &rcb);
+		m_file.ReadFile(buffer.GetPtr(0), dwsize, &rcb);
 
 		buffer.SetDiff(diff);
 #endif

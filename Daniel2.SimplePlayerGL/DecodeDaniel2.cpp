@@ -82,7 +82,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 	if (res == 0)
 	{
-		coded_frame = buffer.GetPtr(); // poiter to 0-coded frame
+		coded_frame = buffer.coded_frame.GetPtr(); // poiter to 0-coded frame
 
 		HRESULT hr = S_OK;
 
@@ -769,7 +769,7 @@ long DecodeDaniel2::ThreadProc()
 
 		if (frame)
 		{
-			coded_frame = frame->GetPtr(); // poiter to coded frame
+			coded_frame = frame->coded_frame.GetPtr(); // poiter to coded frame
 			coded_frame_size = frame->coded_frame_size; // size of coded frame
 			frame_number = frame->frame_number; // number of coded frame
 

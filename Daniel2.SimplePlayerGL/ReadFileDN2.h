@@ -37,6 +37,7 @@ class C_Buffer
 private:
 	LPBYTE m_pBuffer {nullptr};
 	size_t m_page_aligned_size {};
+	size_t m_data_size {};
 	size_t m_diff {};
 
 	void Destroy()
@@ -49,6 +50,7 @@ private:
 #endif	
 		m_pBuffer = nullptr;
 		m_page_aligned_size = 0;
+		m_data_size = 0;
 		m_diff = 0;
 	}
 public:
@@ -57,17 +59,22 @@ public:
 	void SetDiff(size_t diff) { m_diff = diff; }
 	size_t GetDiff() { return m_diff; }
 
-	size_t GetSize() { return m_page_aligned_size; }
-	LPBYTE GetPtr() { return m_pBuffer; }
+	size_t GetSize() { return m_data_size; }
+	LPBYTE GetPtr() { return m_pBuffer + m_diff; }
+	LPBYTE GetPtr(size_t diff) { return m_pBuffer + diff; }
 	void Resize(size_t size)
 	{
 		if (size > m_page_aligned_size)
 		{
 			Destroy();
 
+			m_data_size = size;
 			m_page_aligned_size = (size + 4095) & ~4095;
+
 #if defined(__WIN32__)
 			m_pBuffer = (LPBYTE)VirtualAlloc(NULL, m_page_aligned_size, MEM_COMMIT, PAGE_READWRITE);
+#elif defined(__APPLE__)
+			m_pBuffer = (LPBYTE)malloc(page_aligned_size);
 #else
 			m_pBuffer = (LPBYTE)aligned_alloc(4096, m_page_aligned_size);
 #endif	
@@ -89,8 +96,6 @@ public:
 
 	CodedFrame(const CodedFrame&) = default;
 	CodedFrame(CodedFrame&&) = default;
-
-	unsigned char* GetPtr() { return coded_frame.GetPtr() + coded_frame.GetDiff(); }
 
 private:
 	//CodedFrame(const CodedFrame&);
