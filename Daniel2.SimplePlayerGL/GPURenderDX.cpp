@@ -490,6 +490,23 @@ HRESULT GPURenderDX::CreateD3D11()
 
 	/////////////////////////
 
+	com_ptr<IDXGIDevice> dxgiDevice = nullptr;
+	com_ptr<IDXGIAdapter> adapter = nullptr;
+
+	hr = m_pd3dDevice->QueryInterface(&dxgiDevice);
+	if (SUCCEEDED(hr) && dxgiDevice) hr = dxgiDevice->GetAdapter(&adapter);
+
+	DXGI_ADAPTER_DESC desc;
+	if (SUCCEEDED(hr) && adapter) hr = adapter->GetDesc(&desc);
+
+	if (SUCCEEDED(hr))
+	{
+		wprintf(L"D3DX11 Adapter: %s\n", desc.Description);
+		printf("-------------------------------------\n");
+	}
+
+	/////////////////////////
+
 	if (SUCCEEDED(hr)) hr = m_pd3dDeviceContext->QueryInterface(IID_ID3D10Multithread, (void**)&m_pMulty);
 	if (SUCCEEDED(hr)) hr = m_pMulty->SetMultithreadProtected(TRUE);
 
