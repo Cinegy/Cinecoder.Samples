@@ -631,9 +631,6 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 		CC_COLOR_FMT fmt = CCF_B8G8R8A8; // set output format
 
-#if defined(__APPLE__)
-		fmt = CCF_R8G8B8A8; // set output format
-#endif
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
 
 #if defined(__WIN32__)
