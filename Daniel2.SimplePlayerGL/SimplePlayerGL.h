@@ -3,6 +3,9 @@
 #if defined(__WIN32__)
 #include <GL/freeglut.h> // GLUT framework
 #elif defined(__APPLE__)
+#ifndef GL_SILENCE_DEPRECATION
+#define GL_SILENCE_DEPRECATION
+#endif
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
