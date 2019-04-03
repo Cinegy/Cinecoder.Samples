@@ -458,6 +458,8 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 	}
 
 	// we have to notify the waiter
+	std::unique_lock<std::mutex> lck(pbufdescr->evFilled->mutex);
+	pbufdescr->bFilled = true;
 	pbufdescr->evFilled->cond_var.notify_one();
 
 	HRESULT hr = pbufdescr->hrReadStatus;
