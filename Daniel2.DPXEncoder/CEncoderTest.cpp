@@ -424,8 +424,14 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 			set_file_pos(hFile, offset);
 		}
 
-		DWORD r;
-		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
+		if (hFile == INVALID_FILE_HANDLE)
+		{
+			pbufdescr->hrReadStatus = S_FALSE;
+			break;
+		}
+
+		DWORD r = 0;
+		if (!read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
 		{
 #ifdef _WIN32
 			pbufdescr->hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
