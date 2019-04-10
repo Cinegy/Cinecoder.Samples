@@ -316,6 +316,22 @@ int GPURenderGL::SetVerticalSync(bool bVerticalSync)
 	return 0;
 }
 
+float GPURenderGL::getVersionGL()
+{
+	char *versionGL = nullptr;
+	versionGL = (char *)(glGetString(GL_VERSION));
+	if (!versionGL) { printf("Error: canot get OpenGL version\n");  return -1;	}
+
+	std::string strVersion = versionGL;
+	strVersion = strVersion.substr(0, strVersion.find(" "));
+	float number = std::atof(strVersion.c_str()) + 0.05f;
+
+	printf("OpenGL version: %s\n", versionGL);
+	printf("-------------------------------------\n");
+
+	return number;
+}
+
 BOOL GPURenderGL::CreateGL()
 {
 	HDC hdc = m_hDC;
@@ -430,8 +446,16 @@ int GPURenderGL::gpu_InitGLBuffers()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, NULL);
 
+	float versionGL = getVersionGL();
+
 	if (m_bUseGPU)
 	{
+		if (versionGL < 3.3f)
+		{
+			printf("Error: for correct render in this mode version OpenGL must be 3.3 or later)\n");
+			return -1;
+		}
+
 		if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 		{
 			GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };

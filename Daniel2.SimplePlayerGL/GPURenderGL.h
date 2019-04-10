@@ -37,6 +37,8 @@ private:
 private:
 	BOOL CreateGL();
 	
+	float getVersionGL();
+
 	int gpu_InitGLBuffers();
 	int gpu_DestroyGLBuffers();
 	int gpu_UpdateGLSettings();
