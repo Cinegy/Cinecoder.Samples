@@ -357,10 +357,12 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 
 	BufferDescr *pbufdescr = nullptr;
     
+	bool forward_read = m_EncPar.StopFrameNum < 0 || m_EncPar.StopFrameNum >= m_EncPar.StartFrameNum;
+
     for(;;)
     {
-		int frame_no = m_ReadFrameCounter++;
-    	int buffer_id = frame_no % m_EncPar.QueueSize;
+		int frame_idx = m_ReadFrameCounter++;
+    	int buffer_id = frame_idx % m_EncPar.QueueSize;
 
 		pbufdescr = &m_Queue[buffer_id];
 
@@ -379,20 +381,34 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 			break;
 		}
 
-		if (m_EncPar.StopFrameNum >= 0)
+		int frame_no = -1;
+
+		if (forward_read)
 		{
-			if (frame_no > m_EncPar.StopFrameNum && !m_EncPar.Looped)
+			frame_no = m_EncPar.StartFrameNum + frame_idx;
+
+			if (m_EncPar.StopFrameNum >= 0)
+			{
+				if (frame_no > m_EncPar.StopFrameNum && !m_EncPar.Looped)
+				{
+					pbufdescr->hrReadStatus = S_FALSE;
+					break;
+				}
+
+				frame_no = m_EncPar.StartFrameNum + frame_idx % (m_EncPar.StopFrameNum - m_EncPar.StartFrameNum + 1);
+			}
+		}
+		else
+		{
+			frame_no = m_EncPar.StartFrameNum - frame_idx;
+
+			if (frame_no < m_EncPar.StopFrameNum && !m_EncPar.Looped)
 			{
 				pbufdescr->hrReadStatus = S_FALSE;
 				break;
 			}
 
-			int num_frames_in_range = m_EncPar.StopFrameNum - m_EncPar.StartFrameNum + 1;
-
-			if (num_frames_in_range > 0)
-				frame_no = frame_no % num_frames_in_range + m_EncPar.StartFrameNum;
-			else
-				frame_no = m_EncPar.StopFrameNum - frame_no % (1-num_frames_in_range);
+			frame_no = m_EncPar.StartFrameNum - frame_idx % (m_EncPar.StartFrameNum - m_EncPar.StopFrameNum + 1);
 		}
 
 	    if(m_EncPar.SetOfFiles)
@@ -408,8 +424,14 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 			set_file_pos(hFile, offset);
 		}
 
-		DWORD r;
-		if (hFile == INVALID_FILE_HANDLE || !read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
+		if (hFile == INVALID_FILE_HANDLE)
+		{
+			pbufdescr->hrReadStatus = S_FALSE;
+			break;
+		}
+
+		DWORD r = 0;
+		if (!read_file(hFile, pbufdescr->pBuffer, (m_FrameSizeInBytes + 4095) & ~4095, &r))
 		{
 #ifdef _WIN32
 			pbufdescr->hrReadStatus = HRESULT_FROM_WIN32(GetLastError());
@@ -442,6 +464,8 @@ DWORD 	CEncoderTest::ReadingThreadProc(int thread_idx)
 	}
 
 	// we have to notify the waiter
+	std::unique_lock<std::mutex> lck(pbufdescr->evFilled->mutex);
+	pbufdescr->bFilled = true;
 	pbufdescr->evFilled->cond_var.notify_one();
 
 	HRESULT hr = pbufdescr->hrReadStatus;
