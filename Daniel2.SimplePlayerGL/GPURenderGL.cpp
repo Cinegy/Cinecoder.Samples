@@ -450,14 +450,14 @@ int GPURenderGL::gpu_InitGLBuffers()
 
 	if (m_bUseGPU)
 	{
-		if (versionGL < 3.3f)
-		{
-			printf("Error: for correct render in this mode version OpenGL must be 3.3 or later)\n");
-			return -1;
-		}
-
 		if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 		{
+			if (versionGL < 3.3f)
+			{
+				printf("Error: for correct render in this mode version OpenGL must be 3.3 or later)\n");
+				return -1;
+			}
+
 			GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
 			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 		}
