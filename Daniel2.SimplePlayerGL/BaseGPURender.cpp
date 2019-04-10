@@ -652,6 +652,8 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
 	BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
 
+	#define PARAMS pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA
+
 	if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 	{
 		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
@@ -660,22 +662,22 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	{
 		if (output_format == IMAGE_FORMAT_RGBA8BIT)
 		{
-			h_convert_YUY2_to_RGBA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			h_convert_YUY2_to_RGBA32_BtT(PARAMS); __vrcu
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 		{
-			h_convert_YUY2_to_BGRA32_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			h_convert_YUY2_to_BGRA32_BtT(PARAMS); __vrcu
 		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_Y216)
 	{
 		if (output_format == IMAGE_FORMAT_RGBA16BIT)
 		{
-			h_convert_Y216_to_RGBA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			h_convert_Y216_to_RGBA64_BtT(PARAMS); __vrcu
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
 		{
-			h_convert_Y216_to_BGRA64_BtT(pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+			h_convert_Y216_to_BGRA64_BtT(PARAMS); __vrcu
 		}
 	}
 
