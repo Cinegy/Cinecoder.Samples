@@ -316,7 +316,7 @@ int GPURenderGL::SetVerticalSync(bool bVerticalSync)
 	return 0;
 }
 
-float GPURenderGL::getVersionGL()
+double GPURenderGL::getVersionGL()
 {
 	char *versionGL = nullptr;
 	versionGL = (char *)(glGetString(GL_VERSION));
@@ -324,7 +324,7 @@ float GPURenderGL::getVersionGL()
 
 	std::string strVersion = versionGL;
 	strVersion = strVersion.substr(0, strVersion.find(" "));
-	float number = std::atof(strVersion.c_str()) + 0.05f;
+	double number = std::atof(strVersion.c_str()) + 0.005;
 
 	printf("OpenGL version: %s\n", versionGL);
 	printf("-------------------------------------\n");
@@ -446,13 +446,13 @@ int GPURenderGL::gpu_InitGLBuffers()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, NULL);
 
-	float versionGL = getVersionGL();
+	double versionGL = getVersionGL();
 
 	if (m_bUseGPU)
 	{
 		if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 		{
-			if (versionGL < 3.3f)
+			if (versionGL < 3.3)
 			{
 				printf("Error: for correct render in this mode version OpenGL must be 3.3 or later)\n");
 				return -1;

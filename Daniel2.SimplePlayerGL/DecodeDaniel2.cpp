@@ -791,7 +791,7 @@ long DecodeDaniel2::ThreadProc()
 				{
 					assert(0);
 
-					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
+					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p frame_number = %zd\n", hr, coded_frame_size, coded_frame, frame_number);
 
 					hr = m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
 

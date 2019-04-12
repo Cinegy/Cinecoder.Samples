@@ -20,6 +20,8 @@
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
 
+#define __GLUT_WINDOW__
+
 ///////////////////////////////////////////////////////
 
 inline bool CheckErrorGL(const char *file, const int line)
@@ -230,7 +232,17 @@ bool gpu_initGLUT(int *argc, char **argv)
 
 	// Create GL context
 	glutInit(argc, argv);
+
+	//glutInitContextVersion(3, 3);
+	//glutInitContextProfile(GLUT_CORE_PROFILE);
+	
+#if defined(__APPLE__)
+	glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+#else
 	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+#endif
+
 	glutInitWindowSize(window_width, window_height);
 	iGLUTWindowHandle = glutCreateWindow(TITLE_WINDOW_APP);
 
@@ -308,11 +320,16 @@ void gpu_initGLBuffers()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
 
-	//if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
-	//{
-	//	GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
-	//	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
-	//}
+#if defined(__WIN32__)
+	if (g_useCuda)
+	{
+		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
+		{
+			GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
+			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+		}
+	}
+#endif
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -578,6 +595,7 @@ void ComputeFPS()
 		size_t data_rate = decodeD2->GetDataRate(true);
 		double fDataRate = bInit ? 0.0, bInit = false : (data_rate * 1000) / ms_elapsed / (1024 * 1024);
 
+#if defined(__GLUT_WINDOW__)
 		char cString[256];
 		std::string cTitle;
 
@@ -602,7 +620,9 @@ void ComputeFPS()
 		cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
 
 		glutSetWindowTitle(cTitle.c_str());
-
+#else
+		printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
+#endif
 		fpsCount = 0;
 
 		timer.StartTimer();
