@@ -165,7 +165,7 @@ int print_help()
 		"  /cache=#   - switching system reading cahe on/off ([off])\n"
 		"\n"
 		"  /method=#  - the encoding method ([0],2)\n"
-		"  /chroma=#  - the chroma format (420,[422],rgba)\n"
+		"  /chroma=#  - the chroma format (420,[422],444,4444,rgb,rgba)\n"
 		"  /bits=#    - the target bitdepth\n"
 		"  /cbr=#     - the Constant Bitrate mode, the value is in Mbps\n"
 		"  /cq=#      - the Constant Quality mode, the value is the quant_scale\n"
@@ -200,7 +200,7 @@ int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *par)
 	par->FrameRateN = 60;
 	par->FrameRateD = 1;
 	par->BitDepth = 10;
-	par->ChromaFormat = CC_CHROMA_422;
+	//par->ChromaFormat = CC_CHROMA_422;
 	par->BitrateMode = CC_CQ;
 	par->QuantScale = 16;
 	par->NumSingleEncoders = 4;
@@ -259,6 +259,12 @@ int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *par)
 			par->ChromaFormat = CC_CHROMA_420;
 		else if (0 == _tcsicmp(argv[i], _T("/chroma=422")))
 			par->ChromaFormat = CC_CHROMA_422;
+		else if (0 == _tcsicmp(argv[i], _T("/chroma=444")))
+			par->ChromaFormat = CC_CHROMA_444;
+		else if (0 == _tcsicmp(argv[i], _T("/chroma=4444")))
+			par->ChromaFormat = CC_CHROMA_4444;
+		else if (0 == _tcsicmp(argv[i], _T("/chroma=RGB")))
+			par->ChromaFormat = CC_CHROMA_RGB;
 		else if (0 == _tcsicmp(argv[i], _T("/chroma=RGBA")))
 			par->ChromaFormat = CC_CHROMA_RGBA;
 
@@ -404,7 +410,7 @@ int check_for_dpx(TEST_PARAMS *par)
 	par->SetOfFiles = TRUE;
 	par->FileSize = dpx_size;
 	par->DataOffset = dpx_offset;
-	par->ChromaFormat = CC_CHROMA_RGBA;
+	//par->ChromaFormat = CC_CHROMA_RGBA;
 
     fclose(hFile);
 

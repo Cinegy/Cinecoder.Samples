@@ -51,7 +51,16 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	pSettings->put_FrameRate(MK_RATIONAL(par.FrameRateN, par.FrameRateD));
 	pSettings->put_InputColorFormat(par.InputColorFormat);
 
-	pSettings->put_ChromaFormat(par.ChromaFormat);
+	auto ChromaFormat = par.ChromaFormat;
+	if(!ChromaFormat)
+	{
+	  if(par.InputColorFormat == CCF_YUY2 || par.InputColorFormat == CCF_UYVY || par.InputColorFormat == CCF_V210)
+	    ChromaFormat = CC_CHROMA_422;
+	  else
+	    ChromaFormat = CC_CHROMA_RGBA;
+	}
+	pSettings->put_ChromaFormat(ChromaFormat);
+
 	pSettings->put_BitDepth(par.BitDepth);
 	pSettings->put_PictureOrientation(par.PictureOrientation);
 
