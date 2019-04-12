@@ -232,12 +232,13 @@ int main(int argc, char **argv)
 
 	InitAudioTrack(filename, decodeD2->GetFrameRateValue());
 
+#if defined(__GLUT_WINDOW__)
 	gpu_initGLUT(&argc, argv); // Init GLUT
 
 	gpu_initGLBuffers(); // Init GL buffers
 
 	get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
-
+#endif
 	// Start timer
 	timer.StartTimer();
 
@@ -245,9 +246,38 @@ int main(int argc, char **argv)
 
 	decodeD2->StartDecode(); // Start decoding
 
+#if defined(__GLUT_WINDOW__)
 	// Start mainloop
 	glutMainLoop(); // Wait
+#else
+	bool bRotate = g_bRotate;
 
+	//g_bMaxFPS = true;
+	//g_bShowTexture = false;
+	//g_bCopyToTexture = false;
+	//g_bDecoder = false;
+
+	//decodeD2->SetDecode(g_bDecoder);
+	//decodeD2->SetReadFile(false);
+
+	while (true)
+	{
+		if (!g_bPause)
+		{
+			// Copy data from queue to texture
+			res = gpu_generateImage(bRotate);
+
+			if (res < 0)
+				printf("Load texture from decoder failed!\n");
+		}
+		else
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
+		}
+
+		ComputeFPS(); // Calculate fps
+	}
+#endif
 	if (decodeD2)
         decodeD2 = nullptr; // destroy video decoder
 

@@ -14,6 +14,8 @@
 #include <memory>
 #include <fstream>
 #include <atomic>
+#include <thread>
+#include <chrono>
 
 ///////////////////////////////////////////////////////////////////////////////
 
