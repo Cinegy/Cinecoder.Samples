@@ -137,6 +137,9 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			{
 			case CC_CHROMA_422:		printf("format        : CHROMA_422 / %d bits\n", m_BitDepth); break;
 			case CC_CHROMA_RGBA:	printf("format        : CHROMA_RGBA / %d bits\n", m_BitDepth); break;
+			case CC_CHROMA_RGB:		printf("format        : CHROMA_RGB / %d bits\n", m_BitDepth); break;
+			case CC_CHROMA_4444:	printf("format        : CHROMA_4444 / %d bits\n", m_BitDepth); break;
+			case CC_CHROMA_444:		printf("format        : CHROMA_444 / %d bits\n", m_BitDepth); break;
 			}
 		}
 		printf("frame rate    : %g\n", (double)m_FrameRate.num / m_FrameRate.denom);
