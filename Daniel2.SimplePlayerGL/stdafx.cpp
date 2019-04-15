@@ -18,6 +18,7 @@ FTcudaStreamDestroy FUNC_CUDA(cudaStreamDestroy) = nullptr;
 FTcudaStreamSynchronize FUNC_CUDA(cudaStreamSynchronize) = nullptr;
 
 FTcudaGraphicsGLRegisterImage FUNC_CUDA(cudaGraphicsGLRegisterImage) = nullptr;
+FTcudaGraphicsGLRegisterBuffer FUNC_CUDA(cudaGraphicsGLRegisterBuffer) = nullptr;
 
 #if defined(__WIN32__)
 FTcudaGraphicsD3D11RegisterResource FUNC_CUDA(cudaGraphicsD3D11RegisterResource) = nullptr;
@@ -30,6 +31,8 @@ FTcudaGraphicsUnmapResources FUNC_CUDA(cudaGraphicsUnmapResources) = nullptr;
 
 FTcudaGraphicsSubResourceGetMappedArray FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) = nullptr;
 FTcudaGraphicsResourceGetMappedPointer FUNC_CUDA(cudaGraphicsResourceGetMappedPointer) = nullptr;
+
+FTcudaGraphicsResourceSetMapFlags FUNC_CUDA(cudaGraphicsResourceSetMapFlags) = nullptr;
 
 FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray) = nullptr;
 FTcudaMemcpy2DToArrayAsync FUNC_CUDA(cudaMemcpy2DToArrayAsync) = nullptr;

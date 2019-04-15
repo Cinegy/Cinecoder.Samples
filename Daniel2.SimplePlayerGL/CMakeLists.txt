@@ -3,6 +3,7 @@ project (Daniel2_SimplePlayerGL)
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
+find_package(GLEW   REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -30,6 +31,11 @@ set(HEADERS
 include_directories("../common")
 include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
+
+if (GLEW_FOUND)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    link_libraries(${GLEW_LIBRARIES})
+endif()
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 

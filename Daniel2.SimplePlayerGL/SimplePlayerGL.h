@@ -6,6 +6,7 @@
 #ifndef GL_SILENCE_DEPRECATION
 #define GL_SILENCE_DEPRECATION
 #endif
+#include <GL/glew.h>
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
@@ -13,6 +14,7 @@
 #elif defined(__LINUX__)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <GL/glew.h>
 #include <GL/glx.h>
 #include <GL/freeglut.h> // GLUT framework
 #endif
@@ -39,6 +41,7 @@ inline bool CheckErrorGL(const char *file, const int line)
 		fprintf(stderr, "%s", tmpStr);
 		printf("%s", tmpStr);
 		ret_val = false;
+		exit(0);
 	}
 
 	return ret_val;
@@ -106,6 +109,7 @@ GLuint tex_result;  // Where we will copy result
 
 unsigned int image_width = 1280; // start value for image width
 unsigned int image_height = 720; // start value for image height
+unsigned int image_size;
 
 GLint g_internalFormat = GL_RGBA;
 GLenum g_format = GL_BGRA_EXT;
@@ -123,6 +127,20 @@ double ValueFPS = 60.0;
 std::shared_ptr<DecodeDaniel2> decodeD2; // Wrapper class which demonstration decoding Daniel2 format
 
 std::shared_ptr<AudioSource> decodeAudio; // Audio decoder
+
+///////////////////////////////////////////////////////
+
+GLuint fbo = 0;
+GLuint rbo = 0;
+
+GLuint vbo = 0;
+GLuint pbo = 0; // OpenGL pixel buffer object
+#ifdef USE_CUDA_SDK
+struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
+#endif
+
+//std::vector<unsigned char> pBuffer;
+void PBO_to_Texture2D(unsigned char* pData, size_t size);
 
 ///////////////////////////////////////////////////////
 
@@ -237,7 +255,8 @@ bool gpu_initGLUT(int *argc, char **argv)
 	//glutInitContextProfile(GLUT_CORE_PROFILE);
 	
 #if defined(__APPLE__)
-	glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+	//glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
 #else
 	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
@@ -270,22 +289,129 @@ bool gpu_initGLUT(int *argc, char **argv)
 
 	OGL_CHECK_ERROR_GL();
 
+	glewExperimental = GL_TRUE;
+	GLenum GlewInitResult = glewInit();
+
+	if (GlewInitResult != GLEW_OK) {
+		// Problem: glewInit failed, something is seriously wrong.
+		printf("glewInit failed: %s\n", glewGetErrorString(GlewInitResult));
+		exit(1);
+	}
+
+	OGL_CHECK_ERROR_GL();
+
 	return true;
+}
+
+int gpu_copyImage(unsigned char* pImage)
+{
+	if (pImage)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pImage); // coping decoded frame into the GL texture
+		//PBO_to_Texture2D(pImage, image_size);
+	}
+
+	return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Create VBO
+////////////////////////////////////////////////////////////////////////////////
+void createVBO(GLuint *vbo, int size)
+{
+	// create buffer object
+	glGenBuffers(1, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	OGL_CHECK_ERROR_GL();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Delete VBO
+////////////////////////////////////////////////////////////////////////////////
+void deleteVBO(GLuint *vbo)
+{
+	if (*vbo)
+		glDeleteBuffers(1, vbo);
+	*vbo = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Create PBO
+////////////////////////////////////////////////////////////////////////////////
+void createPBO(GLuint *pbo, int size)
+{
+	//pBuffer.resize(image_width * image_height * 4);
+
+	//size_t image_pitch = image_width * 4;
+	//for (size_t y = 0; y < image_height; y++)
+	//{
+	//	for (size_t x = 0; x < image_pitch; x += 4)
+	//	{
+	//		pBuffer[y * image_pitch + x + 0] = 255;
+	//		pBuffer[y * image_pitch + x + 1] = 0;
+	//		pBuffer[y * image_pitch + x + 2] = 0;
+	//		pBuffer[y * image_pitch + x + 3] = 255;
+	//	}
+	//}
+
+	// create pixel buffer object
+	glGenBuffers(1, pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, *pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+#ifdef USE_CUDA_SDK
+	// register this pbo with CUDA
+
+	cuda_pbo_resource = nullptr;
+
+	if (g_useCuda)
+	{
+		cudaError cuErr;
+
+		cuErr = cudaGraphicsGLRegisterBuffer(&cuda_pbo_resource, *pbo, cudaGraphicsRegisterFlagsNone); __vrcu
+		//cuErr = cudaGraphicsResourceSetMapFlags(cuda_pbo_resource, cudaGraphicsMapFlagsWriteDiscard); __vrcu
+	}
+#endif
+
+	OGL_CHECK_ERROR_GL();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Delete PBO
+////////////////////////////////////////////////////////////////////////////////
+void deletePBO(GLuint *pbo)
+{
+	if (*pbo)
+		glDeleteBuffers(1, pbo);
+	*pbo = 0;
+}
+
+void PBO_to_Texture2D(unsigned char* pData, size_t size)
+{
+	// map PBO and copy data to PBO
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	void *pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+	memcpy(pboMemory, pData, size);
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+	
+	// load texture from PBO
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	glBindTexture(GL_TEXTURE_2D, tex_result);
+	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height, g_format, g_type, NULL);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+	
+	OGL_CHECK_ERROR_GL();
 }
 
 void gpu_initGLBuffers()
 {
-	// Create texture
-
-	glGenTextures(1, &tex_result);
-	glBindTexture(GL_TEXTURE_2D, tex_result);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) // RGBA 8 bit
 	{
 		g_internalFormat = GL_RGBA;
@@ -318,6 +444,16 @@ void gpu_initGLBuffers()
 		decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
 		g_format = GL_BGRA_EXT;
 
+	// Create texture
+	glGenTextures(1, &tex_result);
+	glBindTexture(GL_TEXTURE_2D, tex_result);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
 
 #if defined(__WIN32__)
@@ -332,6 +468,17 @@ void gpu_initGLBuffers()
 #endif
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	OGL_CHECK_ERROR_GL();
+
+	image_size = image_width * image_height * sizeof(GLubyte) * 4;
+	
+	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT ||
+		decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
+		image_size *= 2;
+
+	// Create PBO
+	//createPBO(&pbo, image_size);
 
 	OGL_CHECK_ERROR_GL();
 
@@ -390,6 +537,22 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 
+	//unsigned char *memPtr;
+	//size_t size = 0;
+	//cudaGraphicsMapResources(1, &cuda_pbo_resource, 0); __vrcu
+	//cudaGraphicsResourceGetMappedPointer((void **)&memPtr, &size, cuda_pbo_resource); __vrcu
+	//cudaMemcpy(memPtr, cuda_dest_resource, pBlock->Size(), cudaMemcpyDeviceToDevice); __vrcu
+	//cudaGraphicsUnmapResources(1, &cuda_pbo_resource, 0); __vrcu
+
+	//glEnable(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, tex_result);
+	//glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height, g_format, g_type, NULL);
+	//glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+	//glDisable(GL_TEXTURE_2D);
+
+	//OGL_CHECK_ERROR_GL();
+
 	return 0;
 }
 #endif
@@ -417,7 +580,7 @@ int gpu_generateImage(bool & bRotateFrame)
 	{
 		if (g_bCopyToTexture)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+			gpu_copyImage(pBlock->DataPtr());
 		}
 	}
 
@@ -885,10 +1048,17 @@ void Cleanup()
 	// Delete GL texture
 	glDeleteTextures(1, &tex_result);
 
+	// Delete PBO
+	deletePBO(&pbo);
+
 #ifdef USE_CUDA_SDK
 	if (cuda_tex_result_resource)
 	{
 		cudaGraphicsUnregisterResource(cuda_tex_result_resource); __vrcu
+	}
+	if (cuda_pbo_resource)
+	{
+		cudaGraphicsUnregisterResource(cuda_pbo_resource); __vrcu
 	}
 #endif
 	OGL_CHECK_ERROR_GL();
@@ -1029,7 +1199,7 @@ void SeekToFrame(size_t iFrame)
 			{
 				if (g_bCopyToTexture)
 				{
-					glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pBlock->DataPtr()); // coping decoded frame into the GL texture
+					gpu_copyImage(pBlock->DataPtr());
 				}
 			}
 			iCurPlayFrameNumber = iFrame; // Save currect frame number

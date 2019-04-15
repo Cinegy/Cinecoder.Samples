@@ -98,6 +98,8 @@ using namespace cinegy::threading_std;
 }
 
 #if defined(__WIN32__)
+#include <GL/glew.h>
+
 #include "GPURenderGL.h"
 #include "GPURenderDX.h"
 #endif
