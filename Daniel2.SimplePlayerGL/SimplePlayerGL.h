@@ -539,16 +539,16 @@ bool gpu_initGLUT(int *argc, char **argv)
 		fragmentShader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
 
 		//GLuint geomShader = glCreateShader(GL_GEOMETRY_SHADER_ARB);
-		printf("0000");
+
 		// load source code strings into shaders
 		if (!loadShader(vertexShader, vertex_shader_source))
 			//if (!loadShader(vertexShader, "simplest.vsh"))
 			exit(1);
-		printf("1111");
+
 		if (!loadShader(fragmentShader, fragment_shader_source))
 			//if (!loadShader(fragmentShader, "simplest.fsh"))
 			exit(1);
-		printf("222");
+
 		// create a program object and attach the two compiled shaders
 		program = glCreateProgramObjectARB();
 
