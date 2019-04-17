@@ -144,6 +144,220 @@ void PBO_to_Texture2D(unsigned char* pData, size_t size);
 
 ///////////////////////////////////////////////////////
 
+GLhandleARB program = 0;         // program handles
+GLhandleARB vertexShader = 0;
+GLhandleARB fragmentShader = 0;
+
+GLint myTextureSampler;
+GLuint RotateID;
+GLuint SwapRB;
+GLuint DrawElement;
+
+bool g_bSwapRB = false;
+
+bool loadShader(GLhandleARB shader, const char * shader_source);
+bool loadShaderFromFile(GLhandleARB shader, const char * fileName);
+
+static const char *vertex_shader_source = {
+"\
+\n//\
+\n// Simplest GLSL vertex shader\
+\n//\
+\n\
+\n#version 330 core\
+\n\
+\nlayout(location = 0) in vec2 vert;\
+\nlayout(location = 1) in vec2 vertTexCoord;\
+\nlayout(location = 2) in vec2 vertPixCoord;\
+\n\
+\nout vec2 fragTexCoord;\
+\n\
+\nuniform int rotate = 0;\
+\nuniform int draw_element = 0;\
+\n\
+\n//uniform mat4 MVP;\
+\n\
+\nvoid main(void)\
+\n{\
+\n	fragTexCoord = vertTexCoord;\
+\n\
+\n	vec2 pos = vert;\
+\n\
+\n	if (draw_element == 0)\
+\n	{\
+\n		if (rotate > 0) pos.y *= (-1); // rotate texture\
+\n	}\
+\n	else if (draw_element == 1 || draw_element == 2) // slider\
+\n		pos = vertPixCoord;\
+\n\
+\n	gl_Position = vec4(pos, 0, 1);\
+\n}\
+"
+};
+
+static const char *fragment_shader_source = {
+"\
+\n//\
+\n// Simplest fragment shader\
+\n//\
+\n\
+\n#version 330 core\
+\n\
+\nuniform sampler2D myTextureSampler; //this is the texture\
+\nin vec2 fragTexCoord; //this is the texture coord\
+\nout vec4 finalColor; //this is the output color of the pixel\
+\n\
+\nuniform int swap_rb = 0;\
+\nuniform int draw_element = 0;\
+\n\
+\nvoid main()\
+\n{\
+\n	vec4 color = vec4(0.0, 1.0, 0.0, 1.0);\
+\n\
+\n	if (draw_element == 0) // texture\
+\n	{\
+\n		color = texture2D(myTextureSampler, fragTexCoord);\
+\n		if (swap_rb > 0) color = color.bgra;\
+\n	}\
+\n	else if (draw_element == 1) // slider background\
+\n	{\
+\n		color = vec4(0.0, 0.0, 0.0, 0.5);\
+\n	}\
+\n	else if (draw_element == 2) // slider\
+\n	{\
+\n		color = vec4(0.0, 1.0, 0.0, 1.0);\
+\n	}\
+\n	finalColor = color;\
+}\
+"
+};
+
+GLuint vao;
+GLuint quadvbo;
+GLuint texbo;
+
+GLuint Slider_VBObject;
+std::vector<GLfloat> slider_pixels;
+
+// X Y Z W
+float quad[] = {
+	// 1 triangle
+	-1.0f, 1.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 1.0f,
+	1.0f, -1.0f, 0.0f, 1.0f,
+	// 2 triangle
+	1.0f, -1.0f, 0.0f, 1.0f,
+	1.0f, 1.0f, 0.0f, 1.0f,
+	-1.0f, 1.0f, 0.0f, 1.0f,
+};
+
+float texcoord[] = {
+	0.0f, 1.0f,
+	0.0f, 0.0f,
+	1.0f, 0.0f,
+	1.0f, 0.0f,
+	1.0f, 1.0f,
+	0.0f, 1.0f,
+};
+
+void printInfoLog(GLhandleARB object)
+{
+	GLint       logLength = 0;
+	GLsizei     charsWritten = 0;
+	GLcharARB * infoLog;
+
+	OGL_CHECK_ERROR_GL(); // check for OpenGL errors
+
+	glGetObjectParameterivARB(object, GL_OBJECT_INFO_LOG_LENGTH_ARB, &logLength);
+
+	OGL_CHECK_ERROR_GL(); // check for OpenGL errors
+
+	if (logLength > 0)
+	{
+		infoLog = (GLcharARB*)malloc(logLength);
+
+		if (infoLog == NULL)
+		{
+			printf("ERROR: Could not allocate InfoLog buffer\n");
+
+			exit(1);
+		}
+
+		glGetInfoLogARB(object, logLength, &charsWritten, infoLog);
+
+		printf("InfoLog:\n%s\n\n", infoLog);
+		free(infoLog);
+	}
+
+	OGL_CHECK_ERROR_GL(); // check for OpenGL errors
+}
+
+bool loadShaderFromFile(GLhandleARB shader, const char * fileName)
+{
+	printf("Loading %s\n", fileName);
+
+#if defined(__WIN32__)
+	FILE * file = nullptr;
+	fopen_s(&file, fileName, "rb");
+#else
+	FILE * file = fopen(fileName, "rb");
+#endif
+
+	if (file == NULL)
+	{
+		printf("Error opening %s\n", fileName);
+		exit(1);
+	}
+
+	fseek(file, 0, SEEK_END);
+
+	GLint	size = ftell(file);
+
+	if (size < 1)
+	{
+		fclose(file);
+		printf("Error loading file %s\n", fileName);
+		exit(1);
+	}
+
+	char *buf = (char*)malloc(size);
+
+	fseek(file, 0, SEEK_SET);
+
+	if (fread(buf, 1, size, file) != size)
+	{
+		fclose(file);
+		printf("Error loading file %s\n", fileName);
+		exit(1);
+	}
+
+	fclose(file);
+
+	bool res = loadShader(shader, buf);
+	
+	free(buf);
+
+	return res;
+}
+
+bool loadShader(GLhandleARB shader, const char * shader_source)
+{
+	glShaderSourceARB(shader, 1, (const char **)&shader_source, NULL);
+
+	// compile the particle vertex shader, and print out
+	glCompileShaderARB(shader);
+
+	OGL_CHECK_ERROR_GL(); // check for OpenGL errors
+
+	GLint compileStatus;
+	glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &compileStatus);
+	printInfoLog(shader);
+
+	return compileStatus != 0;
+}
+
+///////////////////////////////////////////////////////
+
 int InitAudioTrack(std::string filename, CC_FRAME_RATE frameRate)
 {
 	int res = 0;
@@ -251,16 +465,24 @@ bool gpu_initGLUT(int *argc, char **argv)
 	// Create GL context
 	glutInit(argc, argv);
 
-	//glutInitContextVersion(3, 3);
-	//glutInitContextProfile(GLUT_CORE_PROFILE);
-	
+	if (g_useModernOGL)
+	{
 #if defined(__APPLE__)
-	//glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+		glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+#elif defined(__LINUX__)
+		glutInitContextVersion(3, 3);
+		glutInitContextProfile(GLUT_CORE_PROFILE);
+		glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
 #else
-	glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
+		glutInitContextVersion(3, 3);
+		glutInitContextProfile(GLUT_CORE_PROFILE);
+		glutInitContextFlags(GLUT_FORWARD_COMPATIBLE);
 #endif
+	}
+	else
+	{
+		glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+	}
 
 	glutInitWindowSize(window_width, window_height);
 	iGLUTWindowHandle = glutCreateWindow(TITLE_WINDOW_APP);
@@ -298,7 +520,68 @@ bool gpu_initGLUT(int *argc, char **argv)
 		exit(1);
 	}
 
+	if (!GLEW_ARB_shader_objects)
+	{
+		printf("GL_ARB_shader_objects NOT supported");
+		exit(1);
+	}
+
 	OGL_CHECK_ERROR_GL();
+
+	program = 0;
+
+	if (g_useModernOGL)
+	{
+		GLint linked;
+
+		// create a vertex shader object and a fragment shader object
+		vertexShader = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+		fragmentShader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+
+		//GLuint geomShader = glCreateShader(GL_GEOMETRY_SHADER_ARB);
+		printf("0000");
+		// load source code strings into shaders
+		if (!loadShader(vertexShader, vertex_shader_source))
+			//if (!loadShader(vertexShader, "simplest.vsh"))
+			exit(1);
+		printf("1111");
+		if (!loadShader(fragmentShader, fragment_shader_source))
+			//if (!loadShader(fragmentShader, "simplest.fsh"))
+			exit(1);
+		printf("222");
+		// create a program object and attach the two compiled shaders
+		program = glCreateProgramObjectARB();
+
+		glAttachObjectARB(program, vertexShader);
+		glAttachObjectARB(program, fragmentShader);
+
+		// link the program object and print out the info log
+		glLinkProgramARB(program);
+
+		OGL_CHECK_ERROR_GL(); // check for OpenGL errors
+
+		glGetObjectParameterivARB(program, GL_OBJECT_LINK_STATUS_ARB, &linked);
+
+		printInfoLog(program);
+
+		if (!linked)
+		{
+			program = 0;
+			printf("OpenGL modern: cannot build shader program!\n");
+			return 0;
+		}
+
+		glUseProgram(program);
+		myTextureSampler = glGetUniformLocationARB(program, "myTextureSampler");
+		RotateID = glGetUniformLocation(program, "rotate");
+		SwapRB = glGetUniformLocation(program, "swap_rb");
+		DrawElement = glGetUniformLocation(program, "draw_element");
+		glUseProgram(0);
+
+		OGL_CHECK_ERROR_GL();
+
+		printf("OpenGL modern: use\n");
+	}
 
 	return true;
 }
@@ -461,8 +744,15 @@ void gpu_initGLBuffers()
 	{
 		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 		{
-			GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
-			glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+			if (program)
+			{
+				g_bSwapRB = true;
+			}
+			else
+			{
+				GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
+				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+			}
 		}
 	}
 #endif
@@ -481,6 +771,49 @@ void gpu_initGLBuffers()
 	//createPBO(&pbo, image_size);
 
 	OGL_CHECK_ERROR_GL();
+
+	//OpenGL >= 3.3 core requires a vertex array object containing multiple attribute
+	if (program)
+	{
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		glGenBuffers(1, &quadvbo);
+		glBindBuffer(GL_ARRAY_BUFFER, quadvbo);
+		glBufferData(GL_ARRAY_BUFFER, 6 * 4 * sizeof(float), &quad[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glGenBuffers(1, &texbo);
+		glBindBuffer(GL_ARRAY_BUFFER, texbo);
+		glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(float), &texcoord[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		OGL_CHECK_ERROR_GL();
+
+		//slider_pixels.clear();
+		//slider_pixels.push_back(0.0f);
+		//slider_pixels.push_back(0.5f);
+
+		glGenBuffers(1, &Slider_VBObject);
+		glBindBuffer(GL_ARRAY_BUFFER, Slider_VBObject);
+		//glBufferData(GL_ARRAY_BUFFER, slider_pixels.size() * sizeof(GLfloat), &slider_pixels[0], GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, 2 * sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glBindVertexArray(0);
+
+		OGL_CHECK_ERROR_GL();
+	}
 
 #ifdef USE_CUDA_SDK
 	// register this textures with CUDA
@@ -640,40 +973,85 @@ void RenderWindow()
 	float fBottom = (float)nViewportHeight;
 	float fTop = 0.0f;
 
-	// Update GL settings
-	gpu_UpdateGLSettings();
+	if (program)
+	{
+		glClearColor(0.0, 0.0, 0.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the screen
+
+		// viewport
+		glViewport(0, 0, nCoordR, fBottom);
+
+		//// projection
+		//glMatrixMode(GL_PROJECTION);
+		//glLoadIdentity();
+		//gluPerspective(60.0, (GLfloat)window_width / (GLfloat)window_height, 0.1f, 10.0f);
+
+		// Enable blending
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+	{
+		// Update GL settings
+		gpu_UpdateGLSettings();
+	}
 
 	if (g_bShowTexture)
 	{
-		// Draw texture
-		glBindTexture(GL_TEXTURE_2D, tex_result);
-		glBegin(GL_QUADS);
-
-		if (bRotate)
+		if (program)
 		{
-			glTexCoord2f(0.0, 0.0);
-			glVertex2f(nCoordL, fTop);
-			glTexCoord2f(1.0, 0.0);
-			glVertex2f(nCoordR, fTop);
-			glTexCoord2f(1.0, 1.0);
-			glVertex2f(nCoordR, fBottom);
-			glTexCoord2f(0.0, 1.0);
-			glVertex2f(nCoordL, fBottom);
+			glUseProgramObjectARB(program);
+			glUniform1iARB(myTextureSampler, 0);
+			glUniform1i(DrawElement, 0);
+
+			if (g_bSwapRB) glUniform1i(SwapRB, 1); else glUniform1i(SwapRB, 0);
+			if (bRotate) glUniform1i(RotateID, 1); else glUniform1i(RotateID, 0);
+			
+			//select geometry to render
+			glBindVertexArray(vao);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, tex_result);
+
+			//draw
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			//unbind
+			glBindVertexArray(0);
+
+			glUseProgramObjectARB(0);
 		}
 		else
 		{
-			glTexCoord2f(0.0, 0.0);
-			glVertex2f(nCoordL, fBottom);
-			glTexCoord2f(1.0, 0.0);
-			glVertex2f(nCoordR, fBottom);
-			glTexCoord2f(1.0, 1.0);
-			glVertex2f(nCoordR, fTop);
-			glTexCoord2f(0.0, 1.0);
-			glVertex2f(nCoordL, fTop);
-		}
+			// Draw texture
+			glBindTexture(GL_TEXTURE_2D, tex_result);
+			glBegin(GL_QUADS);
 
-		glEnd();
-		glDisable(GL_TEXTURE_2D);
+			if (bRotate)
+			{
+				glTexCoord2f(0.0, 0.0);
+				glVertex2f(nCoordL, fTop);
+				glTexCoord2f(1.0, 0.0);
+				glVertex2f(nCoordR, fTop);
+				glTexCoord2f(1.0, 1.0);
+				glVertex2f(nCoordR, fBottom);
+				glTexCoord2f(0.0, 1.0);
+				glVertex2f(nCoordL, fBottom);
+			}
+			else
+			{
+				glTexCoord2f(0.0, 0.0);
+				glVertex2f(nCoordL, fBottom);
+				glTexCoord2f(1.0, 0.0);
+				glVertex2f(nCoordR, fBottom);
+				glTexCoord2f(1.0, 1.0);
+				glVertex2f(nCoordR, fTop);
+				glTexCoord2f(0.0, 1.0);
+				glVertex2f(nCoordL, fTop);
+			}
+
+			glEnd();
+			glDisable(GL_TEXTURE_2D);
+		}
 	}
 
 	if (decodeAudio && decodeAudio->IsInitialize())
@@ -691,49 +1069,156 @@ void RenderWindow()
 		float xCoord = edgeLineX + ((((float)w - (2.f * edgeLineX)) / (float)(iAllFrames - 1)) * (float)iCurPlayFrameNumber);
 		float yCoord = (float)h - edgeLineY;
 
-		glColor4f(0.f, 0.f, 0.f, 0.5);
-		glBegin(GL_QUADS);
-		glVertex2f(0, (float)h);
-		glVertex2f((float)w, (float)h);
-		glVertex2f((float)w, (float)h - (edgeLineY * 2));
-		glVertex2f(0, (float)h - (edgeLineY * 2));
-		glEnd();
-
-		glLineWidth(2);
-		glColor4f(0.f, 1.f, 0.f, 0.5);
-
-		if ((xCoord - sizeSquare2) > (0 + edgeLineX))
+		if (program)
 		{
-			glBegin(GL_LINES);
-			glVertex2f(0 + edgeLineX, yCoord);
-			glVertex2f(xCoord - sizeSquare2, yCoord);
-			glEnd();
+			glUseProgramObjectARB(program);
+
+			/////////////////
+
+			glUniform1i(SwapRB, 0);
+			glUniform1i(RotateID, 0);
+			glUniform1i(DrawElement, 2);
+			glBindVertexArray(vao);
+
+			float x_norm, y_norm;
+
+			y_norm = ((h - yCoord) / (float)h) * 2.0f;
+
+			slider_pixels.clear();
+
+			float heightBox_norm = y_norm * 2 - 1.0f;
+
+			slider_pixels.push_back(-1.0f);
+			slider_pixels.push_back(-1.0f);
+			slider_pixels.push_back(-1.0f);
+			slider_pixels.push_back(heightBox_norm);
+			slider_pixels.push_back(1.0f);
+			slider_pixels.push_back(-1.0f);
+
+			slider_pixels.push_back(1.0f);
+			slider_pixels.push_back(-1.0f);
+			slider_pixels.push_back(1.0f);
+			slider_pixels.push_back(heightBox_norm);
+			slider_pixels.push_back(-1.0f);
+			slider_pixels.push_back(heightBox_norm);
+
+			glBindBuffer(GL_ARRAY_BUFFER, Slider_VBObject);
+			glBufferData(GL_ARRAY_BUFFER, slider_pixels.size() * sizeof(GLfloat), &slider_pixels[0], GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glUniform1i(DrawElement, 1);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			slider_pixels.clear();
+
+			if ((xCoord - sizeSquare2) > (0 + edgeLineX))
+			{
+				x_norm = (edgeLineX / (float)w) * 2.0f;
+				slider_pixels.push_back(x_norm - 1.0f);
+				slider_pixels.push_back(y_norm - 1.0f);
+				x_norm = ((xCoord - sizeSquare2) / (float)w) * 2.0f;
+				slider_pixels.push_back(x_norm - 1.0f);
+				slider_pixels.push_back(y_norm - 1.0f);
+			}
+
+			float x1 = ((xCoord - sizeSquare2) / (float)w) * 2.0f;
+			float x2 = ((xCoord + sizeSquare2) / (float)w) * 2.0f;
+
+			float sizeSquare2_norm = (sizeSquare2 / (float)h) * 2.0f;
+
+			float y1 = y_norm - sizeSquare2_norm;
+			float y2 = y_norm + sizeSquare2_norm;
+
+			slider_pixels.push_back(x1 - 1.0f);
+			slider_pixels.push_back(y1 - 1.0f);
+			slider_pixels.push_back(x2 - 1.0f);
+			slider_pixels.push_back(y1 - 1.0f);
+
+			slider_pixels.push_back(x2 - 1.0f);
+			slider_pixels.push_back(y1 - 1.0f);
+			slider_pixels.push_back(x2 - 1.0f);
+			slider_pixels.push_back(y2 - 1.0f);
+
+			slider_pixels.push_back(x2 - 1.0f);
+			slider_pixels.push_back(y2 - 1.0f);
+			slider_pixels.push_back(x1 - 1.0f);
+			slider_pixels.push_back(y2 - 1.0f);
+
+			slider_pixels.push_back(x1 - 1.0f);
+			slider_pixels.push_back(y2 - 1.0f);
+			slider_pixels.push_back(x1 - 1.0f);
+			slider_pixels.push_back(y1 - 1.0f);
+
+			if ((xCoord + sizeSquare2) < ((float)w - edgeLineX))
+			{
+				x_norm = ((xCoord + sizeSquare2) / (float)w) * 2.0f;
+				slider_pixels.push_back(x_norm - 1.0f);
+				slider_pixels.push_back(y_norm - 1.0f);
+				x_norm = (((float)w - edgeLineX) / (float)w) * 2.0f;
+				slider_pixels.push_back(x_norm - 1.0f);
+				slider_pixels.push_back(y_norm - 1.0f);
+			}
+
+			glBindBuffer(GL_ARRAY_BUFFER, Slider_VBObject);
+			glBufferData(GL_ARRAY_BUFFER, slider_pixels.size() * sizeof(GLfloat), &slider_pixels[0], GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glUniform1i(DrawElement, 2);
+			glLineWidth(1);
+			glDrawArrays(GL_LINES, 0, (GLsizei)(slider_pixels.size() / 2));
+
+			glBindVertexArray(0);
+
+			/////////////////
+
+			glUseProgramObjectARB(0);
 		}
-
-		glBegin(GL_LINES);
-		glVertex2f(xCoord - sizeSquare2, yCoord - sizeSquare2);
-		glVertex2f(xCoord + sizeSquare2, yCoord - sizeSquare2);
-
-		glVertex2f(xCoord + sizeSquare2, yCoord - sizeSquare2);
-		glVertex2f(xCoord + sizeSquare2, yCoord + sizeSquare2);
-
-		glVertex2f(xCoord + sizeSquare2, yCoord + sizeSquare2);
-		glVertex2f(xCoord - sizeSquare2, yCoord + sizeSquare2);
-
-		glVertex2f(xCoord - sizeSquare2, yCoord + sizeSquare2);
-		glVertex2f(xCoord - sizeSquare2, yCoord - sizeSquare2);
-		glEnd();
-
-		if ((xCoord + sizeSquare2) < ((float)w - edgeLineX))
+		else
 		{
-			glColor4f(1.f, 1.f, 1.f, 0.5);
-			glBegin(GL_LINES);
-			glVertex2f(xCoord + sizeSquare2, yCoord);
-			glVertex2f((float)w - edgeLineX, yCoord);
+			glColor4f(0.f, 0.f, 0.f, 0.5);
+			glBegin(GL_QUADS);
+			glVertex2f(0, (float)h);
+			glVertex2f((float)w, (float)h);
+			glVertex2f((float)w, (float)h - (edgeLineY * 2));
+			glVertex2f(0, (float)h - (edgeLineY * 2));
 			glEnd();
-		}
 
-		glColor4f(0.f, 0.f, 0.f, 1.0);
+			glLineWidth(2);
+			glColor4f(0.f, 1.f, 0.f, 0.5);
+
+			if ((xCoord - sizeSquare2) > (0 + edgeLineX))
+			{
+				glBegin(GL_LINES);
+				glVertex2f(0 + edgeLineX, yCoord);
+				glVertex2f(xCoord - sizeSquare2, yCoord);
+				glEnd();
+			}
+
+			glBegin(GL_LINES);
+			glVertex2f(xCoord - sizeSquare2, yCoord - sizeSquare2);
+			glVertex2f(xCoord + sizeSquare2, yCoord - sizeSquare2);
+
+			glVertex2f(xCoord + sizeSquare2, yCoord - sizeSquare2);
+			glVertex2f(xCoord + sizeSquare2, yCoord + sizeSquare2);
+
+			glVertex2f(xCoord + sizeSquare2, yCoord + sizeSquare2);
+			glVertex2f(xCoord - sizeSquare2, yCoord + sizeSquare2);
+
+			glVertex2f(xCoord - sizeSquare2, yCoord + sizeSquare2);
+			glVertex2f(xCoord - sizeSquare2, yCoord - sizeSquare2);
+			glEnd();
+
+			if ((xCoord + sizeSquare2) < ((float)w - edgeLineX))
+			{
+				glColor4f(1.f, 1.f, 1.f, 0.5);
+				glBegin(GL_LINES);
+				glVertex2f(xCoord + sizeSquare2, yCoord);
+				glVertex2f((float)w - edgeLineX, yCoord);
+				glEnd();
+			}
+
+			glColor4f(0.f, 0.f, 0.f, 1.0);
+		}
 	}
 
 	glutSwapBuffers(); // swaps the buffers of the current window if double buffered.
@@ -1050,6 +1535,25 @@ void Cleanup()
 
 	// Delete PBO
 	deletePBO(&pbo);
+
+	if (program)
+	{
+		// Detach and delete the shader objects
+		glDetachShader(program, vertexShader);
+		glDetachShader(program, fragmentShader);
+
+		glDeleteShader(vertexShader);
+		glDeleteShader(fragmentShader);
+
+		glDeleteObjectARB(program);
+
+		glDeleteVertexArrays(1, &vao);
+		glDeleteBuffers(1, &quadvbo);
+		glDeleteBuffers(1, &texbo);
+
+		glDeleteBuffers(1, &Slider_VBObject);
+		slider_pixels.clear();
+	}
 
 #ifdef USE_CUDA_SDK
 	if (cuda_tex_result_resource)

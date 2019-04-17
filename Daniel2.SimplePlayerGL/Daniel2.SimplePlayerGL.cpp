@@ -9,6 +9,7 @@ bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
 bool g_useDirectX11 = false;
+bool g_useModernOGL = false;
 
 bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
@@ -96,6 +97,9 @@ void printHelp(void)
 #if defined(__WIN32__)
 	printf("-d3d11              enable DirectX11 pipeline (default - OpenGL)\n");
 #endif
+#if !defined(__WIN32__)
+	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
+#endif
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
@@ -180,6 +184,13 @@ int main(int argc, char **argv)
 		g_useDirectX11 = true; // use DirectX11 pipeline
 	}
 #endif	
+
+#if !defined(__WIN32__)
+	if (checkCmdLineArg(argc, (const char **)argv, "ogl33"))
+	{
+		g_useModernOGL = true; // use modern OpenGL 3.3
+	}
+#endif
 
 	int res = 0;
 	
