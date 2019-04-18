@@ -187,7 +187,7 @@ static const char *vertex_shader_source = {
 \n	{\
 \n		if (rotate > 0) pos.y *= (-1); // rotate texture\
 \n	}\
-\n	else if (draw_element == 1 || draw_element == 2) // slider\
+\n	else if (draw_element >= 1) // slider\
 \n		pos = vertPixCoord;\
 \n\
 \n	gl_Position = vec4(pos, 0, 1);\
@@ -225,7 +225,11 @@ static const char *fragment_shader_source = {
 \n	}\
 \n	else if (draw_element == 2) // slider\
 \n	{\
-\n		color = vec4(0.0, 1.0, 0.0, 1.0);\
+\n		color = vec4(0.0, 1.0, 0.0, 0.5);\
+\n	}\
+\n	else if (draw_element == 3) // slider\
+\n	{\
+\n		color = vec4(1.0, 1.0, 1.0, 0.5);\
 \n	}\
 \n	finalColor = color;\
 }\
@@ -810,6 +814,10 @@ void gpu_initGLBuffers()
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		GLint range[2];
+		glGetIntegerv(GL_ALIASED_LINE_WIDTH_RANGE, range);
+		glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, range);
+
 		glBindVertexArray(0);
 
 		OGL_CHECK_ERROR_GL();
@@ -1163,10 +1171,15 @@ void RenderWindow()
 			glBufferData(GL_ARRAY_BUFFER, slider_pixels.size() * sizeof(GLfloat), &slider_pixels[0], GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-			glUniform1i(DrawElement, 2);
-			glLineWidth(1);
-			glDrawArrays(GL_LINES, 0, (GLsizei)(slider_pixels.size() / 2));
+			//glEnable(GL_LINE_WIDTH);
+			//glLineWidth(2); // get error GL_INVALID_VALUE
 
+			glUniform1i(DrawElement, 2);
+			glDrawArrays(GL_LINES, 0, (GLsizei)(slider_pixels.size() / 2) - 2);
+
+			glUniform1i(DrawElement, 3);
+			glDrawArrays(GL_LINES, (GLsizei)(slider_pixels.size() / 2) - 2, 2);
+	
 			glBindVertexArray(0);
 
 			/////////////////
