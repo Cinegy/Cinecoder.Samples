@@ -1,12 +1,13 @@
 #pragma once
 
 #if defined(__WIN32__)
+#include <GL/glew.h> // GLEW framework
 #include <GL/freeglut.h> // GLUT framework
 #elif defined(__APPLE__)
 #ifndef GL_SILENCE_DEPRECATION
 #define GL_SILENCE_DEPRECATION
 #endif
-#include <GL/glew.h>
+#include <GL/glew.h> // GLEW framework
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
@@ -14,8 +15,8 @@
 #elif defined(__LINUX__)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <GL/glew.h>
-#include <GL/glx.h>
+#include <GL/glew.h> // GLEW framework
+#include <GL/glx.h> // GLX framework
 #include <GL/freeglut.h> // GLUT framework
 #endif
 
