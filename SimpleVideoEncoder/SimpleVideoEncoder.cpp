@@ -1,6 +1,10 @@
 // SimpleVideoEncoder.cpp : Defines the entry point for the console application.
 //
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -26,6 +30,10 @@
 
 #include <chrono>
 using namespace std::chrono;
+
+#ifdef _MSC_VER
+#define stricmp _stricmp
+#endif
 
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[])

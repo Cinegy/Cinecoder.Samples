@@ -2,6 +2,10 @@
 //
 //#include <windows.h>
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <tchar.h>
 
@@ -20,6 +24,10 @@
 #include "../common/c_unknown.h"
 
 #include "ppm_writer.h"
+
+#ifdef _MSC_VER
+#define stricmp _stricmp
+#endif
 
 //------------------------------------------------------------------
 int main(int argc, char* argv[])
@@ -83,13 +91,13 @@ int main(int argc, char* argv[])
     {
       static unsigned char buffer[65536];
 
-      int dwBytesRead = fread(buffer, 1, sizeof(buffer), hSrcFile);
+      size_t dwBytesRead = fread(buffer, 1, sizeof(buffer), hSrcFile);
 
       if(dwBytesRead > 0)
       {
         CC_UINT dwBytesProcessed = 0;
 
-        if(FAILED(hr = spVideoDec->ProcessData(buffer, (int)dwBytesRead, 0, -1, &dwBytesProcessed)))
+        if(FAILED(hr = spVideoDec->ProcessData(buffer, (CC_UINT)dwBytesRead, 0, -1, &dwBytesProcessed)))
           return hr;
       }
 
