@@ -1,7 +1,11 @@
 #pragma once
 
 // OpenGL Graphics includes
-#include <GL/freeglut.h>
+#include <GL/GL.h>
+#include <GL/GLU.h>
+
+#pragma comment(lib, "OpenGL32.lib") // for OpenGL functions
+#pragma comment(lib, "glu32.lib") // for gluErrorString
 
 // DirectX includes
 #include <d3d11.h>

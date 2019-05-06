@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props" Condition="Exists('..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props')" />
   <Import Project="..\packages\CUDAConvertLib.1.0.0.5\build\CUDAConvertLib.props" Condition="Exists('..\packages\CUDAConvertLib.1.0.0.5\build\CUDAConvertLib.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\Cinecoder.3.32.13.43248\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.32.13.43248\build\Cinecoder.props')" />
@@ -101,14 +102,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib;$(SolutionDir)_toolkits\OpenALSoft\libs\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenAL32.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -122,14 +123,14 @@ call get-external-libraries.bat</Command>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib\x64;$(SolutionDir)_toolkits\OpenALSoft\libs\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenAL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -145,7 +146,7 @@ call get-external-libraries.bat</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -153,9 +154,9 @@ call get-external-libraries.bat</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib;$(SolutionDir)_toolkits\OpenALSoft\libs\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenAL32.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -171,7 +172,7 @@ call get-external-libraries.bat</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)_toolkits\freeglut\include;$(SolutionDir)_toolkits\OpenALSoft\include;$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -179,8 +180,8 @@ call get-external-libraries.bat</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)_toolkits\freeglut\lib\x64;$(SolutionDir)_toolkits\OpenALSoft\libs\Win64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>freeglut.lib;OpenAL32.lib;Cinecoder.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>cd $(SolutionDir)
@@ -231,30 +232,30 @@ call get-external-libraries.bat</Command>
     <Import Project="..\packages\Cinecoder.3.32.13.43248\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.32.13.43248\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.targets')" />
   </ImportGroup>
-  <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
-    <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\freeglut.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
-  <Target Name="Copy FreeGlut binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'">
-    <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\x64\freeglut.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
-  <Target Name="Copy OpenALSoft binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'">
-    <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\*.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
-  <Target Name="Copy OpenALSoft binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'">
-    <ItemGroup>
-      <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\x64\*.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
-  </Target>
+  <!-- <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'"> -->
+  <!-- <ItemGroup> -->
+  <!-- <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\freeglut.dll" /> -->
+  <!-- </ItemGroup> -->
+  <!-- <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" /> -->
+  <!-- </Target> -->
+  <!-- <Target Name="Copy FreeGlut binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'"> -->
+  <!-- <ItemGroup> -->
+  <!-- <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\freeglut\bin\x64\freeglut.dll" /> -->
+  <!-- </ItemGroup> -->
+  <!-- <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" /> -->
+  <!-- </Target> -->
+  <!-- <Target Name="Copy OpenALSoft binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'"> -->
+  <!-- <ItemGroup> -->
+  <!-- <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\*.dll" /> -->
+  <!-- </ItemGroup> -->
+  <!-- <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" /> -->
+  <!-- </Target> -->
+  <!-- <Target Name="Copy OpenALSoft binary x64" AfterTargets="AfterBuild" Condition="'$(Platform)'=='x64'"> -->
+  <!-- <ItemGroup> -->
+  <!-- <SourceFiles Include="$(MSBuildThisFileDirectory)\..\_toolkits\OpenALSoft\bin\x64\*.dll" /> -->
+  <!-- </ItemGroup> -->
+  <!-- <Copy SourceFiles="@(SourceFiles)" DestinationFiles="@(SourceFiles->'$(TargetDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" /> -->
+  <!-- </Target> -->
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -266,5 +267,6 @@ call get-external-libraries.bat</Command>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.7.20010\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\CUDAConvertLib.1.0.0.5\build\CUDAConvertLib.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDAConvertLib.1.0.0.5\build\CUDAConvertLib.props'))" />
+    <Error Condition="!Exists('..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props'))" />
   </Target>
 </Project>

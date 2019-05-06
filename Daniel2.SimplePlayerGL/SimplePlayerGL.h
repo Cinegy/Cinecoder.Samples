@@ -987,7 +987,7 @@ void RenderWindow()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the screen
 
 		// viewport
-		glViewport(0, 0, nCoordR, fBottom);
+		glViewport(0, 0, (GLsizei)nCoordR, (GLsizei)fBottom);
 
 		//// projection
 		//glMatrixMode(GL_PROJECTION);
