@@ -250,5 +250,5 @@ _toolkits/
 .DS_Store
 
 #Cinegy license strings
-common/cinecoder_license_string.h
-common/cinecoder_license_string.cs
+/common/cinecoder_license_string.h
+/common/cinecoder_license_string.cs
