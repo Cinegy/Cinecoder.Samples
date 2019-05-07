@@ -3,9 +3,15 @@ pull_requests:
   do_not_increment_build_number: true
 configuration: Release
 platform: x64
+environment:
+  LicensePassword:
+    secure: 83JKISDczOy08t28HskByA==
 before_build:
 - cmd: get-external-libraries.bat
 - cmd: nuget restore
+- ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
+- cmd: appveyor-tools\secure-file -decrypt /common/cinecoder_license_string.cs.enc -secret %LicensePassword%
+- cmd: appveyor-tools\secure-file -decrypt /common/cinecoder_license_string.h.enc -secret %LicensePassword%
 build:
   project: Cinecoder.Samples.sln
   verbosity: minimal
