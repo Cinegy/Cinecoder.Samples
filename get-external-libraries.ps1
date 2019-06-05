@@ -4,7 +4,7 @@
 #$FreeGlut_Package_url = "https://www.transmissionzero.co.uk/files/software/development/GLUT/freeglut-MSVC.zip"
 #$FreeGlutPackageName =  Split-Path -Path $FreeGlut_Package_url -Leaf
 
-$CUDAConvertLibUrl = "http://caas-deploy.s3-eu-central-1.amazonaws.com/v1/Cinegy-CUDA-ConvertLib/CUDAConvertLib.1.0.0.5.nupkg"
+$CUDAConvertLibUrl = "http://caas-deploy.s3-eu-central-1.amazonaws.com/v1/Cinegy-CUDA-ConvertLib/CUDAConvertLib.1.0.0.6.nupkg"
 $CUDAConvertLibPackageName =  Split-Path -Path $CUDAConvertLibUrl -Leaf
 
 #OpenALSoftPackageName = "OpenALSoft-1.18.2.zip"
