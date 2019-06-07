@@ -83,23 +83,24 @@ void printHelp(void)
 	printf("Usage: Daniel2.SimplePlayerGL [OPTION]...\n");
 	printf("Test the decode DANIEL2 format file (DN2) using OpenGL(GLUT)\nNow with added Cinecoder power to decode MXFs with various other codecs (because we can!)");
 	printf("\n");
-	printf("Command line example: <Daniel2.SimplePlayerGL.exe> <file_path> -decoders 2 -vsync -rotate_frame\n");
+	printf("Command line example: <Daniel2.SimplePlayerGL.exe> <file_path> -decoders 2 -vsync -rotate_frame -output_format RGBA32\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("-help               display this help menu\n");
 	printf("-decoders <N>       max count of decoders [1..4] (default: 2)\n");
 	//printf("-vsync              enable vertical synchronisation (default - disable)\n");
-	printf("-fpsmax             enable maximum playing fps (default - disable)\n");
-	printf("-rotate_frame       enable rotate frame (default - disable)\n");
+	printf("-fpsmax             enable maximum playing fps (default: disable)\n");
+	printf("-rotate_frame       enable rotate frame (default: disable)\n");
 #ifdef USE_CUDA_SDK
-	printf("-cuda               enable CUDA decoding (default - disable, PC only)\n");
+	printf("-cuda               enable CUDA decoding (default: disable, PC only)\n");
 #endif
 #if defined(__WIN32__)
-	printf("-d3d11              enable DirectX11 pipeline (default - OpenGL)\n");
+	printf("-d3d11              enable DirectX11 pipeline (default: OpenGL)\n");
 #endif
 #if !defined(__WIN32__)
 	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
 #endif
+	printf("-output_format      output texture format (default: RGBA32 for 8 bit and RGBA64 for more 8 bit)\n");
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
@@ -192,6 +193,18 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN;
+
+	if (getCmdLineArgStr(argc, (const char **)argv, "output_format", &str))
+	{
+		if (strcmp(str, "RGBA32") == 0)
+			outputFormat = IMAGE_FORMAT_RGBA8BIT;
+		else if (strcmp(str, "RGBA64") == 0)
+			outputFormat = IMAGE_FORMAT_RGBA16BIT;
+		else 
+			printf("output_format set incorrect!\n");
+	}
+
 	int res = 0;
 	
 #if defined(__WIN32__)
@@ -204,7 +217,7 @@ int main(int argc, char **argv)
 
 	if (render && !render->IsInit())
 	{
-		int res = render->Init(filename, iMaxCountDecoders, g_useCuda); // init render
+		int res = render->Init(filename, iMaxCountDecoders, g_useCuda, outputFormat); // init render
 
 		if (res == 0)
 			res = render->SetParameters(g_bVSync, g_bRotate, g_bMaxFPS); // set startup parameters
@@ -217,7 +230,6 @@ int main(int argc, char **argv)
 
 	render = nullptr; // destroy render
 #else
-
 	decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
 
 	if (!decodeD2)
@@ -226,7 +238,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda); // Open input DN2 file
+	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda, outputFormat); // Open input DN2 file
 
 	if (res != 0)
 	{

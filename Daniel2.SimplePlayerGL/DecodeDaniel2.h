@@ -3,8 +3,8 @@
 #include "Block.h"
 #include "ReadFileDN2.h"
 
-enum IMAGE_FORMAT { IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
-enum BUFFER_FORMAT { BUFFER_FORMAT_RGBA32, BUFFER_FORMAT_RGBA64, BUFFER_FORMAT_YUY2, BUFFER_FORMAT_Y216 };
+enum IMAGE_FORMAT { IMAGE_FORMAT_UNKNOWN, IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
+enum BUFFER_FORMAT { BUFFER_FORMAT_UNKNOWN, BUFFER_FORMAT_RGBA32, BUFFER_FORMAT_RGBA64, BUFFER_FORMAT_YUY2, BUFFER_FORMAT_Y216 };
 
 #if defined(__WIN32__)
 class GPURenderDX;
@@ -22,6 +22,8 @@ private:
 	BUFFER_FORMAT m_outputBufferFormat;
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
+
+	IMAGE_FORMAT m_setOutputFormat;
 
 	CC_FRAME_RATE m_FrameRate;
 	CC_CHROMA_FORMAT m_ChromaFormat;
@@ -58,7 +60,7 @@ public:
 	~DecodeDaniel2();
 
 public:
-	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false);
+	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
 	int StartDecode();
 	int StopDecode();
 

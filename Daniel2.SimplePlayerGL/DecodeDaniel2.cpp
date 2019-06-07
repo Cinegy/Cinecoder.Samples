@@ -56,11 +56,13 @@ DecodeDaniel2::~DecodeDaniel2()
 	m_file.CloseFile(); // close reading DN2 file
 }
 
-int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda)
+int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda, IMAGE_FORMAT outputFormat)
 {
 	m_bInitDecoder = false;
 
 	m_bUseCuda = useCuda;
+
+	m_setOutputFormat = outputFormat;
 
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
@@ -633,6 +635,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #endif
 
 		CC_COLOR_FMT fmt = CCF_B8G8R8A8; // set output format
+
+		// set user settings for output format
+		if (m_setOutputFormat == IMAGE_FORMAT_RGBA8BIT)
+			BitDepth = 8;
+		else if (m_setOutputFormat == IMAGE_FORMAT_RGBA16BIT)
+			BitDepth = 16;
 
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
 
