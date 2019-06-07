@@ -55,13 +55,16 @@ int GPURenderDX::GenerateImage(bool & bRotateFrame)
 
 	unsigned char* pFrameData = pBlock->DataPtr();
 
-	D3D11_MAPPED_SUBRESOURCE ms;
-	hr = m_pd3dDeviceContext->Map(m_pTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); __hr(hr)
-	if (ms.pData && pFrameData && m_bCopyToTexture)
+	if (m_bCopyToTexture)
 	{
-		memcpy(ms.pData, pFrameData, size_tex_data);
+		D3D11_MAPPED_SUBRESOURCE ms;
+		hr = m_pd3dDeviceContext->Map(m_pTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); __hr(hr)
+		if (ms.pData && pFrameData)
+		{
+			memcpy(ms.pData, pFrameData, size_tex_data);
+		}
+		m_pd3dDeviceContext->Unmap(m_pTexture, NULL);
 	}
-	m_pd3dDeviceContext->Unmap(m_pTexture, NULL);
 
 	bRotateFrame = pBlock->GetRotate() ? !bRotateFrame : bRotateFrame; // Rotate frame
 
