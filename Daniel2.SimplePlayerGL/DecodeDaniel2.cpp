@@ -336,7 +336,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	{
 		com_ptr<ICC_DanielVideoDecoder_CUDA> pCuda;
 
-		if(FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda)))
+		if(FAILED(hr = m_pVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCuda)) || !pCuda)
 			return printf("DecodeDaniel2: Failed to get ICC_DanielVideoDecoder_CUDA interface!\n"), hr;
 
 		if (FAILED(hr = pCuda->put_TargetColorFormat(static_cast<CC_COLOR_FMT>(CCF_BGRA)))) // need call put_TargetColorFormat for using GetFrame when using GPU-pipeline
@@ -344,15 +344,15 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	}
 #endif
 
-	com_ptr<ICC_ProcessDataPolicyProp> pPolicy;
-	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)))
+	com_ptr<ICC_ProcessDataPolicyProp> pPolicy = nullptr;
+	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPolicy)) && pPolicy)
 	{
 		if (FAILED(hr = pPolicy->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
 			return printf("DecodeDaniel2: put_ProcessDataPolicy failed!\n"), hr;
 	}
 
-	com_ptr<ICC_ConcurrencyLevelProp> pConcur;
-	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur)))
+	com_ptr<ICC_ConcurrencyLevelProp> pConcur = nullptr;
+	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur)) && pConcur)
 	{
 		// set count of decoders in carousel of decoders
 		if (FAILED(hr = pConcur->put_ConcurrencyLevel(static_cast<CC_AMOUNT>(iMaxCountDecoders))))
@@ -466,20 +466,20 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	CC_TIME						PTS = 0;
 	CC_TIME						DTS = 0;
 
-	com_ptr<ICC_VideoStreamInfo> pVideoStreamInfo;
-	com_ptr<ICC_VideoFrameInfo> pVideoFrameInfo;
+	com_ptr<ICC_VideoStreamInfo> pVideoStreamInfo = nullptr;
+	com_ptr<ICC_VideoFrameInfo> pVideoFrameInfo = nullptr;
 
-	if (FAILED(hr = pVideoProducer->GetVideoStreamInfo((ICC_VideoStreamInfo**)&pVideoStreamInfo)))
+	if (FAILED(hr = pVideoProducer->GetVideoStreamInfo((ICC_VideoStreamInfo**)&pVideoStreamInfo)) || !pVideoStreamInfo)
 		return printf("GetVideoStreamInfo() fails\n"), hr;
 
-	if (FAILED(hr = pVideoProducer->GetVideoFrameInfo((ICC_VideoFrameInfo**)&pVideoFrameInfo)))
+	if (FAILED(hr = pVideoProducer->GetVideoFrameInfo((ICC_VideoFrameInfo**)&pVideoFrameInfo)) || !pVideoFrameInfo)
 		return printf("GetVideoFrameInfo() fails\n"), hr;
 
 	hr = pVideoStreamInfo->get_FrameRate(&FrameRate); __check_hr
 	hr = pVideoStreamInfo->get_FrameSize(&FrameSize); __check_hr
-
-	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt;
-	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)))
+	
+	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt = nullptr;
+	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)) || !pVideoStreamInfoExt)
 		return printf("Failed to get ICC_VideoStreamInfoExt interface\n"), hr;
 
 	hr = pVideoStreamInfoExt->get_ChromaFormat(&ChromaFormat); __check_hr
@@ -487,7 +487,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	hr = pVideoStreamInfoExt->get_BitDepthLuma(&BitDepth); __check_hr
 
 	com_ptr<ICC_DanielVideoStreamInfo>	pDanielVideoStreamInfo;
-	if(SUCCEEDED(pVideoStreamInfo->QueryInterface(IID_ICC_DanielVideoStreamInfo, (void**)&pDanielVideoStreamInfo)))
+	if(SUCCEEDED(pVideoStreamInfo->QueryInterface(IID_ICC_DanielVideoStreamInfo, (void**)&pDanielVideoStreamInfo)) && pDanielVideoStreamInfo)
 	{
 		hr = pDanielVideoStreamInfo->get_PictureOrientation(&PictureOrientation); __check_hr
 	}
