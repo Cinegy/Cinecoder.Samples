@@ -304,7 +304,8 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			
 #if defined(__WIN32__)
 		case CC_ES_TYPE_VIDEO_HEVC:
-			clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
+			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
+			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
 			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
@@ -620,21 +621,24 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					}
 				}
 
-				CC_VIDEO_FRAME_DESCR vid_frame_desc;
-				if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
+				if (m_bUseCuda)
 				{
-					m_fmt = vid_frame_desc.cFormat;
-					m_stride = vid_frame_desc.iStride;
-					m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
-					m_outputBufferFormat = BUFFER_FORMAT_NV12;
+					CC_VIDEO_FRAME_DESCR vid_frame_desc;
+					if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
+					{
+						m_fmt = vid_frame_desc.cFormat;
+						m_stride = vid_frame_desc.iStride;
+						m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+						m_outputBufferFormat = BUFFER_FORMAT_NV12;
 
-					if (m_fmt != CCF_NV12)
-						return E_FAIL;
+						if (m_fmt != CCF_NV12)
+							return E_FAIL;
 
-					m_bInitDecoder = true; // set init decoder value
-					m_eventInitDecoder.Set(); // set event about decoder was initialized
+						m_bInitDecoder = true; // set init decoder value
+						m_eventInitDecoder.Set(); // set event about decoder was initialized
 
-					return S_OK;
+						return S_OK;
+					}
 				}
 			}
 		}
