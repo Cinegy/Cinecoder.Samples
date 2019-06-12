@@ -520,6 +520,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				}
 				else
 				{
+					pBlock->iMatrixCoeff_YUYtoRGBA = ConvertMatrixCoeff_Default;
+
 					if (ChromaFormat == CC_CHROMA_422)
 						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
 
@@ -624,6 +626,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					m_fmt = vid_frame_desc.cFormat;
 					m_stride = vid_frame_desc.iStride;
 					m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+					m_outputBufferFormat = BUFFER_FORMAT_NV12;
+
+					if (m_fmt != CCF_NV12)
+						return E_FAIL;
 
 					m_bInitDecoder = true; // set init decoder value
 					m_eventInitDecoder.Set(); // set event about decoder was initialized

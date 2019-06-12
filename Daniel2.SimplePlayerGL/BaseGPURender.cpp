@@ -680,6 +680,10 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 			h_convert_Y216_to_BGRA64_BtT(PARAMS); __vrcu
 		}
 	}
+	else if (buffer_format == BUFFER_FORMAT_NV12)
+	{
+		h_convert_NV12_to_RGBA32_BtT(PARAMS); __vrcu
+	}
 
 	// Unmap the resources
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
