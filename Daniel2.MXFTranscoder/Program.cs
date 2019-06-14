@@ -306,7 +306,7 @@ namespace Daniel2.MXFTranscoder
                 else if(arg.StartsWith("/bitrate="))
                 {
                     int mbs = Int32.Parse(arg.Substring(9));
-                    encParams.BitRate = mbs * 1000000;
+                    encParams.BitRate = mbs * 1000000L;
                     encParams.RateMode = CC_BITRATE_MODE.CC_CBR;
                 }
 
