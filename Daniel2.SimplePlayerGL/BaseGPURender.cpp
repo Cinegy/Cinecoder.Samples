@@ -689,7 +689,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	}
 	else if (buffer_format == BUFFER_FORMAT_P016)
 	{
-		//h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
+		h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
 	}
 
 	// Unmap the resources
