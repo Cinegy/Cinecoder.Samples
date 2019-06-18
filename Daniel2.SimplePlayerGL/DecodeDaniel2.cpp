@@ -631,7 +631,17 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 						m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 						m_outputBufferFormat = BUFFER_FORMAT_NV12;
 
-						if (m_fmt != CCF_NV12)
+						if (m_fmt == CCF_NV12)
+						{
+							m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+							m_outputBufferFormat = BUFFER_FORMAT_NV12;
+						}
+						else if (m_fmt == CCF_P016) // CCF_NV12_16BIT
+						{
+							m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+							m_outputBufferFormat = BUFFER_FORMAT_P016;
+						}
+						else 
 							return E_FAIL;
 
 						m_bInitDecoder = true; // set init decoder value

@@ -93,7 +93,7 @@ public:
 	virtual ~BaseGPURender();
 
 	int SetParameters(bool bVSync, bool bRotate, bool bMaxFPS);
-	int Init(std::string filename, size_t iMaxCountDecoders = 2, bool useCuda = false, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
+	int Init(std::string filename, size_t iMaxCountDecoders = 2, bool useCuda = false, size_t gpuDevice = 1, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
 	int InitAudioTrack(std::string filename, CC_FRAME_RATE frameRate);
 
 	int StartPipe();

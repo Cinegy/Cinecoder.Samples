@@ -67,7 +67,7 @@ int BaseGPURender::SetParameters(bool bVSync, bool bRotate, bool bMaxFPS)
 	return 0;
 }
 
-int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool useCuda, IMAGE_FORMAT outputFormat)
+int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool useCuda, size_t gpuDevice, IMAGE_FORMAT outputFormat)
 {
 	m_bUseGPU = useCuda;
 
@@ -102,7 +102,10 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 
 			std::wstring dev_name(adapterDesc.Description);
 
-			if (dev_name.find(L"NVIDIA") != std::string::npos)
+			if ( (gpuDevice == 0) || 
+				 (gpuDevice == 1 && dev_name.find(L"NVIDIA") != std::string::npos) || 
+				 (gpuDevice == 2 && dev_name.find(L"Intel") != std::string::npos)
+				)
 			{
 				pAdapter->QueryInterface(IID_IDXGIAdapter1, (void**)&m_pCapableAdapter);
 				break;
@@ -683,6 +686,10 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	else if (buffer_format == BUFFER_FORMAT_NV12)
 	{
 		h_convert_NV12_to_RGBA32_BtT(PARAMS); __vrcu
+	}
+	else if (buffer_format == BUFFER_FORMAT_P016)
+	{
+		//h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
 	}
 
 	// Unmap the resources
