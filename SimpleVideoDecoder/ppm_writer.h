@@ -6,11 +6,8 @@ class C_PPMWriter : public C_Unknown, public ICC_DataReadyCallback
 	DWORD m_cbFrameBytes;
 	const char *m_strFileMask;
 
-	CC_COLOR_FMT formatImg;
-	INT stride;
-
 public:
-	C_PPMWriter(const char *filemask) : m_strFileMask(filemask), m_pBuffer(NULL), m_cbFrameBytes(0) , formatImg(CCF_BGR24), stride(0)
+	C_PPMWriter(const char *filemask) : m_strFileMask(filemask), m_pBuffer(NULL), m_cbFrameBytes(0)
 	{
 	}
 
@@ -20,7 +17,7 @@ public:
 			delete [] m_pBuffer;
 	}
 
-	_IMPLEMENT_IUNKNOWN_1(ICC_DataReadyCallback);                                 \
+	_IMPLEMENT_IUNKNOWN_1(ICC_DataReadyCallback);
 
 	STDMETHOD(DataReady)(IUnknown *pUnk)
 	{
@@ -38,6 +35,9 @@ public:
 		if(spVideoInfo->get_FrameSize(&szFrame) != S_OK)
 			return E_UNEXPECTED;
 
+		CC_COLOR_FMT formatImg = CCF_BGR24;
+		int stride = szFrame.cx * 3;
+
 		if(m_pBuffer == NULL) // first call!
 		{
 			printf("Frame size = %d x %d, Frame rate = ", szFrame.cx, szFrame.cy);
@@ -48,15 +48,7 @@ public:
 			else
 				printf("<unknown>\n");
 
-			stride = szFrame.cx * 3;
 			hr = spProducer->GetFrame(formatImg, NULL, 0, stride, &m_cbFrameBytes);
-
-			if (hr == MPG_E_FORMAT_NOT_SUPPORTED)
-			{
-				formatImg = CCF_BGR32;
-				stride = szFrame.cx * 4;
-			} 
-			else if (FAILED(hr)) return hr;
 
 			if (FAILED(hr = spProducer->GetFrame(formatImg, NULL, 0, stride, &m_cbFrameBytes)))
 				return hr;
@@ -80,8 +72,8 @@ public:
 		sprintf(filename, m_strFileMask, dwFrameNumber);
 		fprintf(stderr, "%s:", filename);
 
-		DWORD dwBytesWrote = 0;
-		if(FAILED(hr = spProducer->GetFrame(formatImg, m_pBuffer, m_cbFrameBytes, stride, &dwBytesWrote)))
+		DWORD dwBytesWritten = 0;
+		if(FAILED(hr = spProducer->GetFrame(formatImg, m_pBuffer, m_cbFrameBytes, stride, &dwBytesWritten)))
 			return hr;
 
 		FILE *f = fopen(filename, "wb");
@@ -95,22 +87,8 @@ public:
 		if(fwrite(hdr, 1, strlen(hdr), f) != strlen(hdr))
 			return E_FAIL;
 
-		if (formatImg == CCF_BGR24 || formatImg == CCF_RGB24)
-		{
-			if(fwrite(m_pBuffer, 1, dwBytesWrote, f) != dwBytesWrote)
-				return E_FAIL;
-		}
-		else if (formatImg == CCF_BGR32 || formatImg == CCF_RGB32)
-		{
-			size_t pixels = szFrame.cx * szFrame.cy;
-			BYTE* pData = m_pBuffer;
-			for (size_t i = 0; i < pixels; ++i)
-			{
-				if (fwrite(pData, 1, 3, f) != 3) // save only 3 components: R G B
-					break;
-				pData += 4;
-			}
-		}
+		if(fwrite(m_pBuffer, 1, dwBytesWritten, f) != dwBytesWritten)
+			return E_FAIL;
 
 		fclose(f);
 
