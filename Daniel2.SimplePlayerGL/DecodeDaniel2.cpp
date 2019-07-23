@@ -38,6 +38,8 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_FrameRate.num = 60;
 	m_FrameRate.denom = 1;
 
+	m_dec_scale_factor = CC_VDEC_NO_SCALE;
+
 #if defined(__WIN32__)
 	m_pVideoDecD3D11 = nullptr;
 	m_pRender = nullptr;
@@ -133,6 +135,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
+		if (m_dec_scale_factor != CC_VDEC_NO_SCALE) printf("scale factor  : 1/%d\n", (2 << (m_dec_scale_factor - 1)));
 		if (strcmp(m_strStreamType, "Daniel") == 0) 
 		{
 			switch (m_ChromaFormat)
@@ -376,6 +379,14 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	else m_pVideoDecD3D11 = nullptr;
 #endif
 
+	//com_ptr<ICC_VDecFixedScaleFactorProp> pVDecFixedScaleFactorProp = nullptr;
+	//hr = m_pVideoDec->QueryInterface((ICC_VDecFixedScaleFactorProp**)&pVDecFixedScaleFactorProp);
+	//if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
+	//{
+	//	CC_VDEC_SCALE_FACTOR v = CC_VDEC_SCALE_X4;
+	//	hr = pVDecFixedScaleFactorProp->put_FixedScaleFactor(v);
+	//}
+
 	// init decoder
 	if (FAILED(hr = m_pVideoDec->Init()))
 		return printf("DecodeDaniel2: Init failed!\n"), hr;
@@ -590,6 +601,13 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 		if (SUCCEEDED(m_pVideoDec->get_TimeBase(&timeBase)) && timeBase != 0)
 			m_llTimeBase = timeBase;
+
+		//com_ptr<ICC_VDecFixedScaleFactorProp> pVDecFixedScaleFactorProp = nullptr;
+		//hr = m_pVideoDec->QueryInterface((ICC_VDecFixedScaleFactorProp**)&pVDecFixedScaleFactorProp);
+		//if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
+		//{
+		//	hr = pVDecFixedScaleFactorProp->get_FixedScaleFactor(&m_dec_scale_factor);
+		//}
 
 		com_ptr<ICC_VideoAccelerationInfo> pVideoAccelerationInfo;
 		if (SUCCEEDED(m_pVideoDec->QueryInterface(IID_ICC_VideoAccelerationInfo, (void**)&pVideoAccelerationInfo)))

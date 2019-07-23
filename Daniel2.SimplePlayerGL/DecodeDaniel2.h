@@ -29,6 +29,8 @@ private:
 	CC_CHROMA_FORMAT m_ChromaFormat;
 	DWORD m_BitDepth;
 
+	CC_VDEC_SCALE_FACTOR m_dec_scale_factor;
+
 	bool m_bProcess;
 	bool m_bPause;
 	bool m_bDecode;
