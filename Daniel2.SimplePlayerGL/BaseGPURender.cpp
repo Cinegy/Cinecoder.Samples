@@ -451,6 +451,16 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			m_bShowSlider = false;
 		}
 
+		//Check the mouse left button is pressed or not
+		if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
+		{
+			if (m_bShowSlider)
+			{
+				SeekToFrame(x, y);
+				RenderWindow(); // update frame to improve performance of scrubbing
+			}
+		}
+
 		break;
 	}
 
