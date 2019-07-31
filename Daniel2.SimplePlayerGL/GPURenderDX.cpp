@@ -929,6 +929,14 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 				{
 					h_convert_Y216_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
+				else if (output_format == IMAGE_FORMAT_RGBA8BIT)
+				{
+					h_convert_Y216_to_RGBA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+				{
+					//h_convert_Y216_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
 			}
 
 			// Unmap the resources of texture
@@ -987,6 +995,14 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 				else if (output_format == IMAGE_FORMAT_BGRA16BIT)
 				{
 					h_convert_Y216_to_BGRA64_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_RGBA8BIT)
+				{
+					h_convert_Y216_to_RGBA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+				{
+					//h_convert_Y216_to_BGRA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
 

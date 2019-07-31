@@ -451,6 +451,16 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			m_bShowSlider = false;
 		}
 
+		//Check the mouse left button is pressed or not
+		if ((GetKeyState(VK_LBUTTON) & 0x80) != 0)
+		{
+			if (m_bShowSlider)
+			{
+				SeekToFrame(x, y);
+				RenderWindow(); // update frame to improve performance of scrubbing
+			}
+		}
+
 		break;
 	}
 
@@ -682,14 +692,36 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 		{
 			h_convert_Y216_to_BGRA64_BtT(PARAMS); __vrcu
 		}
+		else if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_Y216_to_RGBA32_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			//h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
+		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_NV12)
 	{
-		h_convert_NV12_to_RGBA32_BtT(PARAMS); __vrcu
+		if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_NV12_to_RGBA32_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			//h_convert_NV12_to_BGRA32_BtT(PARAMS); __vrcu
+		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_P016)
 	{
-		h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
+		if (output_format == IMAGE_FORMAT_RGBA16BIT)
+		{
+			h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+		{
+			//h_convert_P016_to_BGRA64_BtT(PARAMS); __vrcu
+		}
 	}
 
 	// Unmap the resources
