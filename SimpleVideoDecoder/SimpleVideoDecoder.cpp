@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	if(argc < 3)
 	{
       puts("Usage: video_decoder.exe <input_file> <codec_name>");
-      puts("Where codec_name can be MPEG, H264 or DN2");
+      puts("Where codec_name can be MPEG, H264, DN2 or DN2_CUDA");
       return 1;
 	}
 
@@ -62,6 +62,9 @@ int main(int argc, char* argv[])
       CODEC_CLSID = CLSID_CC_H264VideoDecoder;
     else if(0 == stricmp(argv[2], "DN2"))
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder;
+    else if(0 == stricmp(argv[2], "DN2_CUDA"))
+      CODEC_CLSID = CLSID_CC_DanielVideoDecoder_CUDA;
+
     else
       return fprintf(stderr, "Unknown codec_name '%s' specified\n", argv[2]), -2;
 
@@ -84,6 +87,17 @@ int main(int argc, char* argv[])
       return hr;
 
     if(FAILED(hr = spVideoDec->put_OutputCallback(static_cast<ICC_DataReadyCallback*>(new C_BMP32Writer("frame%05d.bmp")))))
+      return hr;
+
+    com_ptr<ICC_DanielVideoDecoder_CUDA> spDanielVideoDecoder_CUDA;
+	if(SUCCEEDED(hr = spVideoDec->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&spDanielVideoDecoder_CUDA)))
+	{
+	  // Daniel2 CUDA decoder requires the TargetColorFormat to be set up before Init.
+	  if(FAILED(hr = spDanielVideoDecoder_CUDA->put_TargetColorFormat(CCF_RGB32)))
+	    return hr;
+	}
+
+	if(FAILED(hr = spVideoDec->Init()))
 	  return hr;
 
     // 4. Main cycle ------------------------------------------------
