@@ -15,6 +15,11 @@
 #include "Cinecoder_h.h"	
 #include "Cinecoder_i.c"
 
+#ifdef _WIN32
+#include "Cinecoder.Plugin.GpuCodecs.h"
+#include "Cinecoder.Plugin.GpuCodecs_i.c"
+#endif
+
 #include "cinecoder_errors.h"
 
 #include "../common/cinecoder_license_string.h"
@@ -38,7 +43,11 @@ int main(int argc, char* argv[])
 	if(argc < 3)
 	{
       puts("Usage: video_decoder.exe <input_file> <codec_name>");
-      puts("Where codec_name can be MPEG, H264, DN2 or DN2_CUDA");
+      puts("Where the codec_name is: MPEG, H264, DN2, DN2_CUDA"
+#ifdef _WIN32
+           ", H264_NV, HEVC_NV"
+#endif
+	  );
       return 1;
 	}
 
@@ -54,7 +63,7 @@ int main(int argc, char* argv[])
     fprintf(stderr, "ok\n");
 
     // Determining the codec clsid ----------------------------------
-    CLSID CODEC_CLSID;
+    CLSID CODEC_CLSID; bool bGpuPluginIsRequired = false;
 
     if(0 == stricmp(argv[2], "MPEG"))
       CODEC_CLSID = CLSID_CC_MpegVideoDecoder;
@@ -64,7 +73,12 @@ int main(int argc, char* argv[])
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder;
     else if(0 == stricmp(argv[2], "DN2_CUDA"))
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder_CUDA;
-
+#ifdef _WIN32
+    else if(0 == stricmp(argv[2], "H264_NV"))
+    { CODEC_CLSID = CLSID_CC_H264VideoDecoder_NV; bGpuPluginIsRequired = true; }
+    else if(0 == stricmp(argv[2], "HEVC_NV"))
+    { CODEC_CLSID = CLSID_CC_HEVCVideoDecoder_NV; bGpuPluginIsRequired = true; }
+#endif
     else
       return fprintf(stderr, "Unknown codec_name '%s' specified\n", argv[2]), -2;
 
@@ -82,6 +96,10 @@ int main(int argc, char* argv[])
 
     spFactory->AssignLicense(COMPANYNAME, LICENSEKEY);
 
+#ifdef _WIN32
+    if(bGpuPluginIsRequired && FAILED(hr = spFactory->LoadPlugin(_T("Cinecoder.Plugin.GpuCodecs.dll"))))
+      return hr;
+#endif
     com_ptr<ICC_VideoDecoder> spVideoDec;
     if(FAILED(hr = spFactory->CreateInstance(CODEC_CLSID, IID_ICC_VideoDecoder, (IUnknown**)&spVideoDec)))
       return hr;
