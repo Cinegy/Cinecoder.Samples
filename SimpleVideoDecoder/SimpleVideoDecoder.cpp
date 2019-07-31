@@ -23,7 +23,7 @@
 #include "../common/com_ptr.h"
 #include "../common/c_unknown.h"
 
-#include "ppm_writer.h"
+#include "bmp_writer.h"
 
 #ifdef _MSC_VER
 #define stricmp _stricmp
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
     // Determining the codec clsid ----------------------------------
     CLSID CODEC_CLSID;
-    
+
     if(0 == stricmp(argv[2], "MPEG"))
       CODEC_CLSID = CLSID_CC_MpegVideoDecoder;
     else if(0 == stricmp(argv[2], "H264"))
@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
     if(FAILED(hr = spFactory->CreateInstance(CODEC_CLSID, IID_ICC_VideoDecoder, (IUnknown**)&spVideoDec)))
       return hr;
 
-    if(FAILED(hr = spVideoDec->put_OutputCallback(static_cast<ICC_DataReadyCallback*>(new C_PPMWriter("frame%05d.ppm")))))
-      return hr;
+    if(FAILED(hr = spVideoDec->put_OutputCallback(static_cast<ICC_DataReadyCallback*>(new C_BMP32Writer("frame%05d.bmp")))))
+	  return hr;
 
     // 4. Main cycle ------------------------------------------------
     for(;;)
