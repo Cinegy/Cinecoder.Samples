@@ -37,5 +37,8 @@ FTcudaGraphicsResourceSetMapFlags FUNC_CUDA(cudaGraphicsResourceSetMapFlags) = n
 FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray) = nullptr;
 FTcudaMemcpy2DToArrayAsync FUNC_CUDA(cudaMemcpy2DToArrayAsync) = nullptr;
 FTcudaMemcpyArrayToArray FUNC_CUDA(cudaMemcpyArrayToArray) = nullptr;
-FTcudaMemcpyToArray FUNC_CUDA(cudaMemcpyToArray) = nullptr;
+
+FTcudaMallocArray FUNC_CUDA(cudaMallocArray) = nullptr;
+FTcudaFreeArray FUNC_CUDA(cudaFreeArray) = nullptr;
+FTcudaCreateChannelDesc FUNC_CUDA(cudaCreateChannelDesc) = nullptr;
 #endif

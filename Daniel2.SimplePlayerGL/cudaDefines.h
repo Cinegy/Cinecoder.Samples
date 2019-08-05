@@ -1,6 +1,29 @@
 #pragma once
 
 #ifdef CUDA_WRAPPER
+	#define cudaArrayDefault                    0x00  /**< Default CUDA array allocation flag */
+	#define cudaArrayLayered                    0x01  /**< Must be set in cudaMalloc3DArray to create a layered CUDA array */
+	#define cudaArraySurfaceLoadStore           0x02  /**< Must be set in cudaMallocArray or cudaMalloc3DArray in order to bind surfaces to the CUDA array */
+	#define cudaArrayCubemap                    0x04  /**< Must be set in cudaMalloc3DArray to create a cubemap CUDA array */
+	#define cudaArrayTextureGather              0x08  /**< Must be set in cudaMallocArray or cudaMalloc3DArray in order to perform texture gather operations on the CUDA array */
+
+	enum cudaChannelFormatKind
+	{
+		cudaChannelFormatKindSigned = 0,      /**< Signed channel format */
+		cudaChannelFormatKindUnsigned = 1,      /**< Unsigned channel format */
+		cudaChannelFormatKindFloat = 2,      /**< Float channel format */
+		cudaChannelFormatKindNone = 3       /**< No channel format */
+	};
+
+	struct cudaChannelFormatDesc
+	{
+		int                        x; /**< x */
+		int                        y; /**< y */
+		int                        z; /**< z */
+		int                        w; /**< w */
+		enum cudaChannelFormatKind f; /**< Channel format kind */
+	};
+
 	enum cudaMemcpyKind
 	{
 		cudaMemcpyHostToHost = 0,      /**< Host   -> Host */
@@ -73,7 +96,10 @@ typedef cudaError_t (*FTcudaGraphicsResourceSetMapFlags)(cudaGraphicsResource_t 
 typedef cudaError_t(*FTcudaMemcpy2DToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaMemcpy2DToArrayAsync)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream);
 typedef cudaError_t(*FTcudaMemcpyArrayToArray)(cudaArray_t dst, size_t wOffsetDst, size_t hOffsetDst, cudaArray_t src, size_t wOffsetSrc, size_t hOffsetSrc, size_t count, cudaMemcpyKind kind);
-typedef cudaError_t(*FTcudaMemcpyToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t count, enum cudaMemcpyKind kind);
+
+typedef cudaError_t(*FTcudaMallocArray)(cudaArray_t *array, const struct cudaChannelFormatDesc *desc, size_t width, size_t height, unsigned int flags);
+typedef cudaError_t(*FTcudaFreeArray)(cudaArray_t array);
+typedef cudaChannelFormatDesc(*FTcudaCreateChannelDesc)(int x, int y, int z, int w, enum cudaChannelFormatKind f);
 
 extern FTcudaGetLastError FUNC_CUDA(cudaGetLastError);
 extern FTcudaGetErrorString FUNC_CUDA(cudaGetErrorString);
@@ -105,7 +131,10 @@ extern FTcudaGraphicsResourceSetMapFlags FUNC_CUDA(cudaGraphicsResourceSetMapFla
 extern FTcudaMemcpy2DToArray FUNC_CUDA(cudaMemcpy2DToArray);
 extern FTcudaMemcpy2DToArrayAsync FUNC_CUDA(cudaMemcpy2DToArrayAsync);
 extern FTcudaMemcpyArrayToArray FUNC_CUDA(cudaMemcpyArrayToArray);
-extern FTcudaMemcpyToArray  FUNC_CUDA(cudaMemcpyToArray);
+
+extern FTcudaMallocArray FUNC_CUDA(cudaMallocArray);
+extern FTcudaFreeArray FUNC_CUDA(cudaFreeArray);
+extern FTcudaCreateChannelDesc FUNC_CUDA(cudaCreateChannelDesc);
 
 #if defined(_WIN32)
 	#define CUDART32_FILENAME "cudart32_80.dll"
@@ -153,7 +182,6 @@ static int initCUDA()
 #if defined(__WIN32__)
 		FUNC_CUDA(cudaGraphicsD3D11RegisterResource) = (FTcudaGraphicsD3D11RegisterResource)GetProcAddress(hCuda, "cudaGraphicsD3D11RegisterResource");
 #endif
-
 		FUNC_CUDA(cudaGraphicsUnregisterResource) = (FTcudaGraphicsUnregisterResource)GetProcAddress(hCuda, "cudaGraphicsUnregisterResource");
 
 		FUNC_CUDA(cudaGraphicsMapResources) = (FTcudaGraphicsMapResources)GetProcAddress(hCuda, "cudaGraphicsMapResources");
@@ -167,7 +195,10 @@ static int initCUDA()
 		FUNC_CUDA(cudaMemcpy2DToArray) = (FTcudaMemcpy2DToArray)GetProcAddress(hCuda, "cudaMemcpy2DToArray");
 		FUNC_CUDA(cudaMemcpy2DToArrayAsync) = (FTcudaMemcpy2DToArrayAsync)GetProcAddress(hCuda, "cudaMemcpy2DToArrayAsync");
 		FUNC_CUDA(cudaMemcpyArrayToArray) = (FTcudaMemcpyArrayToArray)GetProcAddress(hCuda, "cudaMemcpyArrayToArray");
-		FUNC_CUDA(cudaMemcpyToArray) = (FTcudaMemcpyToArray)GetProcAddress(hCuda, "cudaMemcpyToArray");
+
+		FUNC_CUDA(cudaMallocArray) = (FTcudaMallocArray)GetProcAddress(hCuda, "cudaMallocArray");
+		FUNC_CUDA(cudaFreeArray) = (FTcudaFreeArray)GetProcAddress(hCuda, "cudaFreeArray");
+		FUNC_CUDA(cudaCreateChannelDesc) = (FTcudaCreateChannelDesc)GetProcAddress(hCuda, "cudaCreateChannelDesc");
 	}
 
 	if (!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) ||
