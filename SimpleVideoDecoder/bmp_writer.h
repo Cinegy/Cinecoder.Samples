@@ -113,7 +113,7 @@ public:
 			LONG  biYPelsPerMeter;
 			DWORD biClrUsed;
 			DWORD biClrImportant;
-		}
+		} hdr;
 #pragma pack(pop)
 		hdr = {};
 
