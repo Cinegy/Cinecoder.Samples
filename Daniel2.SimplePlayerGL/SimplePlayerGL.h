@@ -1,8 +1,8 @@
 #pragma once
 
 #if defined(__WIN32__)
-#include <GL/glew.h> // GLEW framework
-#include <GL/freeglut.h> // GLUT framework
+//#include <GL/glew.h> // GLEW framework
+//#include <GL/freeglut.h> // GLUT framework
 #elif defined(__APPLE__)
 #ifndef GL_SILENCE_DEPRECATION
 #define GL_SILENCE_DEPRECATION

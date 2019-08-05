@@ -15,7 +15,7 @@ bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
 bool g_bShowTexture = true;
 
-#if !defined(__WIN32__)
+#if defined(__USE_GLUT_RENDER__)
 #include "SimplePlayerGL.h"
 #endif
 
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
 
 	int res = 0;
 	
-#if defined(__WIN32__)
+#if defined(__WIN32__) && !defined(__USE_GLUT_RENDER__)
 	std::shared_ptr<BaseGPURender> render = nullptr; // pointer to render (OpenGL or DirectX11)
 
 	if (g_useDirectX11)
