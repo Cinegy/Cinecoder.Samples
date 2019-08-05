@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\freeglut.3.0.0.v140.1.0.2\build\freeglut.3.0.0.v140.props" Condition="Exists('..\packages\freeglut.3.0.0.v140.1.0.2\build\freeglut.3.0.0.v140.props')" />
   <Import Project="..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\CUDAConvertLib.1.0.0.7\build\CUDAConvertLib.props" Condition="Exists('..\packages\CUDAConvertLib.1.0.0.7\build\CUDAConvertLib.props')" />
@@ -232,7 +231,6 @@ call get-external-libraries.bat</Command>
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.1.9\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.9\build\Cinecoder.Plugin.Multiplexers.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.targets')" />
     <Import Project="..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.targets')" />
-    <Import Project="..\packages\glew.v140.1.12.0\build\native\glew.v140.targets" Condition="Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" />
   </ImportGroup>
   <!-- <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'"> -->
   <!-- <ItemGroup> -->
@@ -270,7 +268,5 @@ call get-external-libraries.bat</Command>
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.12.20018\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.32.23.56598\build\Cinecoder.targets'))" />
-    <Error Condition="!Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glew.v140.1.12.0\build\native\glew.v140.targets'))" />
-    <Error Condition="!Exists('..\packages\freeglut.3.0.0.v140.1.0.2\build\freeglut.3.0.0.v140.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\freeglut.3.0.0.v140.1.0.2\build\freeglut.3.0.0.v140.props'))" />
   </Target>
 </Project>
