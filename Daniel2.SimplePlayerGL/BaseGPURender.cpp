@@ -709,7 +709,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 		{
-			//h_convert_NV12_to_BGRA32_BtT(PARAMS); __vrcu
+			h_convert_NV12_to_BGRA32_BtT(PARAMS); __vrcu
 		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_P016)
@@ -720,7 +720,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
 		{
-			//h_convert_P016_to_BGRA64_BtT(PARAMS); __vrcu
+			h_convert_P016_to_BGRA64_BtT(PARAMS); __vrcu
 		}
 	}
 

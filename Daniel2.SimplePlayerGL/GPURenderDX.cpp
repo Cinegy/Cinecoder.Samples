@@ -935,7 +935,7 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 				}
 				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 				{
-					//h_convert_Y216_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+					h_convert_Y216_to_BGRA32_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
 
@@ -1002,7 +1002,7 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 				}
 				else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 				{
-					//h_convert_Y216_to_BGRA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
+					h_convert_Y216_to_BGRA32_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
 
