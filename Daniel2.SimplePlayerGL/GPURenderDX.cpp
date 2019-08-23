@@ -61,7 +61,13 @@ int GPURenderDX::GenerateImage(bool & bRotateFrame)
 		hr = m_pd3dDeviceContext->Map(m_pTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); __hr(hr)
 		if (ms.pData && pFrameData)
 		{
-			memcpy(ms.pData, pFrameData, size_tex_data);
+			if (ms.RowPitch == pBlock->Pitch())
+				memcpy(ms.pData, pFrameData, size_tex_data);
+			else
+			{
+				for (size_t i = 0; i < image_height; i++)
+					memcpy((BYTE*)ms.pData + (i * ms.RowPitch), pFrameData + (i * pBlock->Pitch()), pBlock->Pitch());
+			}
 		}
 		m_pd3dDeviceContext->Unmap(m_pTexture, NULL);
 	}
