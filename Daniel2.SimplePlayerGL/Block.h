@@ -48,7 +48,7 @@ public:
 #endif
 
 private:
-	std::vector<unsigned char> frame_buffer;
+	unsigned char* frame_buffer;
 
 	cudaPtr	pKernelDataOut;
 
@@ -62,7 +62,7 @@ public:
 public:
 	unsigned char* DataPtr() 
 	{ 
-		return frame_buffer.data(); 
+		return frame_buffer;
 	}
 
 	unsigned char* DataGPUPtr()
