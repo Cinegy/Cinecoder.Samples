@@ -75,6 +75,9 @@ typedef cudaError_t(*FTcudaMemset)(void *devPtr, int value, size_t count);
 typedef cudaError_t(*FTcudaMemcpy)(void* dst, const void* src, size_t count, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaFree)(void *devPtr);
 
+typedef cudaError_t(*FTcudaMallocHost)(void **ptr, size_t size);
+typedef cudaError_t(*FTcudaFreeHost)(void *ptr);
+
 typedef cudaError_t(*FTcudaStreamCreate)(cudaStream_t *pStream);
 typedef cudaError_t(*FTcudaStreamDestroy)(cudaStream_t stream);
 typedef cudaError_t(*FTcudaStreamSynchronize)(cudaStream_t stream);
@@ -108,6 +111,9 @@ extern FTcudaMalloc FUNC_CUDA(cudaMalloc);
 extern FTcudaMemset FUNC_CUDA(cudaMemset);
 extern FTcudaMemcpy FUNC_CUDA(cudaMemcpy);
 extern FTcudaFree FUNC_CUDA(cudaFree);
+
+extern FTcudaMallocHost FUNC_CUDA(cudaMallocHost);
+extern FTcudaFreeHost FUNC_CUDA(cudaFreeHost);
 
 extern FTcudaStreamCreate FUNC_CUDA(cudaStreamCreate);
 extern FTcudaStreamDestroy FUNC_CUDA(cudaStreamDestroy);
@@ -171,6 +177,9 @@ static int initCUDA()
 		FUNC_CUDA(cudaMemset) = (FTcudaMemset)GetProcAddress(hCuda, "cudaMemset");
 		FUNC_CUDA(cudaMemcpy) = (FTcudaMemcpy)GetProcAddress(hCuda, "cudaMemcpy");
 		FUNC_CUDA(cudaFree) = (FTcudaFree)GetProcAddress(hCuda, "cudaFree");
+
+		FUNC_CUDA(cudaMallocHost) = (FTcudaMallocHost)GetProcAddress(hCuda, "cudaMallocHost");
+		FUNC_CUDA(cudaFreeHost) = (FTcudaFreeHost)GetProcAddress(hCuda, "cudaFreeHost");
 
 		FUNC_CUDA(cudaStreamCreate) = (FTcudaStreamCreate)GetProcAddress(hCuda, "cudaStreamCreate");
 		FUNC_CUDA(cudaStreamDestroy) = (FTcudaStreamDestroy)GetProcAddress(hCuda, "cudaStreamDestroy");

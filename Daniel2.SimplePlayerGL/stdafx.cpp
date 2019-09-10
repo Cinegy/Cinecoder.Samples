@@ -13,6 +13,9 @@ FTcudaMemset FUNC_CUDA(cudaMemset) = nullptr;
 FTcudaMemcpy FUNC_CUDA(cudaMemcpy) = nullptr;
 FTcudaFree FUNC_CUDA(cudaFree) = nullptr;
 
+FTcudaMallocHost FUNC_CUDA(cudaMallocHost) = nullptr;
+FTcudaFreeHost FUNC_CUDA(cudaFreeHost) = nullptr;
+
 FTcudaStreamCreate FUNC_CUDA(cudaStreamCreate) = nullptr;
 FTcudaStreamDestroy FUNC_CUDA(cudaStreamDestroy) = nullptr;
 FTcudaStreamSynchronize FUNC_CUDA(cudaStreamSynchronize) = nullptr;
