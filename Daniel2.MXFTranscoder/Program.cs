@@ -56,7 +56,8 @@ namespace Daniel2.MXFTranscoder
                 Console.WriteLine("Chroma format: {0}{1}", streamInfo.Assigned("ChromaFormat") ? "" : "<unknown>, assuming ", streamInfo.ChromaFormat);
 
                 bool use_cuda = false;
-                var encParams = ParseArgs(args, streamInfo, ref use_cuda);
+                bool enc_looped = false;
+                var encParams = ParseArgs(args, streamInfo, ref use_cuda, ref enc_looped);
 
                 CC_COLOR_FMT exch_fmt =
                     encParams.ChromaFormat == CC_CHROMA_FORMAT.CC_CHROMA_RGB ||
@@ -105,17 +106,18 @@ namespace Daniel2.MXFTranscoder
 
                 fileWriter.Create(args[1]);
 
-                Console.WriteLine($"\nTotal frames: {VideoFile.Length}");
+                Console.WriteLine($"\nTotal frames: {VideoFile.Length}" + (enc_looped ? ", encoding looped." : ""));
+                Console.WriteLine("Press ESC if you want to stop encoding.");
 
                 long totalFrames = VideoFile.Length;
                 long codedFrames = 0;
                 DateTime t00 = DateTime.Now, t0 = t00;
                 double fps = 0;
-                long i0 = 0;
+                long f = 0, f0 = 0;
 
-                for (long i = 0; i < totalFrames; i++)
+                for (long i = 0; i < totalFrames; i++, f++)
                 {
-                    Console.Write($"\rframe {i} ({i*100.0/totalFrames:F2}%), {fps:F2} fps \b");
+                    Console.Write($"\rframe {f} ({f*100.0/totalFrames:F2}%), {fps:F2} fps \b");
                     var frameData = VideoFile.ReadFrame(i);
 
                     fixed (byte* p = frameData)
@@ -125,17 +127,20 @@ namespace Daniel2.MXFTranscoder
 
                     if (Console.KeyAvailable && Console.ReadKey().Key == ConsoleKey.Escape)
                     {
-                        Console.WriteLine("\nCancelled.");
+                        Console.WriteLine("\nStopped by ESC.");
                         break;
                     }
 
                     DateTime t1 = DateTime.Now;
                     if((t1 - t0).TotalMilliseconds > 500)
                     {
-                        fps = (i - i0) / (t1 - t0).TotalSeconds;
-                        i0 = i;
+                        fps = (f - f0) / (t1 - t0).TotalSeconds;
+                        f0 = f;
                         t0 = t1;
                     }
+
+                    if (enc_looped && i + 1 == totalFrames)
+                        i = -1;
                 }
 
                 decoder.Done(true);
@@ -251,6 +256,7 @@ namespace Daniel2.MXFTranscoder
                 "  /method=#  - the encoding method (0,[2])\n" +
                 "  /nenc=#    - the number of frame encoders working in a loop ([4])\n" +
                 "  /cuda      - use CUDA encoder\n"+
+                "  /looped    - if you want to loop the source file\n"+
                 "\n"+
                 "The most of the video stream parameters are obtained from the source stream,\n"+
                 "but you can ovveride some of them if you need by the switches:\n"+
@@ -266,7 +272,7 @@ namespace Daniel2.MXFTranscoder
             Console.ReadKey();
         }
 
-        static ICC_DanielVideoEncoderSettings ParseArgs(string[] args, ICC_DanielVideoEncoderSettings src, ref bool use_cuda)
+        static ICC_DanielVideoEncoderSettings ParseArgs(string[] args, ICC_DanielVideoEncoderSettings src, ref bool use_cuda, ref bool enc_looped)
         {
             ICC_DanielVideoEncoderSettings encParams = src;
 
@@ -328,6 +334,11 @@ namespace Daniel2.MXFTranscoder
                 else if (arg == "/cuda")
                 {
                     use_cuda = true;
+                }
+
+                else if (arg == "/looped")
+                {
+                    enc_looped = true;
                 }
 
                 else if (arg.StartsWith("/nenc="))
