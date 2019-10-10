@@ -75,7 +75,10 @@ namespace Daniel2.MXFTranscoder
                 Console.WriteLine($"Aspect ratio : {encParams.AspectRatio.num}:{encParams.AspectRatio.denom}");
                 Console.WriteLine($"Bit depth    : {encParams.BitDepth}");
                 Console.WriteLine($"Chroma format: {encParams.ChromaFormat}");
-                Console.WriteLine($"Bitrate      : {encParams.BitRate/1E6:F2} Mbps");
+                if (encParams.RateMode == CC_BITRATE_MODE.CC_CQ)
+                    Console.WriteLine($"QuantScale   : {encParams.QuantScale}");
+                else
+                    Console.WriteLine($"Bitrate      : {encParams.BitRate / 1E6:F2} Mbps");
                 Console.WriteLine($"Coding method: {encParams.CodingMethod}");
 
                 var decoder = CreateDecoder(VideoFile.StreamType);
@@ -243,7 +246,8 @@ namespace Daniel2.MXFTranscoder
                 "Usage: Daniel2.MXFTranscoder.exe <inputfile.MXF> <output_file.MXF> [<switches>]\n"+
                 "\n"+
                 "Where the switches are:\n"+
-                "  /bitrate=# - the bitrate value is in Mbps\n"+
+                "  /cbr=#     - CBR mode encoding where the arg is the bitrate value is in Mbps\n"+
+                "  /cq=#      - CQ mode encoding where the arg is the quant scale\n" +
                 "  /method=#  - the encoding method (0,[2])\n" +
                 "  /nenc=#    - the number of frame encoders working in a loop ([4])\n" +
                 "  /cuda      - use CUDA encoder\n"+
@@ -303,11 +307,17 @@ namespace Daniel2.MXFTranscoder
                 else if (arg == "/chroma=rgba")
                     encParams.ChromaFormat = CC_CHROMA_FORMAT.CC_CHROMA_RGBA;
 
-                else if(arg.StartsWith("/bitrate="))
+                else if(arg.StartsWith("/cbr="))
                 {
-                    int mbs = Int32.Parse(arg.Substring(9));
+                    int mbs = Int32.Parse(arg.Substring(5));
                     encParams.BitRate = mbs * 1000000L;
                     encParams.RateMode = CC_BITRATE_MODE.CC_CBR;
+                }
+
+                else if (arg.StartsWith("/cq="))
+                {
+                    encParams.QuantScale = float.Parse(arg.Substring(4));
+                    encParams.RateMode = CC_BITRATE_MODE.CC_CQ;
                 }
 
                 else if (arg.StartsWith("/method="))
