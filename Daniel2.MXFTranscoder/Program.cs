@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Cinecoder.Interop;
-using Cinecoder.Plugin.Multiplexers.Interop;
+using Cinecoder.Plugin.Multiplexers.Interop.MXF;
 
 namespace Daniel2.MXFTranscoder
 {
@@ -106,6 +107,37 @@ namespace Daniel2.MXFTranscoder
 
                 fileWriter.Create(args[1]);
 
+                // audio -------------------------------
+                var audioReader = Factory.CreateInstanceByName("MediaReader") as ICC_MediaReader;
+                audioReader.Open(args[0]);
+
+                int numAudioTracks = audioReader.NumberOfAudioTracks;
+                Console.WriteLine($"\nAudio tracks : {numAudioTracks}");
+
+                int audioBufferSize = 96000 * 16 * 4; // max possible buffer
+                IntPtr audioBuffer = Marshal.AllocHGlobal(audioBufferSize); 
+
+                var audioPins = new ICC_ByteStreamConsumer[numAudioTracks];
+                var audioFmts = new CC_AUDIO_FMT[numAudioTracks];
+
+                for (int i = 0; i < numAudioTracks; i++)
+                {
+                    audioReader.CurrentAudioTrackNumber = i;
+                    var audio_info = audioReader.CurrentAudioTrackInfo;
+
+                    Console.WriteLine($"{i}: Freq = {audio_info.SampleRate}Hz, NumCh = {audio_info.NumChannels}, BitDepth = {audio_info.BitsPerSample}");
+
+                    var pin_descr = Factory.CreateInstanceByName("MXF_MultiplexerPinSettings") as ICC_MXF_MultiplexerPinSettings;
+                    pin_descr.StreamType = CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_AUDIO_LPCM;
+                    pin_descr.FrameRate = encParams.FrameRate;
+                    pin_descr.BitsPerSample = audio_info.BitsPerSample;
+                    pin_descr.NumChannels = audio_info.NumChannels;
+                    pin_descr.SampleRate = audio_info.SampleRate;
+                    audioPins[i] = muxer.CreatePin(pin_descr);
+                    audioFmts[i] = GetAudioFormat(audio_info.NumChannels, audio_info.BitsPerSample);
+                }
+                // audio -------------------------------
+
                 Console.WriteLine($"\nTotal frames: {VideoFile.Length}" + (enc_looped ? ", encoding looped." : ""));
                 Console.WriteLine("Press ESC if you want to stop encoding.");
 
@@ -122,6 +154,14 @@ namespace Daniel2.MXFTranscoder
 
                     fixed (byte* p = frameData)
                         decoder.ProcessData((IntPtr)p, (uint)frameData.Length);
+
+                    audioReader.CurrentFrameNumber = (int)i;
+                    for (int track = 0; track < numAudioTracks; track++)
+                    {
+                        audioReader.CurrentAudioTrackNumber = track;
+                        var ret_sz = audioReader.GetCurrentAudioFrame(audioFmts[track], audioBuffer, (uint)audioBufferSize);
+                        audioPins[track].ProcessData(audioBuffer, ret_sz);
+                    }
 
                     codedFrames++;
 
@@ -147,6 +187,8 @@ namespace Daniel2.MXFTranscoder
                 encoder.Done(true);
                 muxer.Done(true);
 
+                Marshal.FreeHGlobal(audioBuffer);
+
                 Console.WriteLine($"\nTotal frame(s) processed: {codedFrames}, average fps: {codedFrames/(DateTime.Now-t00).TotalSeconds:F2}, average bitrate: {fileWriter.Length*8/1E6/codedFrames*encParams.FrameRate.num/encParams.FrameRate.denom:F2} Mbps");
 
                 fileWriter.Close();
@@ -161,6 +203,25 @@ namespace Daniel2.MXFTranscoder
 
             return 0;
         }
+
+        static CC_AUDIO_FMT GetAudioFormat(uint num_channels, uint bit_depth)
+		{
+            CC_AUDIO_FMT fmt = 0;
+
+			switch(bit_depth)
+			{
+				case  8: fmt = CC_AUDIO_FMT.CAF_PCM8; break;
+				case 16: fmt = CC_AUDIO_FMT.CAF_PCM16; break;
+				case 24: fmt = CC_AUDIO_FMT.CAF_PCM24; break;
+				case 32: fmt = CC_AUDIO_FMT.CAF_PCM32; break;
+				default: throw new Exception($"Invalid combination of bit_depth({bit_depth}) and num_channels({num_channels})");
+
+            }
+
+			return (CC_AUDIO_FMT)((int)fmt | num_channels);
+		}
+
+
 
         static ICC_VideoDecoder CreateDecoder(CC_ELEMENTARY_STREAM_TYPE type)
         {
