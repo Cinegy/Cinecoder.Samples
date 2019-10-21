@@ -521,7 +521,6 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			DWORD cb = 0;
 
 #ifdef USE_CUDA_SDK
-#if defined(__WIN32__)// || defined(__LINUX__)
 			if (m_bUseCuda)
 			{
 				if (m_bUseCudaHost) // use CUDA-pipeline with host memory
@@ -532,12 +531,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				}
 				else
 				{
+#if defined(__WIN32__)
 					pBlock->iMatrixCoeff_YUYtoRGBA = ConvertMatrixCoeff_Default;
 
 					if (ChromaFormat == CC_CHROMA_422)
 						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
 
-#if defined(__WIN32__)
 					if (m_pVideoDecD3D11)
 					{
 						CC_VA_STATUS vaStatus = CC_VA_STATUS_OFF;
@@ -557,7 +556,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 							m_pRender->MultithreadSyncEnd();
 							__check_hr
 						}
-					}
+					} // if (m_pVideoDecD3D11)
 					else
 #endif
 					{
@@ -566,24 +565,24 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					}
 				}
 			}
-			else
-#endif
+			else // use CPU-pipeline
 			{
 				hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 				__check_hr
 			}
-#else
+#else // #ifdef USE_CUDA_SDK
 			hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
 			__check_hr
-#endif
+#endif // #ifdef USE_CUDA_SDK
+
 			if (m_llDuration > 0)
 				pBlock->iFrameNumber = static_cast<size_t>(PTS) / m_llDuration; // save PTS (in our case this is the frame number)
 			else
 				pBlock->iFrameNumber = (PTS * m_FrameRate.num) / (m_llTimeBase * m_FrameRate.denom);
 
 			m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
-		}
-	}
+		} // if (pBlock)
+	} // if (m_bProcess)
 	else if (!m_bInitDecoder) // init values after first decoding frame
 	{
 		m_FrameRate = FrameRate;
