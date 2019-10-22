@@ -104,6 +104,7 @@ C_CritSec g_mutex; // global mutex
 
 #ifdef USE_CUDA_SDK
 cudaGraphicsResource_t cuda_tex_result_resource = nullptr;
+unsigned int bytePerPixel;
 #endif
 
 GLuint tex_result;  // Where we will copy result
@@ -833,11 +834,13 @@ void gpu_initGLBuffers()
 	{
 		cudaError cuErr;
 
-		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsWriteDiscard); __vrcu
+		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
 	}
 #endif
 
 	OGL_CHECK_ERROR_GL();
+
+	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
 }
 
 void gpu_UpdateGLSettings()
@@ -876,7 +879,75 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 	cudaArray *texture_ptr;
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
-	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+
+#if defined(__WIN32__)
+	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
+
+	IMAGE_FORMAT output_format = decodeD2->GetImageFormat();
+	BUFFER_FORMAT buffer_format = decodeD2->GetBufferFormat();
+
+	#define PARAMS pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA
+
+	if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
+	{
+		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+	}
+	else if (buffer_format == BUFFER_FORMAT_YUY2)
+	{
+		if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_YUY2_to_RGBA32_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			h_convert_YUY2_to_BGRA32_BtT(PARAMS); __vrcu
+		}
+	}
+	else if (buffer_format == BUFFER_FORMAT_Y216)
+	{
+		if (output_format == IMAGE_FORMAT_RGBA16BIT)
+		{
+			h_convert_Y216_to_RGBA64_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+		{
+			h_convert_Y216_to_BGRA64_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_Y216_to_RGBA32_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
+		}
+	}
+	else if (buffer_format == BUFFER_FORMAT_NV12)
+	{
+		if (output_format == IMAGE_FORMAT_RGBA8BIT)
+		{
+			h_convert_NV12_to_RGBA32_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
+		{
+			h_convert_NV12_to_BGRA32_BtT(PARAMS); __vrcu
+		}
+	}
+	else if (buffer_format == BUFFER_FORMAT_P016)
+	{
+		if (output_format == IMAGE_FORMAT_RGBA16BIT)
+		{
+			h_convert_P016_to_RGBA64_BtT(PARAMS); __vrcu
+		}
+		else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+		{
+			h_convert_P016_to_BGRA64_BtT(PARAMS); __vrcu
+		}
+	}
+#else
+	cudaMemcpy2DToArray(texture_ptr, 0, 0, cuda_dest_resource, pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+#endif
+
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 
 	//unsigned char *memPtr;
