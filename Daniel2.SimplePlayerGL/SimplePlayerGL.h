@@ -745,7 +745,7 @@ void gpu_initGLBuffers()
 
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
 
-#if defined(__WIN32__)
+//#if defined(__WIN32__)
 	if (g_useCuda)
 	{
 		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
@@ -754,14 +754,14 @@ void gpu_initGLBuffers()
 			{
 				g_bSwapRB = true;
 			}
-			else
+			else // for correct render in this mode version OpenGL must be 3.3 or later
 			{
 				GLint swizzleMask[] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
 				glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 			}
 		}
 	}
-#endif
+//#endif
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
