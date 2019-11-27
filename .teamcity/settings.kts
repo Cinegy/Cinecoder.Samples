@@ -57,6 +57,7 @@ object Version : BuildType({
 
 object Build : BuildType({
     name = "Build"
+    buildNumberPattern = "${Version.depParamRefs.buildNumber}"
 
     artifactRules = """_bin\Release.x64 => CinecoderSamples-%teamcity.build.branch%-%build.number%.zip"""
 
@@ -79,6 +80,16 @@ object Build : BuildType({
     }
 
     steps {
+        powerShell {
+            name = "(patch) Version (from version step)"
+            platform = PowerShellStep.Platform.x86
+            edition = PowerShellStep.Edition.Desktop
+            scriptMode = file {
+                path = "set_version.ps1"
+            }
+            noProfile = false
+            param("jetbrains_powershell_scriptArguments", "-majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}")
+        }
         exec {
             name = "(restore) Get libraries for build"
             path = "get-external-libraries.bat"

@@ -3,8 +3,8 @@
 param([int]$buildCounter,[string]$SourceRevisionValue="FFFFFF",[string]$OverrideMinorVersion="")
 
 #generate major / minor versions from current year / month
-$majorVer= Get-Date -UFormat “%y” 
-$minorVer= Get-Date -UFormat “%m” 
+$majorVer= Get-Date -UFormat "%y"
+$minorVer= Get-Date -UFormat "%m" 
 
 if($OverrideMinorVersion)
 {

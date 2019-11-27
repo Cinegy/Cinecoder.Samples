@@ -1,21 +1,8 @@
 # PowerShell Cinegy Build Script
 # COPYRIGHT Cinegy GmbH 2019
-param([string]$BuildCounter=0,[string]$SourceRevisionValue="FFFFFF",[string]$OverrideMinorVersion="")
+param([string]$majorVer,[string]$minorVer,[string]$buildVer,[string]$sourceVer)
 
-#generate major / minor versions from current year / month
-$majorVer= Get-Date -UFormat “%y” 
-$minorVer= Get-Date -UFormat “%m” 
-
-if($OverrideMinorVersion)
-{
-    $minorVer = $OverrideMinorVersion
-}
-
-#calculte a UInt16 from the commit hash to use as 4th version flag
-$shortRev = $SourceRevisionValue.Substring(0,4)
-$sourceAsDecimal = [System.Convert]::ToUInt16($shortRev, 16) -1
-
-$SoftwareVersion = "$majorVer.$minorVer.$BuildCounter.$sourceAsDecimal"
+$SoftwareVersion = "$majorVer.$minorVer.$buildVer.$sourceVer"
 $SoftwareVersionList = $SoftwareVersion.Replace('.', ',')
 
 #make teamcity update with this new version number
