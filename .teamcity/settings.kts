@@ -82,12 +82,9 @@ object Build : BuildType({
     steps {
         powerShell {
             name = "(patch) Version (from version step)"
-            platform = PowerShellStep.Platform.x86
-            edition = PowerShellStep.Edition.Desktop
             scriptMode = file {
                 path = "set_version.ps1"
             }
-            noProfile = false
             param("jetbrains_powershell_scriptArguments", "-majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}")
         }
         exec {
