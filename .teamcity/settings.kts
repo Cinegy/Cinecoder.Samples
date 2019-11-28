@@ -1,4 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.v2018_2.*
+import jetbrains.buildServer.configs.kotlin.v2018_2.ui.*
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.MSBuildStep
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.exec
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.msBuild
@@ -106,10 +107,12 @@ object Version : BuildType({
     }
 
     params {
-        text("MajorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true)
-        text("BuildVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true)
-        text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true)
-        text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true)
+        text("MajorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script, made as param for later steps to call easily
+        text("BuildVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
+        text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
+        text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
+        text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
+        password("LICENSE_KEY", "credentialsJSON:3232fa18-602e-4414-80d5-9901a79cfc16", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 
     steps {
@@ -137,10 +140,6 @@ object BuildWin : BuildType({
 
     artifactRules = """_bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip"""
 
-    params {
-        text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
-        password("LICENSE_KEY", "zxxa438a776e2232213653a573da6eb2734dca83fc076d4ebe9c9ee46ce2dcfcf2daf64a0983187fa7e2782eea53ed0acfa9545bd6184f6c2d3ee310aba0bcd293b775d03cbe80d301b", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
-    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -175,7 +174,7 @@ object BuildWin : BuildType({
             scriptMode = file {
                 path = "common/inject-license.ps1"
             }
-            param("jetbrains_powershell_scriptArguments", "-CompanyName %LICENSE_COMPANYNAME% -LicenseKey %LICENSE_KEY%")
+            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
         }
         msBuild {
             name = "(build) Samples Solution"
@@ -217,7 +216,7 @@ object BuildLinux : BuildType({
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
-            arguments = "./common/inject-license.ps1 -CompanyName %LICENSE_COMPANYNAME% -LicenseKey %LICENSE_KEY%"
+            arguments = "./common/inject-license.ps1 -CompanyName -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
         }
         exec {
