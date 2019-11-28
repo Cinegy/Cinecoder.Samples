@@ -168,8 +168,8 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets')" />
-    <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.2\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.2\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
     <Import Project="..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -178,8 +178,8 @@
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.2\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.2\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.8.34741\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
   </Target>
 </Project>
