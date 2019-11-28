@@ -35,23 +35,6 @@ Get-ChildItem -Path ComponentsCustoms.rc -Recurse | ForEach-Object {
     [System.IO.File]::WriteAllLines($fileName.FullName, $FileLines)
 }
 
-#patch WIX file used by bootstrapper
-$WixProductVerRegex = '(^\s*<\?define ProductVersion\s*=\s*")(.*)("\s*\?>)'
-
-Get-ChildItem -Path CinegyPlayer.Bootstrapper/Common.wxi -Recurse | ForEach-Object {
-    $fileName = $_
-    Write-Host "Processing metadata changes for file: $fileName"
-
-    $FileLines = Get-Content -path $fileName 
-    
-    for($i=0;$i -lt $FileLines.Count;$i++)
-    {
-        $FileLines[$i] = $FileLines[$i] -Replace $WixProductVerRegex, "`${1}$SoftwareVersion`$3"
-    }
-
-    [System.IO.File]::WriteAllLines($fileName.FullName, $FileLines)
-}
-
 #find C#/C++ AssemblyInfo files and update versions, company info and copyright years
 $AssemblyCompanyRegex = '(^\s*\[\s*assembly\s*:\s*((System\s*\.)?\s*Reflection\s*\.)?\s*AssemblyCompany(Attribute)?\s*\(\s*@?\")(([^\"]*\\\")*[^\"]*)(\"\s*\)\s*\])'
 $AssemblyCopyrightRegex = '(^\s*\[\s*assembly\s*:\s*((System\s*\.)?\s*Reflection\s*\.)?\s*AssemblyCopyright(Attribute)?\s*\(\s*@?\")(([^\"]*\\\")*[^\"]*)(\"\s*\)\s*\])'
