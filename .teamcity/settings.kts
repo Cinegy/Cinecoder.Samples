@@ -6,6 +6,9 @@ import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.nuGetInstaller
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2018_2.vcs.GitVcsRoot
+import jetbrains.buildServer.configs.kotlin.v2018_2.projectFeatures.dockerRegistry
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildFeatures.dockerSupport
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.dockerCommand
 
 version = "2019.1"
 
