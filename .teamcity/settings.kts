@@ -138,8 +138,10 @@ object BuildWin : BuildType({
     name = "build (win)"
     buildNumberPattern = "${Version.depParamRefs.buildNumber}"
 
-    artifactRules = """_bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip"""
-
+    artifactRules = """
+    _bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+    common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
+    """.trimIndent()
 
     vcs {
         root(DslContext.settingsRoot)
@@ -197,7 +199,7 @@ object BuildLinux : BuildType({
     // Integration Builds: disable most artifacts
     if(!isIntegrationBuild)
     { 
-        artifactRules = """_bin\Release.x64 => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
     }
 
     vcs {
@@ -281,6 +283,7 @@ object BuildAggregation : BuildType({
             artifacts {
                 artifactRules = """
                     CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+                    LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
         }

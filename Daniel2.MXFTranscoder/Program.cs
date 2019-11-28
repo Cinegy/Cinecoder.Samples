@@ -218,7 +218,7 @@ namespace Daniel2.MXFTranscoder
 
             }
 
-			return (CC_AUDIO_FMT)((int)fmt | num_channels);
+            return (CC_AUDIO_FMT)((uint)fmt | num_channels);
 		}
 
 
