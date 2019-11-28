@@ -197,7 +197,7 @@ object BuildLinux : BuildType({
     // Integration Builds: disable most artifacts
     if(!isIntegrationBuild)
     { 
-        artifactRules = """_bin\Release.x64 => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
     }
 
     vcs {
