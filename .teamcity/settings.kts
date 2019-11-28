@@ -6,18 +6,92 @@ import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.nuGetInstaller
 import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.powerShell
 import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2018_2.vcs.GitVcsRoot
+import jetbrains.buildServer.configs.kotlin.v2018_2.projectFeatures.dockerRegistry
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildFeatures.dockerSupport
+import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.dockerCommand
 
 version = "2019.1"
 
 project {
+    features {
+        dockerRegistry {
+            id = "CINEGY_REGISTRY"
+            name = "Cinegy GitLabDocker Registry"
+            url = "https://registry.cinegy.com"
+            userName = "teamcity_service"
+            password = "credentialsJSON:c0105573-8413-4bca-b9ca-c3cfc95d5fb2"
+        }
+    }
+
+    subProject(DockerContainers)
+    subProject(SampleBinaries)
+
+}
+
+object DockerContainers : Project({
+    name = "Build Containers"
+    description = "Docker container images for use with Cinecoder Samples"
+
+    buildType(Ubuntu1804CinecoderSamples)
+})
+
+object Ubuntu1804CinecoderSamples : BuildType({
+    name = "Ubuntu 18.04 Build Container"
+    description = "Docker container image for compiling Cinecoder Samples binaries on x86/x64 Linux"
+
+    buildNumberPattern = "19.%build.counter%"
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
+    steps {
+        dockerCommand {
+            name = "Build"
+            commandType = build {
+                source = path {
+                    path = "dockerfile"
+                }
+                namesAndTags = """
+                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest
+                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:%build.number%
+                """.trimIndent()
+                commandArgs = "--pull"
+            }
+            param("dockerImage.platform", "linux")
+        }
+        dockerCommand {
+            name = "Push"
+            commandType = push {
+                namesAndTags = """
+                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest
+                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:%build.number%
+                """.trimIndent()
+                removeImageAfterPush = false
+            }
+        }
+    }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
+        }
+    }
+})
+
+object SampleBinaries : Project({
+    name = "Sample Binaries"
+    description = "Cinecoder Samples Cross-Platform Binary Builds"
+
     buildType(Version)
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildAggregation)
 
     buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildAggregation)
-}
-
+})
 
 object Version : BuildType({
     name = "version"
@@ -138,13 +212,19 @@ object BuildLinux : BuildType({
             name = "(patch) Version (from version step)"
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+        }
+        exec {
+            name = "(patch) Inject license"
+            path = "pwsh"
+            arguments = "./common/inject-license.ps1 -CompanyName %LICENSE_COMPANYNAME% -LicenseKey %LICENSE_KEY%"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
         }
         exec {
             name = "(build) Samples Script"
             path = "./build_samples.sh"
             arguments = "Release"            
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
         }
     }
 
