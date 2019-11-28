@@ -10,7 +10,6 @@ before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %LicensePassword%
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %LicensePassword%
-- cmd: get-external-libraries.bat
 - cmd: nuget restore
 build:
   project: Cinecoder.Samples.sln
