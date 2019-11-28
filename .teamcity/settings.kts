@@ -11,9 +11,9 @@ version = "2019.1"
 
 project {
     buildType(Version)
-    buildType(Build)
+    buildType(BuildWin)
 
-    buildTypesOrder = arrayListOf(Version, Build)
+    buildTypesOrder = arrayListOf(Version, BuildWin)
 }
 
 
@@ -55,11 +55,11 @@ object Version : BuildType({
     }
 })
 
-object Build : BuildType({
-    name = "Build"
+object BuildWin : BuildType({
+    name = "build (Win)"
     buildNumberPattern = "${Version.depParamRefs.buildNumber}"
 
-    artifactRules = """_bin\Release.x64 => CinecoderSamples-%teamcity.build.branch%-%build.number%.zip"""
+    artifactRules = """_bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip"""
 
     params {
         text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
@@ -87,11 +87,6 @@ object Build : BuildType({
             }
             param("jetbrains_powershell_scriptArguments", "-majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}")
         }
-        exec {
-            name = "(restore) Get libraries for build"
-            path = "get-external-libraries.bat"
-            enabled = false
-        }
         nuGetInstaller {
             name = "(restore) Nuget"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
@@ -116,8 +111,96 @@ object Build : BuildType({
         }
     }
 
+})
+
+object BuildLinux : BuildType({
+    name = "build (linux)"
+    
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """_bin\Release.x64 => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+        }
+        exec {
+            name = "(build) Samples Script"
+            path = "./build_samples.sh"
+            arguments = "Release"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+        }
+    }
+
     triggers {
         vcs {
+            enabled = false
+            branchFilter = ""
+        }
+    }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+})
+
+object BuildAggregation : BuildType({
+    name = "build aggregation"
+    description = "Collected results from all dependencies for single commit status"
+
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    type = BuildTypeSettings.Type.COMPOSITE
+    buildNumberPattern = "${Version.depParamRefs.buildNumber}"
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+    
+    triggers {
+        vcs {
+        }
+    }
+
+    dependencies {
+        dependency(BuildLinux) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }        
+        dependency(BuildWin) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
         }
     }
 })
