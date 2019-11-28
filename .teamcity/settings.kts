@@ -89,9 +89,10 @@ object SampleBinaries : Project({
     buildType(Version)
     buildType(BuildWin)
     buildType(BuildLinux)
+    buildType(BuildLinuxArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -224,7 +225,62 @@ object BuildLinux : BuildType({
         }
         exec {
             name = "(build) Samples Script"
-            path = "./build_samples.sh"
+            path = "./build_samples-linux.sh"
+            arguments = "Release"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+        }
+    }
+
+    triggers {
+        vcs {
+            enabled = false
+            branchFilter = ""
+        }
+    }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+})
+
+object BuildLinuxArm64 : BuildType({
+    name = "build (linux-arm64)"
+    
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+        }
+        exec {
+            name = "(patch) Inject license"
+            path = "pwsh"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+        }
+        exec {
+            name = "(build) Samples Script"
+            enabled=false
+            path = "./build_samples-linux-arm64.sh"
             arguments = "Release"            
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
         }
@@ -273,6 +329,16 @@ object BuildAggregation : BuildType({
             artifacts {
                 artifactRules = """
                     CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }          
+        dependency(BuildLinuxArm64) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
         }        
