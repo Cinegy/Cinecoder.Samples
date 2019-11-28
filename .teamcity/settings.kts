@@ -12,8 +12,10 @@ version = "2019.1"
 project {
     buildType(Version)
     buildType(BuildWin)
+    buildType(BuildLinux)
+    buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildAggregation)
 }
 
 
@@ -56,7 +58,7 @@ object Version : BuildType({
 })
 
 object BuildWin : BuildType({
-    name = "build (Win)"
+    name = "build (win)"
     buildNumberPattern = "${Version.depParamRefs.buildNumber}"
 
     artifactRules = """_bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip"""
