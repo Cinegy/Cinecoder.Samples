@@ -1,6 +1,6 @@
 # Cinecoder Samples
 
-Projects demonstrating how to use Cinecoder to encode and decode, including the Daniel2 codec
+Projects demonstrating how to use Cinecoder to encode and decode, including the Daniel2 codec.
 
 ## Build Status
 
@@ -19,6 +19,10 @@ To build locally, develop custom apps or to integrate into other projects, pleas
 Example license files are visible in the /common folder of the project, although these license example strings are not valid.
 
 The build output artifacts from the sample build should not be used for any production scenarios and are provided for testing or demo purposes only, and will expire a period of time after compilation.
+
+Building for Windows requires Visual Studio 2015, and the samples include the required solution files.
+
+Building for Linux uses cmake, and a dockerfile is included within the repository that is used by Cinegy CI systems to compile the Linux samples. You can build this dockerfile and then run the 'build_samples.sh' script to execute the compilation.
 
 There are a few different projects included now within these samples, which help to show off some critical features of Cinecoder and the Daniel2 codec.
 
