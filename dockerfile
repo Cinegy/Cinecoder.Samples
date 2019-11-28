@@ -15,7 +15,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
         build-essential git nano gnupg apt-utils unzip sudo bzip2 \
         apt-transport-https curl wget ca-certificates cpio \
         mono-complete libboost-dev uuid-dev libssl-dev software-properties-common \
-        jq libopenal-dev libopengl-dev freeglut3-dev
+        jq libopenal-dev freeglut3-dev libglew-dev
 
 #add powershell core & dotnet 3
 RUN cd /tmp && \
