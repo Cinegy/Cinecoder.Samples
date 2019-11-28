@@ -188,7 +188,6 @@ object BuildWin : BuildType({
             args = "-p:Configuration=Release"
         }
     }
-
 })
 
 object BuildLinux : BuildType({
@@ -251,10 +250,10 @@ object BuildLinuxArm64 : BuildType({
     // check if the build type is Integration Build
     val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
 
-    // Integration Builds: disable most artifacts
+    // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
     if(!isIntegrationBuild)
     { 
-        artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """README.md => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
     vcs {
@@ -268,21 +267,21 @@ object BuildLinuxArm64 : BuildType({
             name = "(patch) Version (from version step)"
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1604/cuda8aarch64:latest"
         }
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
             arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1604/cuda8aarch64:latest"
         }
         exec {
             name = "(build) Samples Script"
             enabled=false
             path = "./build_samples-linux-arm64.sh"
             arguments = "Release"            
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1604/cuda8aarch64:latest"
         }
     }
 
