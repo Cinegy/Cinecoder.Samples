@@ -216,7 +216,8 @@ object BuildLinux : BuildType({
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
-            arguments = "./common/inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
         }
         exec {
