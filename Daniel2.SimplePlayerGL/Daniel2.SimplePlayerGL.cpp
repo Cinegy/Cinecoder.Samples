@@ -301,9 +301,9 @@ int main(int argc, char **argv)
 #else
 	bool bRotate = g_bRotate;
 
-	//g_bMaxFPS = true;
-	//g_bShowTexture = false;
-	//g_bCopyToTexture = false;
+	g_bMaxFPS = true;
+	g_bShowTexture = false;
+	g_bCopyToTexture = false;
 	//g_bDecoder = false;
 
 	//decodeD2->SetDecode(g_bDecoder);
@@ -311,6 +311,20 @@ int main(int argc, char **argv)
 
 	while (true)
 	{
+		if (!g_bMaxFPS && g_bVSyncHand)
+		{
+			double timestep = 1000.0 / ValueFPS;
+
+			double ms_elapsed = timerqFPSMode.GetElapsedTime();
+
+			int dT = (int)(timestep - ms_elapsed);
+
+			if (dT > 1)
+				std::this_thread::sleep_for(std::chrono::milliseconds(dT));
+
+			timerqFPSMode.StartTimer();
+		}
+
 		if (!g_bPause)
 		{
 			// Copy data from queue to texture
@@ -318,13 +332,20 @@ int main(int argc, char **argv)
 
 			if (res < 0)
 				printf("Load texture from decoder failed!\n");
+
+			ComputeFPS(); // Calculate fps
 		}
 		else
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
 		}
 
-		ComputeFPS(); // Calculate fps
+		if (_kbhit())
+		{
+			char ch = _getch();
+			if (ch == 27) break;
+			else Keyboard(ch, 0, 0);
+		}
 	}
 #endif
 	if (decodeD2)

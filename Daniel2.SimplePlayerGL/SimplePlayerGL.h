@@ -25,6 +25,44 @@
 
 #define __GLUT_WINDOW__
 
+#if defined(__WIN32__)
+#include<conio.h>
+#elif defined(__LINUX__)
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#define _getch getchar
+
+int _kbhit(void)
+{
+	struct termios oldt, newt;
+	int ch;
+	int oldf;
+
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
+	newt.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+	fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+	ch = getchar();
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+	if (ch != EOF)
+	{
+		ungetc(ch, stdin);
+		return 1;
+	}
+
+	return 0;
+}
+#endif
+
 ///////////////////////////////////////////////////////
 
 inline bool CheckErrorGL(const char *file, const int line)
@@ -1503,7 +1541,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case 'f':
 	{
 		g_bFullScreen = !g_bFullScreen;
-
+#if defined(__GLUT_WINDOW__)
 		if (g_bFullScreen)
 			glutFullScreen(); // if uses freeglut 3.0 and 4K image -> GL error invalid framebuffer operation
 		else
@@ -1511,7 +1549,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			glutPositionWindow(100, 100); // Start position window
 			glutReshapeWindow(window_width, window_height); // requests a change to the size of the current window.
 		}
-
+#endif
 		if (g_bFullScreen)
 			printf("fullscreen mode: on\n");
 		else
@@ -1726,6 +1764,10 @@ void SetPause(bool bPause)
 
 void SetVerticalSync(bool bVerticalSync)
 {
+#if !defined(__GLUT_WINDOW__)
+	return;
+#endif
+
 #if defined(__WIN32__)
 	if (!g_wglSwapInterval)
 	{
