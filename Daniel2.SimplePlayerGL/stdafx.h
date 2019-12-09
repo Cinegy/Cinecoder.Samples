@@ -103,6 +103,9 @@ using namespace cinegy::threading_std;
 
 #if defined(__WIN32__) // use CUDA convert library
 #include "CUDAConvertLib.h"
+#ifndef __CUDAConvertLib__  
+#define __CUDAConvertLib__
+#endif
 #endif
 
 #define __vrcu \

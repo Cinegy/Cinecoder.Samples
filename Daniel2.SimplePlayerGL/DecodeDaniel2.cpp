@@ -531,12 +531,13 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				}
 				else
 				{
-#if defined(__WIN32__)
+#if defined(__CUDAConvertLib__)
 					pBlock->iMatrixCoeff_YUYtoRGBA = ConvertMatrixCoeff_Default;
-
+#endif
 					if (ChromaFormat == CC_CHROMA_422)
 						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
 
+#if defined(__WIN32__)
 					if (m_pVideoDecD3D11)
 					{
 						CC_VA_STATUS vaStatus = CC_VA_STATUS_OFF;
