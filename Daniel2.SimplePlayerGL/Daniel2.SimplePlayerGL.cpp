@@ -357,13 +357,14 @@ int main(int argc, char **argv)
 				else Keyboard(ch, 0, 0);
 			}
 		}
-#endif
+
 		if (decodeD2)
 			decodeD2 = nullptr; // destroy video decoder
 
 		if (decodeAudio)
 			decodeAudio = nullptr; // destroy audio decoder
 	}
+#endif
 
 #ifdef USE_CUDA_SDK
 	if (g_useCuda)
