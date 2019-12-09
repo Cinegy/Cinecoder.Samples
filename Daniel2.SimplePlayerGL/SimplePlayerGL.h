@@ -23,8 +23,6 @@
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
 
-#define __GLUT_WINDOW__
-
 #if defined(__WIN32__)
 #include<conio.h>
 #elif defined(__LINUX__)
@@ -105,6 +103,8 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 ///////////////////////////////////////////////////////
 
 #define TITLE_WINDOW_APP "TestApp OGL(Decode Daniel2)"
+
+bool g_bGlutWindow = true;
 
 bool g_bCopyToTexture = true;
 bool g_bDecoder = true;
@@ -1366,34 +1366,38 @@ void ComputeFPS()
 		size_t data_rate = decodeD2->GetDataRate(true);
 		double fDataRate = bInit ? 0.0, bInit = false : (data_rate * 1000) / ms_elapsed / (1024 * 1024);
 
-#if defined(__GLUT_WINDOW__)
-		char cString[256];
-		std::string cTitle;
-
-		GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
-		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
-
-		if (g_bPause)
-			sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
-		else
-			sprintf_s(cString, "%s (%d x %d): %.0f fps data_rate = %.2f MB/s", TITLE_WINDOW_APP, w, h, fps, fDataRate);
-
-		cTitle = cString;
-		switch (g_internalFormat)
+		if (g_bGlutWindow)
 		{
-		case GL_RGBA: cTitle += " fmt=RGBA32"; break;
-		case GL_RGB10: cTitle += " fmt=RGB30"; break;
-		case GL_RGBA16: cTitle += " fmt=RGBA64"; break;
-		default: break;
+			char cString[256];
+			std::string cTitle;
+
+			GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+			GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
+
+			if (g_bPause)
+				sprintf_s(cString, "%s (%d x %d): (Pause)", TITLE_WINDOW_APP, w, h);
+			else
+				sprintf_s(cString, "%s (%d x %d): %.0f fps data_rate = %.2f MB/s", TITLE_WINDOW_APP, w, h, fps, fDataRate);
+
+			cTitle = cString;
+			switch (g_internalFormat)
+			{
+			case GL_RGBA: cTitle += " fmt=RGBA32"; break;
+			case GL_RGB10: cTitle += " fmt=RGB30"; break;
+			case GL_RGBA16: cTitle += " fmt=RGBA64"; break;
+			default: break;
+			}
+
+			cTitle += " cur_frm=";
+			cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
+
+			glutSetWindowTitle(cTitle.c_str());
+		}
+		else
+		{
+			printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
 		}
 
-		cTitle += " cur_frm=";
-		cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
-
-		glutSetWindowTitle(cTitle.c_str());
-#else
-		printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
-#endif
 		fpsCount = 0;
 
 		timer.StartTimer();
@@ -1541,15 +1545,18 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	case 'f':
 	{
 		g_bFullScreen = !g_bFullScreen;
-#if defined(__GLUT_WINDOW__)
-		if (g_bFullScreen)
-			glutFullScreen(); // if uses freeglut 3.0 and 4K image -> GL error invalid framebuffer operation
-		else
+
+		if (g_bGlutWindow)
 		{
-			glutPositionWindow(100, 100); // Start position window
-			glutReshapeWindow(window_width, window_height); // requests a change to the size of the current window.
+			if (g_bFullScreen)
+				glutFullScreen(); // if uses freeglut 3.0 and 4K image -> GL error invalid framebuffer operation
+			else
+			{
+				glutPositionWindow(100, 100); // Start position window
+				glutReshapeWindow(window_width, window_height); // requests a change to the size of the current window.
+			}
 		}
-#endif
+
 		if (g_bFullScreen)
 			printf("fullscreen mode: on\n");
 		else
@@ -1764,9 +1771,8 @@ void SetPause(bool bPause)
 
 void SetVerticalSync(bool bVerticalSync)
 {
-#if !defined(__GLUT_WINDOW__)
-	return;
-#endif
+	if (!g_bGlutWindow)
+		return;
 
 #if defined(__WIN32__)
 	if (!g_wglSwapInterval)

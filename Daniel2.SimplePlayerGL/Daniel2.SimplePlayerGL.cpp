@@ -102,6 +102,7 @@ void printHelp(void)
 #endif
 #if !defined(__WIN32__)
 	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
+	printf("-nogl               start without OpenGL (default use OpenGL)\n");
 #endif
 	printf("-output_format      output texture format (default: RGBA32 for 8 bit and RGBA64 for more 8 bit)\n");
 	printf("\nCommands:\n");
@@ -217,6 +218,10 @@ int main(int argc, char **argv)
 	{
 		g_useModernOGL = true; // use modern OpenGL 3.3
 	}
+	if (checkCmdLineArg(argc, (const char **)argv, "nogl"))
+	{
+		g_bGlutWindow = false;
+	}
 #endif
 
 	IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN;
@@ -281,13 +286,15 @@ int main(int argc, char **argv)
 
 	InitAudioTrack(filename, decodeD2->GetFrameRateValue());
 
-#if defined(__GLUT_WINDOW__)
-	gpu_initGLUT(&argc, argv); // Init GLUT
+	if (g_bGlutWindow)
+	{
+		gpu_initGLUT(&argc, argv); // Init GLUT
 
-	gpu_initGLBuffers(); // Init GL buffers
+		gpu_initGLBuffers(); // Init GL buffers
 
-	get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
-#endif
+		get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
+	}
+
 	// Start timer
 	timer.StartTimer();
 
@@ -295,65 +302,68 @@ int main(int argc, char **argv)
 
 	decodeD2->StartDecode(); // Start decoding
 
-#if defined(__GLUT_WINDOW__)
-	// Start mainloop
-	glutMainLoop(); // Wait
-#else
-	bool bRotate = g_bRotate;
-
-	g_bMaxFPS = true;
-	g_bShowTexture = false;
-	g_bCopyToTexture = false;
-	//g_bDecoder = false;
-
-	//decodeD2->SetDecode(g_bDecoder);
-	//decodeD2->SetReadFile(false);
-
-	while (true)
+	if (g_bGlutWindow)
 	{
-		if (!g_bMaxFPS && g_bVSyncHand)
-		{
-			double timestep = 1000.0 / ValueFPS;
-
-			double ms_elapsed = timerqFPSMode.GetElapsedTime();
-
-			int dT = (int)(timestep - ms_elapsed);
-
-			if (dT > 1)
-				std::this_thread::sleep_for(std::chrono::milliseconds(dT));
-
-			timerqFPSMode.StartTimer();
-		}
-
-		if (!g_bPause)
-		{
-			// Copy data from queue to texture
-			res = gpu_generateImage(bRotate);
-
-			if (res < 0)
-				printf("Load texture from decoder failed!\n");
-
-			ComputeFPS(); // Calculate fps
-		}
-		else
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
-		}
-
-		if (_kbhit())
-		{
-			char ch = _getch();
-			if (ch == 27) break;
-			else Keyboard(ch, 0, 0);
-		}
+		// Start mainloop
+		glutMainLoop(); // Wait
 	}
-#endif
-	if (decodeD2)
-        decodeD2 = nullptr; // destroy video decoder
+	else
+	{
+		bool bRotate = g_bRotate;
 
-    if (decodeAudio)
-        decodeAudio = nullptr; // destroy audio decoder
+		g_bMaxFPS = true;
+		g_bShowTexture = false;
+		g_bCopyToTexture = false;
+		//g_bDecoder = false;
+
+		//decodeD2->SetDecode(g_bDecoder);
+		//decodeD2->SetReadFile(false);
+
+		while (true)
+		{
+			if (!g_bMaxFPS && g_bVSyncHand)
+			{
+				double timestep = 1000.0 / ValueFPS;
+
+				double ms_elapsed = timerqFPSMode.GetElapsedTime();
+
+				int dT = (int)(timestep - ms_elapsed);
+
+				if (dT > 1)
+					std::this_thread::sleep_for(std::chrono::milliseconds(dT));
+
+				timerqFPSMode.StartTimer();
+			}
+
+			if (!g_bPause)
+			{
+				// Copy data from queue to texture
+				res = gpu_generateImage(bRotate);
+
+				if (res < 0)
+					printf("Load texture from decoder failed!\n");
+
+				ComputeFPS(); // Calculate fps
+			}
+			else
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
+			}
+
+			if (_kbhit())
+			{
+				char ch = _getch();
+				if (ch == 27) break;
+				else Keyboard(ch, 0, 0);
+			}
+		}
 #endif
+		if (decodeD2)
+			decodeD2 = nullptr; // destroy video decoder
+
+		if (decodeAudio)
+			decodeAudio = nullptr; // destroy audio decoder
+	}
 
 #ifdef USE_CUDA_SDK
 	if (g_useCuda)
