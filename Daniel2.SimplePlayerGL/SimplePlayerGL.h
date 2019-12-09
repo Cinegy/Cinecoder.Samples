@@ -918,7 +918,7 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
 
-#if defined(__WIN32__)
+#if defined(__CUDAConvertLib__)
 	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
 
 	IMAGE_FORMAT output_format = decodeD2->GetImageFormat();
