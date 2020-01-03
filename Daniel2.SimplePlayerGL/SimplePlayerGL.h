@@ -525,7 +525,8 @@ bool gpu_initGLUT(int *argc, char **argv)
 	}
 	else
 	{
-		glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+		//glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+		glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	}
 
 	glutInitWindowSize(window_width, window_height);
