@@ -15,7 +15,7 @@ INC = -I/usr/include/AL -I/usr/include/GL\ -I/usr/local/cuda/include -I../packag
 CFLAGS = -Wall -std=c++14 -m64 -fexceptions
 RESINC = 
 LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release
-LIB = -lGL -lGLU -lglut -lopenal -lpthread ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/libCinecoder.so
+LIB = -lGL -lGLU -lglut -lGLEW -lopenal -lpthread ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/libCinecoder.so
 LDFLAGS = -m64 -Wl,-rpath='.'
 
 INC_DEBUG = $(INC)
