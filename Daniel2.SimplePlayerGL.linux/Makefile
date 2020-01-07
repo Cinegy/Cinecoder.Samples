@@ -11,11 +11,11 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/AL -I/usr/include/GL\ -I/usr/local/cuda/include -I../packages/Cinecoder.3.32.10.39744/sources -I../packages/Cinecoder.3.32.10.39744/sources/winclude
+INC = -I/usr/include/AL -I/usr/include/GL\ -I/usr/local/cuda/include -I../packages/Cinecoder.3.33.8.34741/sources -I../packages/Cinecoder.3.33.8.34741/sources/winclude
 CFLAGS = -Wall -std=c++14 -m64 -fexceptions
 RESINC = 
-LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.32.10.39744/runtimes/linux-x64/native/release
-LIB = -lGL -lGLU -lglut -lopenal -lpthread ../packages/Cinecoder.3.32.10.39744/runtimes/linux-x64/native/release/libCinecoder.so
+LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release
+LIB = -lGL -lGLU -lglut -lopenal -lpthread ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/libCinecoder.so
 LDFLAGS = -m64 -Wl,-rpath='.'
 
 INC_DEBUG = $(INC)
@@ -53,7 +53,7 @@ before_debug:
 	test -d $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL
 
 after_debug: 
-	cp ../packages/Cinecoder.3.32.10.39744/runtimes/linux-x64/native/release/*.so bin/Debug
+	cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Debug
 
 debug: before_debug out_debug after_debug
 
@@ -85,7 +85,7 @@ before_release:
 	test -d $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL
 
 after_release: 
-	cp ../packages/Cinecoder.3.32.10.39744/runtimes/linux-x64/native/release/*.so bin/Release
+	cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Release
 
 release: before_release out_release after_release
 
