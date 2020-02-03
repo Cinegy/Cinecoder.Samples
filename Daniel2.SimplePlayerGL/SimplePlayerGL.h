@@ -138,6 +138,15 @@ int g_mouse_button = -1;
 
 C_CritSec g_mutex; // global mutex
 
+struct mousecoord
+{
+	mousecoord() { x = y = 0; }
+	mousecoord(int x_, int y_) { x = x_; y = y_; }
+	int x, y;
+};
+
+std::deque<mousecoord> g_queuecoord;
+
 ///////////////////////////////////////////////////////
 
 #ifdef USE_CUDA_SDK
@@ -448,8 +457,9 @@ void SetPause(bool bPause);
 void SetVerticalSync(bool bVerticalSync);
 void ComputeFPS();
 
-void SeekToFrame(int x, int y);
-void SeekToFrame(size_t iFrame);
+void SeekToFrame(int x, int y, bool bLock = true);
+void SeekToFrame(size_t iFrame, bool bLock = true);
+void SeekToFrameImpl(size_t iFrame);
 
 ///////////////////////////////////////////////////////
 
@@ -1051,6 +1061,14 @@ void RenderWindow()
 {
 	C_AutoLock lock(&g_mutex);
 
+	if (g_queuecoord.size() != 0)
+	{
+		if (g_queuecoord.size() >= 3) g_queuecoord.erase(g_queuecoord.begin(), g_queuecoord.end() - 1);
+
+		mousecoord coord = g_queuecoord.back();	g_queuecoord.pop_back();
+		SeekToFrame(coord.x, coord.y, false);
+	}
+
 	if (!g_bVSync && !g_bMaxFPS && g_bVSyncHand)
 	{
 		double timestep = 1000.0 / ValueFPS;
@@ -1393,6 +1411,9 @@ void ComputeFPS()
 			cTitle += std::to_string((long long)iCurPlayFrameNumber); // print current frame number
 
 			glutSetWindowTitle(cTitle.c_str());
+
+			if (g_bFullScreen)
+				printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
 		}
 		else
 		{
@@ -1745,8 +1766,9 @@ void OnMouseMove(int x, int y)
 	{
 		if (g_mouse_state == GLUT_DOWN && g_mouse_button == GLUT_LEFT_BUTTON)
 		{
-			SeekToFrame(x, y);
-			RenderWindow(); // update frame to improve performance of scrubbing
+			//SeekToFrame(x, y);
+			//RenderWindow(); // update frame to improve performance of scrubbing
+			g_queuecoord.push_back(mousecoord(x, y));
 		}
 
 		g_bShowSlider = true;
@@ -1802,9 +1824,22 @@ void SetVerticalSync(bool bVerticalSync)
 	OGL_CHECK_ERROR_GL();
 }
 
-void SeekToFrame(size_t iFrame)
+void SeekToFrame(size_t iFrame, bool bLock)
 {
-	C_AutoLock lock(&g_mutex);
+	if (bLock)
+	{
+		C_AutoLock lock(&g_mutex);
+		SeekToFrameImpl(iFrame);
+	}
+	else
+	{
+		SeekToFrameImpl(iFrame);
+	}
+}
+
+void SeekToFrameImpl(size_t iFrame)
+{
+	//C_AutoLock lock(&g_mutex);
 
 	decodeD2->SeekFrame(iFrame); // Setting the reading of the input file from the expected frame (from frame number <iFrame>)
 
@@ -1857,7 +1892,7 @@ void SeekToFrame(size_t iFrame)
 	}
 }
 
-void SeekToFrame(int x, int y)
+void SeekToFrame(int x, int y, bool bLock)
 {
 	GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
 	GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
@@ -1878,7 +1913,7 @@ void SeekToFrame(int x, int y)
 	{
 		size_t iFrame = (size_t)(((float)x * (float)(iAllFrames - 1)) / ((float)w - (2.f * edgeLineX)));
 
-		SeekToFrame(iFrame); // Seek to frame number <iFrame>
+		SeekToFrame(iFrame, bLock); // Seek to frame number <iFrame>
 	}
 }
 
