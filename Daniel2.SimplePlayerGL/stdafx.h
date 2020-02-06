@@ -16,6 +16,7 @@
 #include <atomic>
 #include <thread>
 #include <chrono>
+#include <algorithm>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -101,7 +102,7 @@ using namespace cinegy::threading_std;
 
 #include "cudaDefines.h"
 
-#if defined(__WIN32__) // use CUDA convert library
+#if defined(__WIN32__) || defined(__LINUX__) // use CUDA convert library
 #include "CUDAConvertLib.h"
 #ifndef __CUDAConvertLib__  
 #define __CUDAConvertLib__
