@@ -149,7 +149,11 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
-		if (m_dec_scale_factor != CC_VDEC_NO_SCALE) printf("scale factor  : 1/%d\n", (2 << (m_dec_scale_factor - 1)));
+		if (m_dec_scale_factor != CC_VDEC_NO_SCALE)
+		{
+			size_t factor = (2 << (m_dec_scale_factor - 1));
+			printf("scale factor  : 1/%zd (original size %zu x %zu)\n", factor, m_width * factor, m_height * factor);
+		}
 		if (strcmp(m_strStreamType, "Daniel") == 0) 
 		{
 			switch (m_ChromaFormat)
