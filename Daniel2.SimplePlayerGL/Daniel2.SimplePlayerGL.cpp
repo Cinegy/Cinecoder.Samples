@@ -3,6 +3,16 @@
 
 #include "stdafx.h"
 
+#if defined(__LINUX__)
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/mman.h>
+#include <sys/ioctl.h>
+#endif
+
 bool g_bPause = false;
 bool g_bVSync = false;
 bool g_bRotate = true;
@@ -104,7 +114,11 @@ void printHelp(void)
 	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
 	printf("-nogl               start without OpenGL (default use OpenGL)\n");
 #endif
+#if defined(__LINUX__)
+	printf("-framebuffer        start without OpenGL and use framebuffer mode (work in Linux text console)\n");
+#endif
 	printf("-output_format      output texture format (default: RGBA32 for 8 bit and RGBA64 for more 8 bit)\n");
+	printf("-scale <N>          scale output buffer 1(x2) 2(x4) 3(x8) (only without CUDA, default: 0)\n");
 	printf("\nCommands:\n");
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
@@ -142,6 +156,7 @@ int main(int argc, char **argv)
 	std::string filename;
 
 	size_t iMaxCountDecoders = 2;
+	size_t iScale = 0;
 
 	char *str = nullptr;
 
@@ -150,6 +165,11 @@ int main(int argc, char **argv)
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
 		iMaxCountDecoders = atoi(str); // max count of decoders [1..4] (default: 2)
+	}
+
+	if (getCmdLineArgStr(argc, (const char **)argv, "scale", &str))
+	{
+		iScale = atoi(str);
 	}
 
 	if (checkCmdLineArg(argc, (const char **)argv, "vsync"))
@@ -223,6 +243,13 @@ int main(int argc, char **argv)
 		g_bGlutWindow = false;
 	}
 #endif
+#if defined(__LINUX__)
+	if (checkCmdLineArg(argc, (const char **)argv, "framebuffer"))
+	{
+		g_bFramebuffer = true;
+		g_bGlutWindow = false;
+	}
+#endif
 
 	IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN;
 
@@ -269,7 +296,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda, outputFormat); // Open input DN2 file
+	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda, iScale, outputFormat); // Open input DN2 file
 
 	if (res != 0)
 	{
@@ -302,6 +329,16 @@ int main(int argc, char **argv)
 
 	decodeD2->StartDecode(); // Start decoding
 
+#if defined(__LINUX__)
+	int fbfd = 0;
+	struct fb_var_screeninfo vinfo;
+	struct fb_fix_screeninfo finfo;
+	long int screensize = 0;
+	char *fbp = nullptr;
+	int x = 0, y = 0;
+	long int location = 0;
+#endif
+
 	if (g_bGlutWindow)
 	{
 		// Start mainloop
@@ -309,6 +346,44 @@ int main(int argc, char **argv)
 	}
 	else
 	{
+#if defined(__LINUX__)
+		if (g_bFramebuffer)
+		{
+			// Open the file for reading and writing
+			fbfd = open("/dev/fb0", O_RDWR);
+			if (fbfd == -1) {
+				perror("Error: cannot open framebuffer device");
+				exit(1);
+			}
+			printf("The framebuffer device was opened successfully.\n");
+
+			// Get fixed screen information
+			if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo) == -1) {
+				perror("Error reading fixed information");
+				exit(2);
+			}
+
+			// Get variable screen information
+			if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == -1) {
+				perror("Error reading variable information");
+				exit(3);
+			}
+
+			printf("%dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+
+			// Figure out the size of the screen in bytes
+			screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
+
+			// Map the device to memory
+			fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
+			if (fbp == nullptr) {
+				perror("Error: failed to map framebuffer device to memory");
+				exit(4);
+			}
+			printf("The framebuffer device was mapped to memory successfully.\n");
+
+		}
+#endif
 		bool bRotate = g_bRotate;
 
 		g_bMaxFPS = true;
@@ -337,8 +412,17 @@ int main(int argc, char **argv)
 
 			if (!g_bPause)
 			{
-				// Copy data from queue to texture
-				res = gpu_generateImage(bRotate);
+#if defined(__LINUX__)
+				if (g_bFramebuffer)
+				{
+					res = copy_to_framebuffer((unsigned char*)fbp, static_cast<size_t>(screensize));
+				}
+				else
+#endif
+				{
+					// Copy data from queue to texture
+					res = gpu_generateImage(bRotate);
+				}
 
 				if (res < 0)
 					printf("Load texture from decoder failed!\n");
@@ -363,6 +447,16 @@ int main(int argc, char **argv)
 
 		if (decodeAudio)
 			decodeAudio = nullptr; // destroy audio decoder
+
+#if defined(__LINUX__)
+		if (g_bFramebuffer)
+		{
+			memset(fbp, 0x00, screensize);
+			munmap(fbp, screensize);
+			close(fbfd);
+		}
+#endif
+
 	}
 #endif
 

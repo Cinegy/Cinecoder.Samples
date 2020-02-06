@@ -67,7 +67,7 @@ int BaseGPURender::SetParameters(bool bVSync, bool bRotate, bool bMaxFPS)
 	return 0;
 }
 
-int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool useCuda, size_t gpuDevice, IMAGE_FORMAT outputFormat)
+int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool useCuda, size_t gpuDevice, size_t iScale, IMAGE_FORMAT outputFormat)
 {
 	m_bUseGPU = useCuda;
 
@@ -116,7 +116,7 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 		//m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
 	}
 
-	int res = m_decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, useCuda, outputFormat);
+	int res = m_decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, useCuda, iScale, outputFormat);
 
 	if (res != 0)
 	{
@@ -666,7 +666,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
 
 	#define PARAMS pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA
-
+printf("::CopyCUDAImage()\n");
 	if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 	{
 		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
