@@ -18,7 +18,18 @@
 #include <GL/glew.h> // GLEW framework
 #include <GL/glx.h> // GLX framework
 #include <GL/freeglut.h> // GLUT framework
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
+
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+#endif
+
+#include "dib_draw.h"
+#include "cpu_load_meter.h"
 
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
@@ -105,6 +116,7 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 #define TITLE_WINDOW_APP "TestApp OGL(Decode Daniel2)"
 
 bool g_bGlutWindow = true;
+bool g_bFramebuffer = false;
 
 bool g_bCopyToTexture = true;
 bool g_bDecoder = true;
@@ -135,6 +147,9 @@ float sizeSquare2 = sizeSquare / 2;
 
 int g_mouse_state = -1;
 int g_mouse_button = -1;
+
+char g_FpsText[256] = {};
+CpuLoadMeter cpuLoadMeter;
 
 C_CritSec g_mutex; // global mutex
 
@@ -535,8 +550,8 @@ bool gpu_initGLUT(int *argc, char **argv)
 	}
 	else
 	{
-		//glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
-		glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
+		glutInitDisplayMode(GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH);
+		//glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	}
 
 	glutInitWindowSize(window_width, window_height);
@@ -1057,6 +1072,45 @@ int gpu_generateImage(bool & bRotateFrame)
 	return 0;
 }
 
+int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
+{
+	if (!decodeD2->isProcess() || decodeD2->isPause()) // check for pause or process
+		return 1;
+
+	C_Block *pBlock = decodeD2->MapFrame(); // Get poiter to picture after decoding
+
+	if (!pBlock)
+		return -1;
+
+	size_t size_copy = min(pBlock->Size(), iSize);
+
+#ifdef USE_CUDA_SDK
+	if (g_useCuda)
+	{
+		if (g_bCopyToTexture)
+		{
+			cudaMemcpy(pOutput, pBlock->DataGPUPtr(), size_copy, cudaMemcpyDeviceToHost); __vrcu
+		}
+		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+	}
+	else
+#endif
+	{
+		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		if (g_bCopyToTexture)
+		{
+			memcpy(pOutput, pBlock->DataPtr(), size_copy);
+		}
+		//dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+	}
+
+	iCurPlayFrameNumber = pBlock->iFrameNumber; // Save currect frame number
+
+	decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
+
+	return 0;
+}
+
 void RenderWindow()
 {
 	C_AutoLock lock(&g_mutex);
@@ -1385,6 +1439,8 @@ void ComputeFPS()
 		size_t data_rate = decodeD2->GetDataRate(true);
 		double fDataRate = bInit ? 0.0, bInit = false : (data_rate * 1000) / ms_elapsed / (1024 * 1024);
 
+		float fCpuload = cpuLoadMeter.GetLoad();
+
 		if (g_bGlutWindow)
 		{
 			char cString[256];
@@ -1417,7 +1473,10 @@ void ComputeFPS()
 		}
 		else
 		{
-			printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
+			if (g_bFramebuffer)
+				sprintf_s(g_FpsText, "%s: %.0f fps data_rate = %.2f MB/s CPU Load: %.2f%%", TITLE_WINDOW_APP, fps, fDataRate, fCpuload);
+			else
+				printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
 		}
 
 		fpsCount = 0;

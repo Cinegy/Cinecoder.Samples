@@ -37,6 +37,7 @@ private:
 	bool m_bInitDecoder;
 	bool m_bUseCuda;
 	bool m_bUseCudaHost;
+	bool m_bPutColorFormat;
 
 	ReadFileDN2 m_file;
 
@@ -62,7 +63,7 @@ public:
 	~DecodeDaniel2();
 
 public:
-	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
+	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false, size_t iScale = 0, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
 	int StartDecode();
 	int StopDecode();
 
