@@ -26,10 +26,13 @@
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
+
+#include "../common/framebuffer.h"
+CFrameBuffer frame_buffer;
 #endif
 
-#include "dib_draw.h"
-#include "cpu_load_meter.h"
+#include "../common/dib_draw.h"
+#include "../common/cpu_load_meter.h"
 
 #include "DecodeDaniel2.h"
 #include "AudioSource.h"
