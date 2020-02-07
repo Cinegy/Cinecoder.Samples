@@ -1099,12 +1099,16 @@ int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 	else
 #endif
 	{
-		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		
 		if (g_bCopyToTexture)
 		{
+			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 			memcpy(pOutput, pBlock->DataPtr(), size_copy);
 		}
-		//dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		else
+		{
+			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		}
 	}
 
 	iCurPlayFrameNumber = pBlock->iFrameNumber; // Save currect frame number
