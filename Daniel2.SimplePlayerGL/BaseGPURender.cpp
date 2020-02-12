@@ -666,7 +666,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	BUFFER_FORMAT buffer_format = m_decodeD2->GetBufferFormat();
 
 	#define PARAMS pBlock->DataGPUPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA
-printf("::CopyCUDAImage()\n");
+
 	if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 	{
 		cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * bytePerPixel), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu

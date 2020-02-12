@@ -340,7 +340,7 @@ int main(int argc, char **argv)
 #endif
 		bool bRotate = g_bRotate;
 
-		g_bMaxFPS = true;
+		//g_bMaxFPS = true;
 		g_bShowTexture = false;
 		g_bCopyToTexture = false;
 		//g_bDecoder = false;
