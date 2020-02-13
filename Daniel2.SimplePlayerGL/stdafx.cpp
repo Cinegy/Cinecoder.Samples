@@ -13,6 +13,8 @@ FTcudaMemset FUNC_CUDA(cudaMemset) = nullptr;
 FTcudaMemcpy FUNC_CUDA(cudaMemcpy) = nullptr;
 FTcudaFree FUNC_CUDA(cudaFree) = nullptr;
 
+FTcudaMemcpy2D FUNC_CUDA(cudaMemcpy2D) = nullptr;
+
 FTcudaMallocHost FUNC_CUDA(cudaMallocHost) = nullptr;
 FTcudaFreeHost FUNC_CUDA(cudaFreeHost) = nullptr;
 
