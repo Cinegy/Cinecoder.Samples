@@ -253,6 +253,12 @@ int main(int argc, char **argv)
 			printf("output_format set incorrect!\n");
 	}
 
+	if (g_bFramebuffer)
+	{
+		outputFormat = IMAGE_FORMAT_RGBA8BIT;
+		printf("<for this mode (framebuffer): parameter output_format was set in RGBA32!>\n");
+	}
+
 	int res = 0;
 	
 #if defined(__WIN32__) && !defined(__USE_GLUT_RENDER__)
