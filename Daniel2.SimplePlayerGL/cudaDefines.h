@@ -75,6 +75,8 @@ typedef cudaError_t(*FTcudaMemset)(void *devPtr, int value, size_t count);
 typedef cudaError_t(*FTcudaMemcpy)(void* dst, const void* src, size_t count, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaFree)(void *devPtr);
 
+typedef cudaError_t(*FTcudaMemcpy2D)(void *dst, size_t dpitch, const void *src, size_t spitch, size_t width, size_t height, enum cudaMemcpyKind kind);
+
 typedef cudaError_t(*FTcudaMallocHost)(void **ptr, size_t size);
 typedef cudaError_t(*FTcudaFreeHost)(void *ptr);
 
@@ -111,6 +113,8 @@ extern FTcudaMalloc FUNC_CUDA(cudaMalloc);
 extern FTcudaMemset FUNC_CUDA(cudaMemset);
 extern FTcudaMemcpy FUNC_CUDA(cudaMemcpy);
 extern FTcudaFree FUNC_CUDA(cudaFree);
+
+extern FTcudaMemcpy2D FUNC_CUDA(cudaMemcpy2D);
 
 extern FTcudaMallocHost FUNC_CUDA(cudaMallocHost);
 extern FTcudaFreeHost FUNC_CUDA(cudaFreeHost);
@@ -177,6 +181,8 @@ static int initCUDA()
 		FUNC_CUDA(cudaMemset) = (FTcudaMemset)GetProcAddress(hCuda, "cudaMemset");
 		FUNC_CUDA(cudaMemcpy) = (FTcudaMemcpy)GetProcAddress(hCuda, "cudaMemcpy");
 		FUNC_CUDA(cudaFree) = (FTcudaFree)GetProcAddress(hCuda, "cudaFree");
+
+		FUNC_CUDA(cudaMemcpy2D) = (FTcudaMemcpy2D)GetProcAddress(hCuda, "cudaMemcpy2D");
 
 		FUNC_CUDA(cudaMallocHost) = (FTcudaMallocHost)GetProcAddress(hCuda, "cudaMallocHost");
 		FUNC_CUDA(cudaFreeHost) = (FTcudaFreeHost)GetProcAddress(hCuda, "cudaFreeHost");
