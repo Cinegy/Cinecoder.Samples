@@ -1090,24 +1090,60 @@ int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 #ifdef USE_CUDA_SDK
 	if (g_useCuda)
 	{
-		if (g_bCopyToTexture)
+		static C_Block devRGBA;
+		static long res = 1;
+		if (res == 1) res = devRGBA.Init(pBlock->Width(), pBlock->Height(), pBlock->Width() * 4, 0, true);
+
+		if (g_bCopyToTexture && res == 0)
 		{
+			IMAGE_FORMAT output_format = decodeD2->GetImageFormat();
+			BUFFER_FORMAT buffer_format = decodeD2->GetBufferFormat();
+
+#if defined(__CUDAConvertLib__)
+			ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
+
+			#define PARAMS_BtB (void*)pBlock->DataGPUPtr(), (void*)devRGBA.DataGPUPtr(), (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), (int)devRGBA.Pitch(), NULL
+
+			if (buffer_format == BUFFER_FORMAT_RGBA32)
+			{
+				cudaMemcpy2D(pOutput, pBlock->Width() * 4, (void*)pBlock->DataGPUPtr(), pBlock->Pitch(), (pBlock->Width() * 4), pBlock->Height(), cudaMemcpyDeviceToHost); __vrcu
+			}
+			else
+			{
+				if (buffer_format == BUFFER_FORMAT_RGBA64)
+				{
+					h_convert_RGBA64_to_RGBA32_BtB(PARAMS_BtB); __vrcu
+				}
+				else if (buffer_format == BUFFER_FORMAT_YUY2)
+				{
+					h_convert_YUY2_to_BGRA32_BtB(PARAMS_BtB, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+				else if (buffer_format == BUFFER_FORMAT_Y216)
+				{
+					h_convert_Y216_to_BGRA32_BtB(PARAMS_BtB, iMatrixCoeff_YUYtoRGBA); __vrcu
+				}
+
+				size_copy = min(devRGBA.Size(), iSize);
+
+				cudaMemcpy(pOutput, devRGBA.DataGPUPtr(), size_copy, cudaMemcpyDeviceToHost); __vrcu
+			}
+#else
 			cudaMemcpy(pOutput, pBlock->DataGPUPtr(), size_copy, cudaMemcpyDeviceToHost); __vrcu
+#endif
 		}
-		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 	}
 	else
 #endif
 	{
-		
 		if (g_bCopyToTexture)
 		{
-			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 			memcpy(pOutput, pBlock->DataPtr(), size_copy);
 		}
 		else
 		{
-			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 		}
 	}
 
