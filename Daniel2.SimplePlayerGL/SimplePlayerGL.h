@@ -1515,9 +1515,11 @@ void ComputeFPS()
 		}
 		else
 		{
+#if defined(__LINUX__)
 			if (g_bFramebuffer)
 				sprintf_s(g_FpsText, "%s: %.0f fps data_rate = %.2f MB/s CPU Load: %.2f%%", TITLE_WINDOW_APP, fps, fDataRate, fCpuload);
 			else
+#endif
 				printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
 		}
 

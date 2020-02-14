@@ -255,11 +255,13 @@ int main(int argc, char **argv)
 			printf("output_format set incorrect!\n");
 	}
 
+#if defined(__LINUX__)
 	if (g_bFramebuffer)
 	{
 		outputFormat = IMAGE_FORMAT_RGBA8BIT;
 		printf("<for this mode (framebuffer): parameter output_format was set in RGBA32!>\n");
 	}
+#endif
 
 	int res = 0;
 	
@@ -353,8 +355,9 @@ int main(int argc, char **argv)
 		g_bCopyToTexture = false;
 		//g_bDecoder = false;
 
+#if defined(__LINUX__)
 		if (g_bFramebuffer) g_bCopyToTexture = true;
-
+#endif
 		//decodeD2->SetDecode(g_bDecoder);
 		//decodeD2->SetReadFile(false);
 
