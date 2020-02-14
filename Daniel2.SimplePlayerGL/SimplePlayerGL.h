@@ -119,7 +119,6 @@ PFNWGLSWAPINTERVALEXTPROC_GLOBAL g_wglSwapInterval;
 #define TITLE_WINDOW_APP "TestApp OGL(Decode Daniel2)"
 
 bool g_bGlutWindow = true;
-bool g_bFramebuffer = false;
 
 bool g_bCopyToTexture = true;
 bool g_bDecoder = true;
