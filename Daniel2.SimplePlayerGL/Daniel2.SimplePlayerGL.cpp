@@ -15,6 +15,8 @@ bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
 bool g_bShowTexture = true;
 
+bool g_bFramebuffer = false;
+
 #if defined(__USE_GLUT_RENDER__)
 #include "SimplePlayerGL.h"
 #endif
