@@ -311,8 +311,12 @@ int main(int argc, char **argv)
 
 	ValueFPS = decodeD2->GetFrameRate(); // get frame rate
 
-	InitAudioTrack(filename, decodeD2->GetFrameRateValue());
+	if (!g_bFramebuffer)
+	{
+		InitAudioTrack(filename, decodeD2->GetFrameRateValue());
+	}
 
+#if defined(__USE_GLUT_RENDER__)
 	if (g_bGlutWindow)
 	{
 		gpu_initGLUT(&argc, argv); // Init GLUT
@@ -321,7 +325,7 @@ int main(int argc, char **argv)
 
 		get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
 	}
-
+#endif
 	// Start timer
 	timer.StartTimer();
 
@@ -329,12 +333,14 @@ int main(int argc, char **argv)
 
 	decodeD2->StartDecode(); // Start decoding
 
+#if defined(__USE_GLUT_RENDER__)
 	if (g_bGlutWindow)
 	{
 		// Start mainloop
 		glutMainLoop(); // Wait
 	}
 	else
+#endif
 	{
 #if defined(__LINUX__)
 		if (g_bFramebuffer)
