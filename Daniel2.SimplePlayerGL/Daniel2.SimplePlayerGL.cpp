@@ -367,6 +367,20 @@ int main(int argc, char **argv)
 		//decodeD2->SetDecode(g_bDecoder);
 		//decodeD2->SetReadFile(false);
 
+#if defined(__LINUX__)
+		size_t cur_page = 0;
+		size_t page_size = 0;
+		size_t cur_offset = 0;
+		size_t yres = 0;
+		unsigned char* pb = nullptr;
+
+		if (g_bFramebuffer)
+		{
+			page_size = frame_buffer.SizeBuffer();
+			cur_offset = page_size;
+			yres = frame_buffer.GetVInfo().yres;
+		}
+#endif
 		while (true)
 		{
 			if (!g_bMaxFPS && g_bVSyncHand)
@@ -388,7 +402,13 @@ int main(int argc, char **argv)
 #if defined(__LINUX__)
 				if (g_bFramebuffer)
 				{
-					res = copy_to_framebuffer(frame_buffer.GetPtr(), frame_buffer.SizeBuffer());
+					cur_page = (cur_page + 1) % 2;
+					cur_offset = cur_page * page_size;
+					pb = frame_buffer.GetPtr() + cur_offset;
+
+					res = copy_to_framebuffer(pb, page_size);
+
+					frame_buffer.DisplayBuffer(cur_page * yres);
 				}
 				else
 #endif
