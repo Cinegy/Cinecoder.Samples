@@ -28,7 +28,7 @@ public:
         prev_KernelTime = KernelTime;
         prev_UserTime   = UserTime;
 
-        return 100.0 * (sys - idl) / sys;
+        return 100.f * (sys - idl) / sys;
 	}
 };
 
