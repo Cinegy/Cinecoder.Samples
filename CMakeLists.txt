@@ -29,7 +29,7 @@ configure_file(${Cinecoder_LIBRARY_DIRS}/libCinecoder.dylib ${EXECUTABLE_OUTPUT_
 else()
 configure_file(${Cinecoder_LIBRARY_DIRS}/libCinecoder.so ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
 configure_file(${Cinecoder_LIBRARY_DIRS}/libd2cudalib.so ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
-configure_file(${CUDAConvertLib_LIBRARY_DIRS}/libd2cudaconvert.so ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
+configure_file(${CUDAConvertLib_LIBRARY_DIRS}/libcudaconvertlib.so ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
 endif()
 
 add_subdirectory(SimpleVideoDecoder)

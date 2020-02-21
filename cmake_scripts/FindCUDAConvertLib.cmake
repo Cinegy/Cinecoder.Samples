@@ -49,7 +49,7 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 #	)
 	endif()
 
-	find_library(CUDAConvertLib_LIBRARIES NAME  d2cudaconvert
+	find_library(CUDAConvertLib_LIBRARIES NAME  cudaconvertlib
 	                                 PATHS ${CUDAConvertLib_LIBRARY_DIRS}
 	)
 

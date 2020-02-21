@@ -133,9 +133,12 @@ public:
 
 	void Destroy()
 	{
-		// reset the display mode
-		if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
-			printf("Error re-setting variable information.\n");
+		if (fbfd)
+		{
+			// reset the display mode
+			if (ioctl(fbfd, FBIOPUT_VSCREENINFO, &orig_vinfo)) {
+				printf("Error re-setting variable information.\n");
+			}
 		}
 
 		if (fbp)
@@ -143,6 +146,7 @@ public:
 			memset(fbp, 0x00, screensize);
 			munmap(fbp, screensize);
 		}
+
 		if (fbfd)
 			close(fbfd);
 
