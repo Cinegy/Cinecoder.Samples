@@ -52,7 +52,7 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 				"${CUDAConvertLib_ROOT_DIR}/runtimes/linux-arm64/native/release/"
 			)
 		else()
-			set(CUDAConvertLib_LIBRARIES
+			set(CUDAConvertLib_LIBRARY_DIRS
 				"${CUDAConvertLib_ROOT_DIR}/runtimes/linux-x64/native/release/"
 			)
 		endif()
