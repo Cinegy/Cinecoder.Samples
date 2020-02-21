@@ -46,4 +46,7 @@ FTcudaMemcpyArrayToArray FUNC_CUDA(cudaMemcpyArrayToArray) = nullptr;
 FTcudaMallocArray FUNC_CUDA(cudaMallocArray) = nullptr;
 FTcudaFreeArray FUNC_CUDA(cudaFreeArray) = nullptr;
 FTcudaCreateChannelDesc FUNC_CUDA(cudaCreateChannelDesc) = nullptr;
+
+//#include "cudaconvertDefines.hpp"
+
 #endif
