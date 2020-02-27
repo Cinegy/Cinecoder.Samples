@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 
 	if (render && !render->IsInit())
 	{
-		int res = render->Init(filename, iMaxCountDecoders, g_useCuda, gpuDevice, outputFormat); // init render
+		int res = render->Init(filename, iMaxCountDecoders, g_useCuda, gpuDevice, iScale, outputFormat); // init render
 
 		if (res == 0)
 			res = render->SetParameters(g_bVSync, g_bRotate, g_bMaxFPS); // set startup parameters
