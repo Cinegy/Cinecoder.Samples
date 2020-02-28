@@ -342,6 +342,16 @@ int main(int argc, char **argv)
 	else
 #endif
 	{
+		bool bRotate = g_bRotate;
+
+		//g_bMaxFPS = true;
+		g_bShowTexture = false;
+		g_bCopyToTexture = false;
+		//g_bDecoder = false;
+
+		//decodeD2->SetDecode(g_bDecoder);
+		//decodeD2->SetReadFile(false);
+
 #if defined(__LINUX__)
 		if (g_bFramebuffer)
 		{
@@ -352,35 +362,15 @@ int main(int argc, char **argv)
 				printf("Error: cannot initialize framebuffer!\n");
 				return 0;
 			}
+			g_bCopyToTexture = true;
 		}
-#endif
-		bool bRotate = g_bRotate;
 
-		//g_bMaxFPS = true;
-		g_bShowTexture = false;
-		g_bCopyToTexture = false;
-		//g_bDecoder = false;
-
-#if defined(__LINUX__)
-		if (g_bFramebuffer) g_bCopyToTexture = true;
-#endif
-		//decodeD2->SetDecode(g_bDecoder);
-		//decodeD2->SetReadFile(false);
-
-#if defined(__LINUX__)
-		size_t cur_page = 0;
 		size_t page_size = 0;
-		size_t cur_offset = 0;
-		size_t yres = 0;
 		unsigned char* pb = nullptr;
 
-		if (g_bFramebuffer)
-		{
-			page_size = frame_buffer.SizeBuffer();
-			cur_offset = page_size;
-			yres = frame_buffer.GetVInfo().yres;
-		}
+		page_size = frame_buffer.SizeBuffer();
 #endif
+
 		while (true)
 		{
 			if (!g_bMaxFPS && g_bVSyncHand)
@@ -402,13 +392,11 @@ int main(int argc, char **argv)
 #if defined(__LINUX__)
 				if (g_bFramebuffer)
 				{
-					cur_page = (cur_page + 1) % 2;
-					cur_offset = cur_page * page_size;
-					pb = frame_buffer.GetPtr() + cur_offset;
+					pb = frame_buffer.GetPtr();
 
 					res = copy_to_framebuffer(pb, page_size);
 
-					frame_buffer.DisplayBuffer(cur_page * yres);
+					frame_buffer.SwapBuffers();
 				}
 				else
 #endif

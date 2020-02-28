@@ -15,7 +15,6 @@ class CFrameBuffer
 {
 private:
 	long int screensize;
-	long int pagesize;
 	char *fbp;
 	int fbfd;
 
@@ -23,6 +22,11 @@ private:
 	struct fb_fix_screeninfo finfo;
 
 	struct fb_var_screeninfo orig_vinfo;
+
+	size_t page_size;
+	size_t cur_page;
+	size_t cur_offset;
+	size_t count_fb;
 
 public:
 	CFrameBuffer()
@@ -74,7 +78,19 @@ public:
 		//screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
 		screensize = finfo.smem_len;
 
-		pagesize = finfo.line_length * vinfo.yres;
+		page_size = finfo.line_length * vinfo.yres;
+		cur_page = 0;
+
+		if (vinfo.yres_virtual >= vinfo.yres)
+		{
+			count_fb = vinfo.yres_virtual / vinfo.yres;
+			if (count_fb >= 2)
+			{
+				cur_page = (cur_page + 1) % 2;
+				cur_offset = cur_page * page_size;
+			}
+		}
+		else return -1;
 
 		// Map the device to memory
 		fbp = (char *)mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);
@@ -152,17 +168,17 @@ public:
 
 		fbp = nullptr;
 		screensize = 0;
-		pagesize = 0;
+		page_size = 0;
 		fbfd = 0;
 	}
 
-	unsigned char* GetPtr() { return (unsigned char*)(fbp); }
-	size_t SizeBuffer() { return (size_t)(pagesize); }
+	unsigned char* GetPtr() { return ((unsigned char*)(fbp) + cur_offset); }
+	size_t SizeBuffer() { return page_size; }
 	fb_var_screeninfo GetVInfo() { return vinfo; }
 
-	int DisplayBuffer(size_t y_offset)
+	int SwapBuffers()
 	{
-		vinfo.yoffset = y_offset;
+		vinfo.yoffset = cur_page * vinfo.yres;
 
 		/* Swap the working buffer for the displayed buffer */
 		if (ioctl(fbfd, FBIOPAN_DISPLAY, &vinfo) == -1) {
@@ -170,7 +186,11 @@ public:
 			return -1;
 		}
 
-		return 0;
+		if (count_fb >= 2)
+		{
+			cur_page = (cur_page + 1) % 2;
+			cur_offset = cur_page * page_size;
+		}
 	}
 };
 
