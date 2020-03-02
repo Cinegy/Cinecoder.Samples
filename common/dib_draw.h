@@ -3,6 +3,9 @@
 
 namespace dib_draw
 {
+typedef unsigned char BYTE;
+
+inline int abs(int x) { return x >= 0 ? x : -x; }
 	
 //-----------------------------------------------------------------------------
 template<typename PIXTYPE>
@@ -76,7 +79,7 @@ inline PIXTYPE* GetTextPtr(PIXTYPE *pBMP, int x, int y, int width, int scale)
 
 //-----------------------------------------------------------------------------
 template<typename PIXTYPE>
-inline void PrintCharToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, int c, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, int transparency = 0, int scale = 1)
+inline void PrintCharToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, int c, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, BYTE transparency = 0, int scale = 1)
 //-----------------------------------------------------------------------------
 {
   static char *chars[]   = { "      *   ** * *  ** *    *    *   * *                           ***   * *** *** * * ***  ** *** *** ***                     **  **   ** ***  ** **  *** ***  ** * * *** *** * * *   * * **   *  **   *  **   ** *** * * * * * * * * * * ***  **     **   *       *  ** ",
@@ -118,7 +121,7 @@ inline void PrintCharToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, int c
 
 //-----------------------------------------------------------------------------
 template<typename PIXTYPE>
-inline void PrintStringToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, const char *s, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, int transparency = 0, int scale = 1)
+inline void PrintStringToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, const char *s, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, BYTE transparency = 0, int scale = 1)
 //-----------------------------------------------------------------------------
 {
   x -= 4;
@@ -127,10 +130,10 @@ inline void PrintStringToDIB_font4x5(PIXTYPE *pBMP, int x, int y, int width, con
 
 //----------------------------------------------------------------
 template<typename PIXTYPE>
-inline void PrintCharToDIB_font8x16(PIXTYPE *pBMP, int x, int y, int width, int c, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, int transparency = 0, int scale = 1)
+inline void PrintCharToDIB_font8x16(PIXTYPE *pBMP, int x, int y, int width, int c, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, BYTE transparency = 0, int scale = 1)
 //----------------------------------------------------------------
 {
-  static unsigned char font[256][16] = {
+  static BYTE font[256][16] = {
                                 #include "vga@font.inc"
                               };
 
@@ -141,19 +144,32 @@ inline void PrintCharToDIB_font8x16(PIXTYPE *pBMP, int x, int y, int width, int 
   {
     PIXTYPE *pbmp = pBMP + (j * width * scale);
                                   
-    for(int x = 0x80; x; x>>=1, pbmp += scale)
+    if(transparency)
     {
-      unsigned scaled_color = ((font[c][j] & x) ? forecolor : backcolor) * (255 - transparency);
+      for(int x = 0x80; x; x>>=1, pbmp += scale)
+      {
+        unsigned scaled_color = ((font[c][j] & x) ? forecolor : backcolor) * (255 - transparency);
 
-      for(int yy = 0; yy < scale; yy++) for(int xx = 0; xx < scale; xx++)
-        pbmp[yy*width+xx] = PIXTYPE((pbmp[yy*width+xx] * transparency + scaled_color) / 255);
+        for(int yy = 0; yy < scale; yy++) for(int xx = 0; xx < scale; xx++)
+          pbmp[yy*width+xx] = PIXTYPE((pbmp[yy*width+xx] * transparency + scaled_color) / 255);
+      }
+    }
+    else
+    {
+      for(int x = 0x80; x; x>>=1, pbmp += scale)
+      {
+        unsigned color = (font[c][j] & x) ? forecolor : backcolor;
+
+        for(int yy = 0; yy < scale; yy++) for(int xx = 0; xx < scale; xx++)
+          pbmp[yy*width+xx] = PIXTYPE(color);
+      }
     }
   }
 }
 
 //-----------------------------------------------------------------------------
 template<typename PIXTYPE>
-inline void PrintStringToDIB_font8x16(PIXTYPE *pBMP, int x, int y, int width, const char *s, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, int transparency = 0, int scale = 1)
+inline void PrintStringToDIB_font8x16(PIXTYPE *pBMP, int x, int y, int width, const char *s, PIXTYPE forecolor = ~0, PIXTYPE backcolor = 0, BYTE transparency = 0, int scale = 1)
 //-----------------------------------------------------------------------------
 {
   x -= 8;
