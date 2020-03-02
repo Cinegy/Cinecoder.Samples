@@ -369,6 +369,9 @@ int main(int argc, char **argv)
 		unsigned char* pb = nullptr;
 
 		page_size = frame_buffer.SizeBuffer();
+		g_var_info = frame_buffer.GetVInfo();
+
+		std::thread thMouse = std::thread(CLI_OnMouseMove);
 #endif
 
 		while (true)
@@ -396,6 +399,8 @@ int main(int argc, char **argv)
 
 					res = copy_to_framebuffer(pb, page_size);
 
+					CLI_Draw(pb);
+
 					frame_buffer.SwapBuffers();
 				}
 				else
@@ -412,7 +417,19 @@ int main(int argc, char **argv)
 			}
 			else
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(100)); // to unload CPU when paused
+#if defined(__LINUX__)
+				if (g_bFramebuffer)
+				{
+                    pb = frame_buffer.GetPtr();
+
+                    res = copy_to_framebuffer(pb, page_size);
+
+                    CLI_Draw(pb);
+
+                    frame_buffer.SwapBuffers();
+				}
+#endif
+				std::this_thread::sleep_for(std::chrono::milliseconds(1)); // to unload CPU when paused
 			}
 
 			if (_kbhit())
@@ -432,6 +449,7 @@ int main(int argc, char **argv)
 #if defined(__LINUX__)
 		if (g_bFramebuffer)
 		{
+			thMouse.detach();
 			frame_buffer.Destroy();
 		}
 #endif

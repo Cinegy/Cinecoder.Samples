@@ -150,7 +150,12 @@ float sizeSquare2 = sizeSquare / 2;
 int g_mouse_state = -1;
 int g_mouse_button = -1;
 
-char g_FpsText[256] = {};
+#define textdib_size 128*8*2
+int textdib[textdib_size*16*2];
+int text_size_x = 0, text_size_y = 0;
+char textbuf[1024];
+
+//char g_FpsText[256] = {};
 CpuLoadMeter cpuLoadMeter;
 
 C_CritSec g_mutex; // global mutex
@@ -478,6 +483,14 @@ void SeekToFrame(int x, int y, bool bLock = true);
 void SeekToFrame(size_t iFrame, bool bLock = true);
 void SeekToFrameImpl(size_t iFrame);
 
+int gpu_copyImage(unsigned char* pImage, size_t iSize);
+
+///////////////////////////////////////////////////////
+
+#if defined(__LINUX__)
+#include "CLI.h"
+#endif
+
 ///////////////////////////////////////////////////////
 
 void get_versionGLandGLUT()
@@ -658,8 +671,19 @@ bool gpu_initGLUT(int *argc, char **argv)
 	return true;
 }
 
-int gpu_copyImage(unsigned char* pImage)
+int gpu_copyImage(unsigned char* pImage, size_t iSize)
 {
+#if defined(__LINUX__)
+	if (g_bFramebuffer)
+	{
+		if (g_fb.size() < iSize)
+			g_fb.resize(iSize);
+
+		size_t size_copy = min(g_fb.size(), iSize);
+		memcpy(g_fb.data(), pImage, size_copy);
+		return 0;
+	}
+#endif
 	if (pImage)
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pImage); // coping decoded frame into the GL texture
@@ -1059,7 +1083,7 @@ int gpu_generateImage(bool & bRotateFrame)
 	{
 		if (g_bCopyToTexture)
 		{
-			gpu_copyImage(pBlock->DataPtr());
+			gpu_copyImage(pBlock->DataPtr(), pBlock->Size());
 		}
 	}
 
@@ -1076,6 +1100,15 @@ int gpu_generateImage(bool & bRotateFrame)
 
 int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 {
+    C_AutoLock lock(&g_mutex);
+
+	if (g_bPause && g_fb.size() > 0 && !g_bCopyToFB)
+	{
+		size_t size_copy = min(g_fb.size(), iSize);
+		memcpy(pOutput, g_fb.data(), size_copy);
+		return 0;
+	}
+
 	if (!decodeD2->isProcess() || decodeD2->isPause()) // check for pause or process
 		return 1;
 
@@ -1130,25 +1163,31 @@ int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 			cudaMemcpy(pOutput, pBlock->DataGPUPtr(), size_copy, cudaMemcpyDeviceToHost); __vrcu
 #endif
 		}
-		dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+		//dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 	}
 	else
 #endif
 	{
 		if (g_bCopyToTexture)
 		{
-			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+			//dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pBlock->DataPtr(), 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 			memcpy(pOutput, pBlock->DataPtr(), size_copy);
 		}
 		else
 		{
-			dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
+			//dib_draw::PrintStringToDIB_font8x16<DWORD>((DWORD*)pOutput, 5, 5, (int)pBlock->Width(), g_FpsText, 0xFFE0E0E0, 0XFF102030, 0, 2);
 		}
 	}
 
 	iCurPlayFrameNumber = pBlock->iFrameNumber; // Save currect frame number
 
 	decodeD2->UnmapFrame(pBlock); // Add free pointer to queue
+
+	if ((g_bPause && g_fb.size() == 0) || g_bCopyToFB)
+	{
+        gpu_copyImage(pOutput, size_copy);
+        g_bCopyToFB = false;
+	}
 
 	return 0;
 }
@@ -1296,6 +1335,7 @@ void RenderWindow()
 		GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
 
 		sizeSquare2 = (float)w / 100;
+        sizeSquare = sizeSquare2 * 2;
 		edgeLineY = sizeSquare2 * 4;
 		edgeLineX = sizeSquare2 * 2;
 
@@ -1517,7 +1557,16 @@ void ComputeFPS()
 		{
 #if defined(__LINUX__)
 			if (g_bFramebuffer)
-				sprintf_s(g_FpsText, "Framebuffer mode: %.0f fps data_rate = %.2f MB/s CPU Load: %.2f%%", fps, fDataRate, fCpuload);
+			{
+				//sprintf_s(g_FpsText, "Framebuffer mode: %.0f fps data_rate = %.2f MB/s CPU Load: %.2f%%", fps, fDataRate, fCpuload);
+
+				sprintf_s(textbuf, "%.2f fps %.2f MB/s CPU: %.2f%%", fps, fDataRate, fCpuload);
+				dib_draw::PrintStringToDIB_font8x16(textdib, 0, 0, textdib_size, textbuf, -1, 0, 0, 2);
+			    text_size_x = strlen(textbuf)*8*2;
+                text_size_y = 16*2;
+
+                //sprintf_s(g_FpsText, "%s", textbuf);
+            }
 			else
 #endif
 				printf("%s: %.0f fps data_rate = %.2f MB/s\n", TITLE_WINDOW_APP, fps, fDataRate);
@@ -1535,11 +1584,25 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	{
 	case 27:
 	{
+		if (g_bGlutWindow)
+		{
 #if defined(__APPLE__)
-		exit(0); // On MacOS we have error <Use of undeclared identifier 'glutLeaveMainLoop'> so we call exit(0)
+			exit(0); // On MacOS we have error <Use of undeclared identifier 'glutLeaveMainLoop'> so we call exit(0)
 #else
-		glutLeaveMainLoop();
+			glutLeaveMainLoop();
 #endif
+		}
+#if defined(__LINUX__)
+		else if (g_bFramebuffer)
+		{
+			g_CLI_bProcess = false;
+			exit(0);
+		}
+#endif
+		else
+		{
+			exit(0);
+		}
 		break;
 	}
 
@@ -1564,6 +1627,14 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 			SeekToFrame(iCurPlayFrameNumber);
 
 		SetPause(!g_bPause);
+
+#if defined(__LINUX__)
+        if (g_bFramebuffer)
+        {
+            if (g_bPause)
+                g_bCopyToFB = true;
+		}
+#endif
 		break;
 	}
 
@@ -1975,7 +2046,7 @@ void SeekToFrameImpl(size_t iFrame)
 			{
 				if (g_bCopyToTexture)
 				{
-					gpu_copyImage(pBlock->DataPtr());
+					gpu_copyImage(pBlock->DataPtr(), pBlock->Size());
 				}
 			}
 			iCurPlayFrameNumber = iFrame; // Save currect frame number
@@ -1997,10 +2068,22 @@ void SeekToFrameImpl(size_t iFrame)
 
 void SeekToFrame(int x, int y, bool bLock)
 {
-	GLint w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
-	GLint h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
+    int w, h;
+
+    if (g_bGlutWindow)
+    {
+        w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
+        h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
+    }
+    else if (g_bFramebuffer)
+    {
+        w = g_var_info.xres;
+        h = g_var_info.yres;
+    }
+    else return;
 
 	sizeSquare2 = (float)w / 100;
+	sizeSquare = sizeSquare2 * 2;
 	edgeLineY = sizeSquare2 * 4;
 	edgeLineX = sizeSquare2 * 2;
 
