@@ -11,23 +11,25 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="/home/cinegydev/Footages/Earth4x4K_q6_rgba.dn2 -cuda" />
+				<Option parameters="/home/jetson/WORK/MXF/Clip.mxf" />
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-std=c++14" />
-					<Add option="-m64" />
+					<!--<Add option="-m64" />-->
 					<Add option="-g" />
 					<Add option="-D_DEBUG" />
 					<Add directory="/usr/include/AL" />
 					<Add directory="/usr/include/GL" />
 					<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
 					<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 				</Compiler>
 				<Linker>
-					<Add option="-m64" />
+					<!--<Add option="-m64" />-->
 				</Linker>
 				<ExtraCommands>
 					<Add after="cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Debug" />
+					<Add after="cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Debug" />
 				</ExtraCommands>
 			</Target>
 			<Target title="Release">
@@ -40,33 +42,36 @@
 					<Add option="-O2" />
 					<Add option="-Wall" />
 					<Add option="-std=c++14" />
-					<Add option="-m64" />
+					<!--<Add option="-m64" />-->
 					<Add directory="/usr/include/AL" />
 					<Add directory="/usr/include/GL" />
 					<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
 					<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add option="-m64" />
+					<!--<Add option="-m64" />-->
 				</Linker>
 				<ExtraCommands>
 					<Add after="cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Release" />
+					<Add after="cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Release" />
 				</ExtraCommands>
 			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-std=c++14" />
-			<Add option="-m64" />
+			<!--<Add option="-m64" />-->
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/AL" />
 			<Add directory="/usr/include/GL " />
 			<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
 			<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+			<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 		</Compiler>
 		<Linker>
-			<Add option="-m64" />
+			<!--<Add option="-m64" />-->
 			<Add option="-Wl,-rpath=&apos;.&apos;" />
 			<Add library="GL" />
 			<Add library="GLU" />
@@ -74,12 +79,14 @@
 			<Add library="GLEW" />
 			<Add library="openal" />
 			<Add library="pthread" />
-			<Add library="../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/libCinecoder.so" />
+			<Add library="Cinecoder" />
+			<Add library="cudaconvertlib" />
 			<Add library="X11" />
 			<Add library="dl" />
 			<Add directory="/usr/lib/x86_64-linux-gnu" />
 			<Add directory="/usr/local/cuda/lib64" />
 			<Add directory="../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release" />
+			<Add directory="../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release" />
 		</Linker>
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.cpp" />
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.h" />
