@@ -1098,6 +1098,7 @@ int gpu_generateImage(bool & bRotateFrame)
 	return 0;
 }
 
+#if defined(__LINUX__)
 int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 {
     C_AutoLock lock(&g_mutex);
@@ -1191,6 +1192,7 @@ int copy_to_framebuffer(unsigned char* pOutput, size_t iSize)
 
 	return 0;
 }
+#endif
 
 void RenderWindow()
 {
@@ -2075,11 +2077,13 @@ void SeekToFrame(int x, int y, bool bLock)
         w = glutGet(GLUT_WINDOW_WIDTH); // Width in pixels of the current window
         h = glutGet(GLUT_WINDOW_HEIGHT); // Height in pixels of the current window
     }
+#if defined(__LINUX__)
     else if (g_bFramebuffer)
     {
         w = g_var_info.xres;
         h = g_var_info.yres;
     }
+#endif
     else return;
 
 	sizeSquare2 = (float)w / 100;

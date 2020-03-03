@@ -283,7 +283,7 @@ int CLI_Draw(unsigned char* pb)
 			}
 
 			pbSlider = pb + ((h - (int)(edgeLineY)) * pitch) + ((int)edgeLineX * 4);
-			memset(pbSlider, 0XFF, pitch - ((int)edgeLineX * 4));
+			memset(pbSlider, 0xFF, pitch - ((int)edgeLineX * 4));
 
 			float xCoord = edgeLineX + ((((float)w - (2.f * edgeLineX)) / (float)(iAllFrames - 1)) * (float)iCurPlayFrameNumber);
 			int yCoord = h - (int)(edgeLineY + sizeSquare2);
@@ -291,7 +291,7 @@ int CLI_Draw(unsigned char* pb)
 			pbSlider = pb + (int)(yCoord * pitch) + ((int)(xCoord - sizeSquare2) * 4);
 			for (int i = 0; i < (int)sizeSquare; i++)
 			{
-				memset(pbSlider, 0XFF, sizeSquare * 4);
+				memset(pbSlider, 0xFF, sizeSquare * 4);
 				pbSlider += pitch;
 			}
 		}
