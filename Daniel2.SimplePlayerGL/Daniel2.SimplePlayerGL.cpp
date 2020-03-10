@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	// Process command line args
 	if (checkCmdLineArg(argc, (const char **)argv, "help") ||
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
-		argc == 1)
+		argc == 0)
 	{
 		printHelp(); // Print help info
 		return 0;
@@ -152,7 +152,9 @@ int main(int argc, char **argv)
 
 	char *str = nullptr;
 
-	filename = argv[1];
+	//filename = argv[1];
+	filename = "D:\\1000.dn2";
+	g_useCuda = true;
 
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
@@ -353,6 +355,11 @@ int main(int argc, char **argv)
 		//decodeD2->SetReadFile(false);
 
 #if defined(__LINUX__)
+		size_t page_size = 0;
+		unsigned char* pb = nullptr;
+		
+		std::thread thMouse;
+
 		if (g_bFramebuffer)
 		{
 			res = frame_buffer.Init();
@@ -363,15 +370,12 @@ int main(int argc, char **argv)
 				return 0;
 			}
 			g_bCopyToTexture = true;
+
+			page_size = frame_buffer.SizeBuffer();
+			g_var_info = frame_buffer.GetVInfo();
+
+			thMouse = std::thread(CLI_OnMouseMove);
 		}
-
-		size_t page_size = 0;
-		unsigned char* pb = nullptr;
-
-		page_size = frame_buffer.SizeBuffer();
-		g_var_info = frame_buffer.GetVInfo();
-
-		std::thread thMouse = std::thread(CLI_OnMouseMove);
 #endif
 
 		while (true)
