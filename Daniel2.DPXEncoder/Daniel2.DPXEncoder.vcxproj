@@ -3,7 +3,7 @@
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.props')" />
   <Import Project="..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.props')" />
   <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
-  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props')" />
+  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -178,7 +178,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets')" />
+    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets')" />
     <Import Project="..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets')" />
   </ImportGroup>
@@ -186,8 +186,8 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.14.20020\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets'))" />
