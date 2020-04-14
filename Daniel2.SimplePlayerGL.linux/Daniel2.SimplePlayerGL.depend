@@ -357,7 +357,7 @@
 1542649903 source:/home/cinegydev/WORK/Cinecoder.Samples/Daniel2.SimplePlayerGL/stdafx.cpp
 	"stdafx.h"
 
-1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/Cinecoder_h.h
+1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/Cinecoder_h.h
 	"rpc.h"
 	"rpcndr.h"
 	"windows.h"
@@ -365,36 +365,36 @@
 	"Unknwn.h"
 	"d3d11.h"
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/rpc.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/rpc.h
 	"wtypes.h"
 	"guiddef.h"
 	"winerror.h"
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/wtypes.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/wtypes.h
 	"msvc_stub.h"
 	"tchar.h"
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/msvc_stub.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/msvc_stub.h
 	<stdint.h>
 	<stdio.h>
 	<unistd.h>
 	<stdlib.h>
 	<malloc.h>
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/tchar.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/tchar.h
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/guiddef.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/guiddef.h
 	<string.h>
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/winerror.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/winerror.h
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/rpcndr.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/rpcndr.h
 
-1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/Unknwn.h
+1542380844 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/Unknwn.h
 
-1542387312 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/winclude/d3d11.h
+1542387312 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/d3d11.h
 
-1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.8.34741/sources/Cinecoder_i.c
+1542386555 /home/cinegydev/WORK/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/Cinecoder_i.c
 	<rpc.h>
 	<rpcndr.h>
 	<guiddef.h>
