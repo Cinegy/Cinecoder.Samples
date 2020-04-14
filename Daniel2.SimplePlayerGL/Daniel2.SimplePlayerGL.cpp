@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 	// Process command line args
 	if (checkCmdLineArg(argc, (const char **)argv, "help") ||
 		checkCmdLineArg(argc, (const char **)argv, "h") ||
-		argc == 0)
+		argc == 1)
 	{
 		printHelp(); // Print help info
 		return 0;
@@ -152,9 +152,7 @@ int main(int argc, char **argv)
 
 	char *str = nullptr;
 
-	//filename = argv[1];
-	filename = "D:\\1000.dn2";
-	g_useCuda = true;
+	filename = argv[1];
 
 	if (getCmdLineArgStr(argc, (const char **)argv, "decoders", &str))
 	{
