@@ -77,6 +77,26 @@ int ReadFileDN2::OpenFile(const char* filename)
 
 	////////////////////////////
 
+	hdr_size = 0;
+
+	com_ptr<ICC_CodedStreamHeaderProp> pCSHP = nullptr;
+	//CC_TIME pts = 0;
+	if (SUCCEEDED(m_fileMvx->QueryInterface(IID_ICC_CodedStreamHeaderProp, (void**)&pCSHP)) && pCSHP)
+	{
+		//BYTE hdr[4096]; DWORD hdr_size = 0;
+
+		if (FAILED(hr = pCSHP->GetCodedStreamHeader(hdr, sizeof(hdr), &hdr_size)))
+			return printf("Error retrieving a coded stream header"), hr;
+
+		//CC_UINT processed;
+		//if (FAILED(hr = m_pVideoDec->ProcessData(hdr, hdr_size, 0, pts, &processed)))
+		//	return hr;
+
+		//pts = -1;
+	}
+
+	////////////////////////////
+
 	size_t iCountFrames = 7;
 
 	for (size_t i = 0; i < iCountFrames; i++)
@@ -144,27 +164,39 @@ int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
 		size_t offset = (size_t)Idx.Offset;
 		size = Idx.Size;
 
+		size_t size_hdr = 0;
+		size_t size_data = size;
+
+		if (Idx.Type == 1 && hdr_size > 0)
+		{
+			size_hdr = hdr_size;
+			size += size_hdr;
+		}
+
 #ifdef __STD_READ__
 		buffer.Resize(size);
 		m_file.seekg(offset, m_file.beg);
-		m_file.read((char*)buffer.GetPtr(), size);
+		m_file.read((char*)buffer.GetPtr(size_hdr), size_data);
 #elif __FILE_READ__
 		buffer.Resize(size);
 		_fseeki64(m_file, offset, SEEK_SET);
-		fread(buffer.GetPtr(), size, 1, m_file);
+		fread(buffer.GetPtr(size_hdr), size_data, 1, m_file);
 #elif __UNBUFF_READ__
 		DWORD rcb = 0;
 		size_t new_offset = offset & ~4095;
 		size_t diff = (offset - new_offset);
-		
+
 		DWORD dwsize = ((size + diff) + 4095) & ~4095;
-		buffer.Resize((size_t)dwsize);
+		buffer.Resize((size_t)dwsize + 4096);
 
-		m_file.SetFilePos(new_offset); 
-		m_file.ReadFile(buffer.GetPtr(0), dwsize, &rcb);
+		m_file.SetFilePos(new_offset);
+		m_file.ReadFile(buffer.GetPtr(4096), dwsize, &rcb);
 
-		buffer.SetDiff(diff);
+		buffer.SetDiff(4096 + diff - size_hdr);
 #endif
+		if (size_hdr > 0)
+			memcpy(buffer.GetPtr(), hdr, size_hdr);
+
 		return 0;
 	}
 

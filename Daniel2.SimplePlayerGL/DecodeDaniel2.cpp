@@ -330,7 +330,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 		case CC_ES_TYPE_VIDEO_H264:
 			clsidDecoder = CLSID_CC_H264VideoDecoder;
 			useCuda = false;
-			m_strStreamType = "H.264";
+			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
 			
@@ -339,6 +339,18 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
 			m_strStreamType = "HEVC";
+			bIntraFormat = false;
+			break;
+
+		case CC_ES_TYPE_VIDEO_HVC1:
+			clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV;
+			m_strStreamType = "HVC1";
+			bIntraFormat = false;
+			break;
+
+		case CC_ES_TYPE_VIDEO_AVC1:
+			clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV;
+			m_strStreamType = "AVC1";
 			bIntraFormat = false;
 			break;
 #endif
