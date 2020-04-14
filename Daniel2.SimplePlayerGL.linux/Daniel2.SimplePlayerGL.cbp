@@ -20,15 +20,15 @@
 					<Add option="-D_DEBUG" />
 					<Add directory="/usr/include/AL" />
 					<Add directory="/usr/include/GL" />
-					<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
-					<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources" />
+					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude" />
 					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 				</Compiler>
 				<Linker>
 					<!--<Add option="-m64" />-->
 				</Linker>
 				<ExtraCommands>
-					<Add after="cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Debug" />
+					<Add after="cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Debug" />
 					<Add after="cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Debug" />
 				</ExtraCommands>
 			</Target>
@@ -45,8 +45,8 @@
 					<!--<Add option="-m64" />-->
 					<Add directory="/usr/include/AL" />
 					<Add directory="/usr/include/GL" />
-					<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
-					<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources" />
+					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude" />
 					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 				</Compiler>
 				<Linker>
@@ -54,7 +54,7 @@
 					<!--<Add option="-m64" />-->
 				</Linker>
 				<ExtraCommands>
-					<Add after="cp ../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release/*.so bin/Release" />
+					<Add after="cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Release" />
 					<Add after="cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Release" />
 				</ExtraCommands>
 			</Target>
@@ -66,8 +66,8 @@
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/AL" />
 			<Add directory="/usr/include/GL " />
-			<Add directory="../packages/Cinecoder.3.33.8.34741/sources" />
-			<Add directory="../packages/Cinecoder.3.33.8.34741/sources/winclude" />
+			<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources" />
+			<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude" />
 			<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 		</Compiler>
 		<Linker>
@@ -85,7 +85,7 @@
 			<Add library="dl" />
 			<Add directory="/usr/lib/x86_64-linux-gnu" />
 			<Add directory="/usr/local/cuda/lib64" />
-			<Add directory="../packages/Cinecoder.3.33.8.34741/runtimes/linux-x64/native/release" />
+			<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release" />
 			<Add directory="../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release" />
 		</Linker>
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.cpp" />

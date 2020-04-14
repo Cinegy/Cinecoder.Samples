@@ -137,6 +137,9 @@ private:
 
 	std::atomic<size_t> data_rate;
 
+	BYTE hdr[4096];
+	DWORD hdr_size;
+
 public:
 	ReadFileDN2();
 	~ReadFileDN2();
