@@ -4,6 +4,7 @@ find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
 find_package(GLEW   REQUIRED)
+find_package(OpenCL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -42,6 +43,10 @@ if (GLEW_FOUND)
     link_libraries(${GLEW_LIBRARIES})
 endif()
 
+if (OpenCL_FOUND)
+    include_directories(${OPENCL_INCLUDE_DIRS})
+endif()
+
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 
 if(APPLE)
@@ -53,9 +58,15 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl)
+
 if(CUDAConvertLib_FOUND)
 target_link_libraries(${PROJECT_NAME} ${CUDAConvertLib_LIBRARIES})
 endif()
+
 if(UNIX AND NOT APPLE)
 target_link_libraries(${PROJECT_NAME} X11)
+endif()
+
+if (OpenCL_FOUND)
+    target_link_libraries(${PROJECT_NAME} OpenCL)
 endif()

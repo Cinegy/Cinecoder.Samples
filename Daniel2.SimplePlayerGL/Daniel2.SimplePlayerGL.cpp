@@ -8,6 +8,7 @@ bool g_bVSync = false;
 bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
+bool g_useOpenCL = false;
 bool g_useDirectX11 = false;
 bool g_useModernOGL = false;
 
