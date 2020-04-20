@@ -72,6 +72,13 @@ using namespace cinegy::threading_std;
 #if defined(__WIN32__) || defined(__LINUX__) // CUDA
 	#define USE_CUDA_SDK
 	#define CUDA_WRAPPER
+	//#define USE_OPENCL_SDK
+#endif
+
+#ifdef USE_OPENCL_SDK
+//#define CL_USE_DEPRECATED_OPENCL_1_1_APIS // for clGetExtensionFunctionAddress
+#include <CL/cl.h>
+#include <CL/cl_gl.h>
 #endif
 
 // for build this code on Windows for example need add "glew.v140" and "freeglut.3.0.0.v140" nuget packages (nuget.org)

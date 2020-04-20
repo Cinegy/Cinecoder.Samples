@@ -176,6 +176,15 @@ cudaGraphicsResource_t cuda_tex_result_resource = nullptr;
 unsigned int bytePerPixel;
 #endif
 
+#ifdef USE_OPENCL_SDK
+cl_context context;
+cl_device_id device;
+cl_command_queue queue;
+cl_mem imageCL;
+
+#include "CL_ListErrors.h"
+#endif
+
 GLuint tex_result;  // Where we will copy result
 
 unsigned int image_width = 1280; // start value for image width
@@ -789,6 +798,97 @@ void PBO_to_Texture2D(unsigned char* pData, size_t size)
 	OGL_CHECK_ERROR_GL();
 }
 
+#ifdef USE_OPENCL_SDK
+int initOpenCLContext()
+{
+	cl_int error = CL_SUCCESS;
+	size_t deviceSize = 0;
+
+	cl_uint numPlatforms = 0;
+	cl_platform_id firstPlatformId;
+
+	error = clGetPlatformIDs(1, &firstPlatformId, &numPlatforms); __rcl
+
+	if (numPlatforms == 0)
+		return -1;
+
+	cl_platform_id platform = firstPlatformId;
+
+	// Load extension function call
+	//clGetGLContextInfoKHR_fn glGetGLContextInfo = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
+
+	clGetGLContextInfoKHR_fn glGetGLContextInfoKHR = NULL;
+		
+	glGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platform, "clGetGLContextInfoKHR");
+
+	if (!glGetGLContextInfoKHR)
+		return -1;
+
+	// Next, create an OpenCL context on the platform.  Attempt to
+	// create a GPU-based context, and if that fails, try to create
+	// a CPU-based context.
+#if defined (__APPLE__)
+	CGLContextObj kCGLContext = CGLGetCurrentContext();
+	CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
+	cl_context_properties contextProperties[] = {
+		CL_CONTEXT_PROPERTY_USE_CGL_SHAREGROUP_APPLE, (cl_context_properties)kCGLShareGroup,
+		0 };
+#else
+#ifdef _WIN32
+	cl_context_properties contextProperties[] = {
+		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(platform),
+		CL_GL_CONTEXT_KHR, reinterpret_cast<cl_context_properties>(wglGetCurrentContext()),
+		CL_WGL_HDC_KHR, reinterpret_cast<cl_context_properties>(wglGetCurrentDC()),
+		0 };
+#else
+	cl_context_properties contextProperties[] = {
+		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+		CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+		0 };
+#endif
+#endif
+
+//		cl_context_properties contextProperties[] =
+//		{
+//#ifdef _WIN32
+//			CL_CONTEXT_PLATFORM,
+//			(cl_context_properties)platform,
+//			CL_GL_CONTEXT_KHR,
+//			(cl_context_properties)wglGetCurrentContext(),
+//			CL_WGL_HDC_KHR,
+//			(cl_context_properties)wglGetCurrentDC(),
+//#elif defined( __GNUC__)
+//			CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
+//			CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
+//			CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
+//#elif defined(__APPLE__) 
+//			//todo
+//#endif
+//			0
+//		};
+
+	// Ask for the CL device associated with the GL context
+	error = glGetGLContextInfoKHR(contextProperties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &device, &deviceSize); __rcl
+
+	// Create the context and the queue
+	context = clCreateContext(contextProperties, 1, &device, NULL, NULL, &error); __rcl
+
+	//queue = clCreateCommandQueue(context, device, 0, &error);
+
+	//cl_queue_properties props[] = { CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0 };
+	//queue = clCreateCommandQueueWithProperties(context, device, props, &error);
+	queue = clCreateCommandQueueWithProperties(context, device, NULL, &error); __rcl
+
+	imageCL = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, tex_result, &error); __rcl
+	
+	if (error != CL_SUCCESS)
+		return -1;
+
+	return 0;
+}
+#endif
+
 void gpu_initGLBuffers()
 {
 	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) // RGBA 8 bit
@@ -836,7 +936,7 @@ void gpu_initGLBuffers()
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
 
 //#if defined(__WIN32__)
-	if (g_useCuda)
+	if (g_useCuda || g_useOpenCL)
 	{
 		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
 		{
@@ -926,6 +1026,18 @@ void gpu_initGLBuffers()
 
 		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
 	}
+#endif
+
+	
+#ifdef USE_OPENCL_SDK
+
+	context = NULL;
+	device = NULL;
+	queue = NULL;
+	imageCL = NULL;
+
+	if (g_useOpenCL && initOpenCLContext() != 0)
+		g_useOpenCL = false;
 #endif
 
 	OGL_CHECK_ERROR_GL();
@@ -1060,6 +1172,48 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 }
 #endif
 
+#ifdef USE_OPENCL_SDK
+int gpu_generateOpenCLImage(C_Block* pBlock)
+{
+	unsigned char* pFrameData = pBlock->DataPtr();
+
+	if (g_useCuda)
+		pBlock->CopyToCPU();
+
+	IMAGE_FORMAT output_format = decodeD2->GetImageFormat();
+	BUFFER_FORMAT buffer_format = decodeD2->GetBufferFormat();
+
+	if (imageCL && pFrameData && g_bCopyToTexture)
+	{
+		cl_int error = CL_SUCCESS;
+		bool is_blockCopy = true;
+
+		// Enqueue Write Image
+		size_t origin[] = { 0, 0, 0 };
+		size_t region[] = { image_width, image_height, 1 };
+
+		error = clEnqueueAcquireGLObjects(queue, 1, &imageCL, 0, NULL, NULL);
+		
+		if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
+		{
+			error = clEnqueueWriteImage(queue, imageCL, is_blockCopy, origin, region, 0, 0, pFrameData, 0, 0, 0);
+			//error = clFlush(queue); // if is_blockCopy == false
+			//printf("OCL Image (RGBA)\n");
+		}
+		else if (buffer_format == BUFFER_FORMAT_YUY2 || buffer_format == BUFFER_FORMAT_Y216)
+		{
+			region[1] = image_height / 2;
+			error = clEnqueueWriteImage(queue, imageCL, is_blockCopy, origin, region, 0, 0, pFrameData, 0, 0, 0);
+			//printf("OCL Image (YUY2)\n");
+		}
+
+		error = clEnqueueReleaseGLObjects(queue, 1, &imageCL, 0, NULL, NULL);
+	}
+
+	return 0;
+}
+#endif
+
 int gpu_generateImage(bool & bRotateFrame)
 {
 	if (!decodeD2->isProcess() || decodeD2->isPause()) // check for pause or process
@@ -1079,6 +1233,16 @@ int gpu_generateImage(bool & bRotateFrame)
 		}
 	}
 	else
+#endif
+#ifdef USE_OPENCL_SDK
+		if (g_useOpenCL)
+		{
+			if (g_bCopyToTexture)
+			{
+				gpu_generateOpenCLImage(pBlock);
+			}
+		}
+		else
 #endif
 	{
 		if (g_bCopyToTexture)
@@ -1893,6 +2057,26 @@ void Cleanup()
 		cudaGraphicsUnregisterResource(cuda_pbo_resource); __vrcu
 	}
 #endif
+
+#ifdef USE_OPENCL_SDK
+	__clerror
+
+	if (imageCL)
+	{
+		error = clReleaseMemObject(imageCL); __vrcl
+	}
+
+	if (queue)
+	{
+		error = clReleaseCommandQueue(queue); __vrcl
+	}
+
+	if (context)
+	{
+		error = clReleaseContext(context); __vrcl
+	}
+#endif
+
 	OGL_CHECK_ERROR_GL();
 }
 
