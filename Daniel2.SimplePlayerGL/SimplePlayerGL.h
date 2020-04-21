@@ -216,7 +216,7 @@ GLuint rbo = 0;
 GLuint vbo = 0;
 GLuint pbo = 0; // OpenGL pixel buffer object
 #ifdef USE_CUDA_SDK
-struct cudaGraphicsResource *cuda_pbo_resource; // CUDA Graphics Resource (to transfer PBO)
+struct cudaGraphicsResource *cuda_pbo_resource = nullptr; // CUDA Graphics Resource (to transfer PBO)
 #endif
 
 //std::vector<unsigned char> pBuffer;
@@ -695,8 +695,10 @@ int gpu_copyImage(unsigned char* pImage, size_t iSize)
 #endif
 	if (pImage)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pImage); // coping decoded frame into the GL texture
-		//PBO_to_Texture2D(pImage, image_size);
+		if (pbo)
+			PBO_to_Texture2D(pImage, image_size); // coping decoded frame into the GL texture using PBO
+		else
+			glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, pImage); // coping decoded frame into the GL texture (synchronous call!)
 	}
 
 	return 0;
@@ -946,7 +948,7 @@ void gpu_initGLBuffers()
 		image_size *= 2;
 
 	// Create PBO
-	//createPBO(&pbo, image_size);
+	createPBO(&pbo, image_size);
 
 	OGL_CHECK_ERROR_GL();
 
