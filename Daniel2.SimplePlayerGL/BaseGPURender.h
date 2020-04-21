@@ -64,6 +64,7 @@ protected:
 
 	unsigned int image_width;
 	unsigned int image_height;
+	unsigned int image_size;
 
 	// Buffer
 	cudaGraphicsResource* cuda_tex_result_resource_buff;

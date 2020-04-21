@@ -72,7 +72,7 @@ using namespace cinegy::threading_std;
 #if defined(__WIN32__) || defined(__LINUX__) // CUDA
 	#define USE_CUDA_SDK
 	#define CUDA_WRAPPER
-	//#define USE_OPENCL_SDK
+	//#define USE_OPENCL_SDK // for build this code on Windows for example need add "opencl-nug" nuget package (nuget.org)
 #endif
 
 #ifdef USE_OPENCL_SDK
@@ -135,6 +135,10 @@ using namespace cinegy::threading_std;
 		hr, __FILE__,__LINE__); \
 	} \
 }
+
+#if defined(__WIN32__)
+#include <GL/glew.h> // GLEW framework
+#endif
 
 #if defined(__USE_GLUT_RENDER__) // Was added for fix #error:  gl.h included before glew.h
 #include <GL/glew.h> // GLEW framework
