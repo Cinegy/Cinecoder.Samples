@@ -218,6 +218,7 @@
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.22.15.20021\build\Cinecoder.Plugin.GpuCodecs.targets')" />
     <Import Project="..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.33.16.33142-alpha\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets')" />
+    <Import Project="..\packages\glew.v140.1.12.0\build\native\glew.v140.targets" Condition="Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" />
   </ImportGroup>
   <!-- <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'"> -->
   <!-- <ItemGroup> -->
@@ -256,5 +257,6 @@
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.1.45\build\Cinecoder.Plugin.Multiplexers.targets'))" />
     <Error Condition="!Exists('..\packages\CUDAConvertLib.1.0.0.12\build\CUDAConvertLib.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDAConvertLib.1.0.0.12\build\CUDAConvertLib.props'))" />
+    <Error Condition="!Exists('..\packages\glew.v140.1.12.0\build\native\glew.v140.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glew.v140.1.12.0\build\native\glew.v140.targets'))" />
   </Target>
 </Project>
