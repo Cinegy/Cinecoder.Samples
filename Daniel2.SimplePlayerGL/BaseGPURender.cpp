@@ -17,6 +17,7 @@ BaseGPURender::BaseGPURender() :
 	// Init image size
 	image_width = 512;
 	image_height = 512;
+	image_size = image_width * image_height * 4;
 
 	fpsCount = 0;
 	ValueFPS = 60.0;

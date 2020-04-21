@@ -9,6 +9,8 @@ private:
 
 	GLuint tex_result;  // texture
 
+	GLuint pbo; // OpenGL pixel buffer object
+
 	float start_ortho_w;
 	float start_ortho_h;
 
@@ -39,8 +41,12 @@ private:
 	
 	double getVersionGL();
 
+	void createPBO(GLuint *pbo, int size);
+	void deletePBO(GLuint *pbo);
+
 	int gpu_InitGLBuffers();
 	int gpu_DestroyGLBuffers();
 	int gpu_UpdateGLSettings();
+	int gpu_CopyImage(unsigned char* pImage, size_t iSize);
 };
 

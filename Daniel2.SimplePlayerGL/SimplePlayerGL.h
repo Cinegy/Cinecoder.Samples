@@ -782,10 +782,15 @@ void deletePBO(GLuint *pbo)
 
 void PBO_to_Texture2D(unsigned char* pData, size_t size)
 {
+	void* pboMemory = nullptr;
+
 	// map PBO and copy data to PBO
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-	void *pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+
+	pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+	if (!pboMemory) return;
 	memcpy(pboMemory, pData, size);
+
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 	

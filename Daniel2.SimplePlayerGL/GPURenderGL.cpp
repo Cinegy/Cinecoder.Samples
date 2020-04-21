@@ -51,6 +51,8 @@ GPURenderGL::GPURenderGL()
 	m_windowCaption = L"TestApp (Decode Daniel2) GL"; // Set window caption
 
 	gpu_render_type = GPU_RENDER_OPENGL;
+
+	pbo = 0;
 }
 
 GPURenderGL::~GPURenderGL()
@@ -67,13 +69,9 @@ int GPURenderGL::GenerateImage(bool & bRotateFrame)
 	if (!pBlock)
 		return -1;
 
-	unsigned char* pFrameData = pBlock->DataPtr();
-
-	if (pFrameData && m_bCopyToTexture)
+	if (m_bCopyToTexture)
 	{
-		glBindTexture(GL_TEXTURE_2D, tex_result);
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, pFrameData); // copying decoded frame into the GL texture
-		glBindTexture(GL_TEXTURE_2D, 0);
+		gpu_CopyImage(pBlock->DataPtr(), pBlock->Size());
 	}
 
 	bRotateFrame = pBlock->GetRotate() ? !bRotateFrame : bRotateFrame; // Rotate frame
@@ -102,15 +100,44 @@ int GPURenderGL::CopyBufferToTexture(C_Block *pBlock)
 	{
 		if (m_bCopyToTexture)
 		{
-			unsigned char* pFrameData = pBlock->DataPtr();
-
-			if (pFrameData)
-			{
-				glBindTexture(GL_TEXTURE_2D, tex_result);
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, pFrameData); // copying decoded frame into the GL texture
-				glBindTexture(GL_TEXTURE_2D, 0);
-			}
+			gpu_CopyImage(pBlock->DataPtr(), pBlock->Size());
 		}
+	}
+
+	return 0;
+}
+
+int GPURenderGL::gpu_CopyImage(unsigned char* pImage, size_t iSize)
+{
+	if (pbo)
+	{
+		void* pboMemory = nullptr;
+
+		// map PBO and copy data to PBO
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+
+		pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
+		if (!pboMemory) return -1;
+		memcpy(pboMemory, pImage, iSize);
+
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+		// load texture from PBO
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
+		glBindTexture(GL_TEXTURE_2D, tex_result);
+		//glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, image_width, image_height, format, type, NULL);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+		OGL_CHECK_ERROR_GL();
+	}
+	else if (pImage)
+	{
+		glBindTexture(GL_TEXTURE_2D, tex_result);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image_width, image_height, 0, format, type, pImage); // copying decoded frame into the GL texture
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	return 0;
@@ -399,6 +426,24 @@ BOOL GPURenderGL::CreateGL()
 	return TRUE;
 }
 
+void GPURenderGL::createPBO(GLuint *pbo, int size)
+{
+	// create pixel buffer object
+	glGenBuffers(1, pbo);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, *pbo);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, size, NULL, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+
+	OGL_CHECK_ERROR_GL();
+}
+
+void GPURenderGL::deletePBO(GLuint *pbo)
+{
+	if (*pbo)
+		glDeleteBuffers(1, pbo);
+	*pbo = 0;
+}
+
 int GPURenderGL::gpu_InitGLBuffers()
 {
 	// Create texture that will receive the result of CUDA
@@ -465,6 +510,30 @@ int GPURenderGL::gpu_InitGLBuffers()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	OGL_CHECK_ERROR_GL();
+
+	image_size = image_width * image_height * sizeof(GLubyte) * 4;
+
+	if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT ||
+		m_decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
+		image_size *= 2;
+
+	glewExperimental = GL_TRUE;
+	GLenum GlewInitResult = glewInit();
+
+	if (GlewInitResult != GLEW_OK) {
+		// Problem: glewInit failed, something is seriously wrong.
+		printf("glewInit failed: %s\n", glewGetErrorString(GlewInitResult));
+		exit(1);
+	}
+
+	OGL_CHECK_ERROR_GL();
+
+	// Create PBO
+	createPBO(&pbo, image_size); // need use GLEW Library => glewInit()
+
+	OGL_CHECK_ERROR_GL();
+
 	if (m_bUseGPU)
 	{
 		// Register this texture with CUDA
@@ -492,6 +561,11 @@ int GPURenderGL::gpu_DestroyGLBuffers()
 
 	// Delete GL texture
 	glDeleteTextures(1, &tex_result);
+
+	OGL_CHECK_ERROR_GL();
+
+	// Delete PBO
+	deletePBO(&pbo);
 
 	OGL_CHECK_ERROR_GL();
 
