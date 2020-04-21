@@ -103,12 +103,28 @@ void C_Block::Destroy()
 int C_Block::CopyToGPU()
 {
 #ifdef USE_CUDA_SDK
-	if (!pKernelDataOut)
+	if (!DataGPUPtr() || !DataPtr())
 		return -1;
 
 	cudaError_t res = cudaSuccess;
 
 	res = cudaMemcpy(DataGPUPtr(), DataPtr(), Size(), cudaMemcpyHostToDevice); __vrcu
+
+	return res;
+#else
+	return 0;
+#endif
+}
+
+int C_Block::CopyToCPU()
+{
+#ifdef USE_CUDA_SDK
+	if (!DataGPUPtr() || !DataPtr())
+		return -1;
+
+	cudaError_t res = cudaSuccess;
+
+	res = cudaMemcpy(DataPtr(), DataGPUPtr(), Size(), cudaMemcpyDeviceToHost); __vrcu
 
 	return res;
 #else

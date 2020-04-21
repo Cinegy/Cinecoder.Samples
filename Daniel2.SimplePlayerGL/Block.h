@@ -81,6 +81,8 @@ public:
 	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize, bool bUseCuda = false);
 
 	int CopyToGPU();
+	int CopyToCPU();
+
 	void Destroy();
 };
 

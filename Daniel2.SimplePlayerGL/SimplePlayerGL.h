@@ -815,19 +815,18 @@ int initOpenCLContext()
 	cl_platform_id platform = firstPlatformId;
 
 	// Load extension function call
-	//clGetGLContextInfoKHR_fn glGetGLContextInfo = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
+	clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = NULL;
 
-	clGetGLContextInfoKHR_fn glGetGLContextInfoKHR = NULL;
-		
-	glGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platform, "clGetGLContextInfoKHR");
+	//clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddress("clGetGLContextInfoKHR");
 
-	if (!glGetGLContextInfoKHR)
+	clGetGLContextInfoKHR = (clGetGLContextInfoKHR_fn)clGetExtensionFunctionAddressForPlatform(platform, "clGetGLContextInfoKHR");
+
+	if (!clGetGLContextInfoKHR)
 		return -1;
 
-	// Next, create an OpenCL context on the platform.  Attempt to
-	// create a GPU-based context, and if that fails, try to create
-	// a CPU-based context.
-#if defined (__APPLE__)
+	//Creating the context
+#if defined(__APPLE__) || defined(__MACOSX)
+	// Apple (untested)
 	CGLContextObj kCGLContext = CGLGetCurrentContext();
 	CGLShareGroupObj kCGLShareGroup = CGLGetShareGroup(kCGLContext);
 	cl_context_properties contextProperties[] = {
@@ -835,12 +834,14 @@ int initOpenCLContext()
 		0 };
 #else
 #ifdef _WIN32
+	// Windows
 	cl_context_properties contextProperties[] = {
 		CL_CONTEXT_PLATFORM, reinterpret_cast<cl_context_properties>(platform),
 		CL_GL_CONTEXT_KHR, reinterpret_cast<cl_context_properties>(wglGetCurrentContext()),
 		CL_WGL_HDC_KHR, reinterpret_cast<cl_context_properties>(wglGetCurrentDC()),
 		0 };
 #else
+	// Linux
 	cl_context_properties contextProperties[] = {
 		CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
 		CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
@@ -849,27 +850,8 @@ int initOpenCLContext()
 #endif
 #endif
 
-//		cl_context_properties contextProperties[] =
-//		{
-//#ifdef _WIN32
-//			CL_CONTEXT_PLATFORM,
-//			(cl_context_properties)platform,
-//			CL_GL_CONTEXT_KHR,
-//			(cl_context_properties)wglGetCurrentContext(),
-//			CL_WGL_HDC_KHR,
-//			(cl_context_properties)wglGetCurrentDC(),
-//#elif defined( __GNUC__)
-//			CL_CONTEXT_PLATFORM, (cl_context_properties)platform,
-//			CL_GL_CONTEXT_KHR, (cl_context_properties)glXGetCurrentContext(),
-//			CL_GLX_DISPLAY_KHR, (cl_context_properties)glXGetCurrentDisplay(),
-//#elif defined(__APPLE__) 
-//			//todo
-//#endif
-//			0
-//		};
-
 	// Ask for the CL device associated with the GL context
-	error = glGetGLContextInfoKHR(contextProperties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &device, &deviceSize); __rcl
+	error = clGetGLContextInfoKHR(contextProperties, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR, sizeof(cl_device_id), &device, &deviceSize); __rcl
 
 	// Create the context and the queue
 	context = clCreateContext(contextProperties, 1, &device, NULL, NULL, &error); __rcl
