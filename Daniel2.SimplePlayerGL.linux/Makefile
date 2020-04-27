@@ -11,15 +11,15 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/AL -I/usr/include/GL\ -I/usr/local/cuda/include -I../packages/Cinecoder.3.33.16.33142-alpha/sources -I../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude
-CFLAGS = -Wall -std=c++14 -m64 -fexceptions
+INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.16.33142-alpha/sources -I../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.12/sources
+CFLAGS = -Wall -std=c++14 -fexceptions
 RESINC = 
-LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release
-LIB = -lGL -lGLU -lglut -lGLEW -lopenal -lpthread ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/libCinecoder.so
-LDFLAGS = -m64 -Wl,-rpath='.'
+LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release
+LIB = -lGL -lGLU -lglut -lGLEW -lopenal -lpthread -lCinecoder -lcudaconvertlib -lX11 -ldl
+LDFLAGS = -Wl,-rpath='.'
 
-INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -g
+INC_DEBUG = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.16.33142-alpha/sources -I../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.12/sources
+CFLAGS_DEBUG = $(CFLAGS) -Wall -std=c++14 -g -D_DEBUG
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
@@ -29,8 +29,8 @@ OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/Daniel2.SimplePlayerGL
 
-INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O2
+INC_RELEASE = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.16.33142-alpha/sources -I../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.12/sources
+CFLAGS_RELEASE = $(CFLAGS) -O2 -Wall -std=c++14
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/Daniel2.SimplePlayerGL
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o
 
 all: debug release
 
@@ -54,6 +54,7 @@ before_debug:
 
 after_debug: 
 	cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Debug
+	cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Debug
 
 debug: before_debug out_debug after_debug
 
@@ -75,6 +76,9 @@ $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePlay
 $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
 
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o: ../Daniel2.SimplePlayerGL/stdafx.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/stdafx.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
@@ -86,6 +90,7 @@ before_release:
 
 after_release: 
 	cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Release
+	cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-arm64/native/release/*.so bin/Release
 
 release: before_release out_release after_release
 
@@ -106,6 +111,9 @@ $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePl
 
 $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o: ../Daniel2.SimplePlayerGL/stdafx.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/stdafx.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
