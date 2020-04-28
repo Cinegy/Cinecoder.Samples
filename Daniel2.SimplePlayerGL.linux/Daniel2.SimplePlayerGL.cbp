@@ -15,19 +15,10 @@
 				<Compiler>
 					<Add option="-Wall" />
 					<Add option="-std=c++14" />
-					<!--<Add option="-m64" />-->
+				<!--<Add option="-m64" />-->
 					<Add option="-g" />
 					<Add option="-D_DEBUG" />
-					<Add directory="/usr/include/AL" />
-					<Add directory="/usr/include/GL" />
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources" />
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude" />
-					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
 				</Compiler>
-				<Linker>
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release" />
-					<Add directory="../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-x64/native/release" />
-				</Linker>
 				<ExtraCommands>
 					<Add after="cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Debug" />
 					<Add after="cp ../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-x64/native/release/*.so bin/Debug" />
@@ -43,17 +34,10 @@
 					<Add option="-O2" />
 					<Add option="-Wall" />
 					<Add option="-std=c++14" />
-					<!--<Add option="-m64" />-->
-					<Add directory="/usr/include/AL" />
-					<Add directory="/usr/include/GL" />
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources" />
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/sources/winclude" />
-					<Add directory="../packages/CUDAConvertLib.1.0.0.12/sources" />
+				<!--<Add option="-m64" />-->
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
-					<Add directory="../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release" />
-					<Add directory="../packages/CUDAConvertLib.1.0.0.12/runtimes/linux-x64/native/release" />
 				</Linker>
 				<ExtraCommands>
 					<Add after="cp ../packages/Cinecoder.3.33.16.33142-alpha/runtimes/linux-x64/native/release/*.so bin/Release" />
