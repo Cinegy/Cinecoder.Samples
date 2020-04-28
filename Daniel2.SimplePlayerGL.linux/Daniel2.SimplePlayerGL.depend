@@ -400,3 +400,231 @@
 	<guiddef.h>
 	<guiddef.h>
 
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/AudioSource.cpp
+	"stdafx.h"
+	"AudioSource.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/stdafx.h
+	<algorithm>
+	<string>
+	<cassert>
+	<list>
+	<vector>
+	<queue>
+	<memory>
+	<fstream>
+	<atomic>
+	<thread>
+	<chrono>
+	<algorithm>
+	"utils/HMTSTDUtil.h"
+	"../common/com_ptr.h"
+	"../common/timer.h"
+	<comutil.h>
+	<CL/cl.h>
+	<CL/cl_gl.h>
+	<cuda.h>
+	<cuda_runtime.h>
+	<cuda_gl_interop.h>
+	<d3d11.h>
+	<dxgi.h>
+	"cudaDefines.h"
+	"CUDAConvertLib.h"
+	<GL/glew.h>
+	<GL/glew.h>
+	<GL/freeglut.h>
+	"GPURenderGL.h"
+	"GPURenderDX.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h
+	<thread>
+	<mutex>
+	<list>
+	<chrono>
+	<condition_variable>
+
+1588084384 /home/test/Cinecoder.Samples/common/com_ptr.h
+
+1588084384 /home/test/Cinecoder.Samples/common/timer.h
+	<iostream>
+	<chrono>
+	<ctime>
+	<cmath>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/d3d11.h
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/cudaDefines.h
+	<dlfcn.h>
+
+1588084401 /home/test/Cinecoder.Samples/packages/CUDAConvertLib.1.0.0.12/sources/CUDAConvertLib.h
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/GPURenderGL.h
+	"BaseGPURender.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/BaseGPURender.h
+	<GL/GL.h>
+	<GL/GLU.h>
+	<d3d11.h>
+	"DecodeDaniel2.h"
+	"AudioSource.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.h
+	"Block.h"
+	"ReadFileDN2.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.h
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/ReadFileDN2.h
+	<Cinecoder_h.h>
+	"../common/cinecoder_license_string.h"
+	"../common/read_file.h"
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/Cinecoder_h.h
+	"rpc.h"
+	"rpcndr.h"
+	"windows.h"
+	"ole2.h"
+	"Unknwn.h"
+	"d3d11.h"
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/rpc.h
+	"wtypes.h"
+	"guiddef.h"
+	"winerror.h"
+	"ObjBase.h"
+	<assert.h>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/wtypes.h
+	"msvc_stub.h"
+	"tchar.h"
+	<stdint.h>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/msvc_stub.h
+	<stdio.h>
+	<stdint.h>
+	<winerror.h>
+	<alloca.h>
+	<stdio.h>
+	<unistd.h>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/winerror.h
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/tchar.h
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/guiddef.h
+	<string.h>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/ObjBase.h
+	"guiddef.h"
+	"winerror.h"
+	"wtypes.h"
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/rpcndr.h
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/Unknwn.h
+
+1556879589 /home/test/Cinecoder.Samples/common/cinecoder_license_string.h
+
+1588084384 /home/test/Cinecoder.Samples/common/read_file.h
+	<windows.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<fcntl.h>
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/AudioSource.h
+	<Cinecoder_h.h>
+	"../common/cinecoder_license_string.h"
+	<Al/al.h>
+	<Al/alc.h>
+	<OpenAL/OpenAL.h>
+	<AL/al.h>
+	<AL/alc.h>
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/GPURenderDX.h
+	"BaseGPURender.h"
+	<atltrace.h>
+
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/Block.cpp
+	"stdafx.h"
+	"Block.h"
+
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
+	"stdafx.h"
+	"SimplePlayerGL.h"
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/SimplePlayerGL.h
+	<GL/glew.h>
+	<GLUT/glut.h>
+	<OpenGL/OpenGL.h>
+	<ApplicationServices/ApplicationServices.h>
+	<X11/Xlib.h>
+	<X11/Xutil.h>
+	<GL/glew.h>
+	<GL/glx.h>
+	<GL/freeglut.h>
+	"../common/framebuffer.h"
+	"../common/dib_draw.h"
+	"../common/cpu_load_meter.h"
+	"DecodeDaniel2.h"
+	"AudioSource.h"
+	<conio.h>
+	<stdio.h>
+	<termios.h>
+	<unistd.h>
+	<fcntl.h>
+	"CL_ListErrors.h"
+	"CLI.h"
+
+1588084384 /home/test/Cinecoder.Samples/common/framebuffer.h
+	<stdlib.h>
+	<unistd.h>
+	<stdio.h>
+	<fcntl.h>
+	<linux/fb.h>
+	<sys/mman.h>
+	<sys/ioctl.h>
+	<string.h>
+
+1588084384 /home/test/Cinecoder.Samples/common/dib_draw.h
+	"vga@font.inc"
+
+1588084384 /home/test/Cinecoder.Samples/common/vga@font.inc
+
+1588084384 /home/test/Cinecoder.Samples/common/cpu_load_meter.h
+	<windows.h>
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/winclude/conio.h
+	<stdio.h>
+	<sys/select.h>
+	<termios.h>
+	<sys/ioctl.h>
+	<unistd.h>
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/CL_ListErrors.h
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/CLI.h
+	<vector>
+
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
+	"stdafx.h"
+	"DecodeDaniel2.h"
+	<Cinecoder_i.c>
+	<Cinecoder.Plugin.GpuCodecs_i.c>
+	"CinecoderErrorHandler.h"
+
+1588084408 /home/test/Cinecoder.Samples/packages/Cinecoder.3.33.16.33142-alpha/sources/Cinecoder_i.c
+	<rpc.h>
+	<rpcndr.h>
+	<guiddef.h>
+	<guiddef.h>
+
+1588084384 /home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/CinecoderErrorHandler.h
+	"utils/HMTSTDUtil.h"
+
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/ReadFileDN2.cpp
+	"stdafx.h"
+	"ReadFileDN2.h"
+
+1588084384 source:/home/test/Cinecoder.Samples/Daniel2.SimplePlayerGL/stdafx.cpp
+	"stdafx.h"
+
