@@ -629,6 +629,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	} // if (m_bProcess)
 	else if (!m_bInitDecoder) // init values after first decoding frame
 	{
+		if (FrameRate.num == 0)
+		{
+			printf("===> Warning: video frame rate == 0, set to 1!\n");
+			FrameRate.num = 1;
+		}
+
 		m_FrameRate = FrameRate;
 		
 		m_ChromaFormat = ChromaFormat;
