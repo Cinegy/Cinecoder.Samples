@@ -246,6 +246,10 @@ int AudioSource::OpenFile(const char* const filename)
 	hr = m_pMediaReader->get_NumberOfFrames(&FrameCount);
 	if (FAILED(hr)) return hr;
 
+	CC_FRAME_RATE FrameRateMR;
+	hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
+	if (FAILED(hr)) return hr;
+
 	CC_BITRATE BitRate;
 	CC_UINT BitsPerSample;
 	CC_UINT ChannelMask;
@@ -276,6 +280,11 @@ int AudioSource::OpenFile(const char* const filename)
 	if (FAILED(hr)) return hr;
 
 	BitsPerSample = 16; // always play in PCM16
+
+	m_FrameRate = FrameRate;
+
+	if (FrameRate.num == 0)
+		m_FrameRate = FrameRateMR;
 
 	size_t sample_count = (SampleRate / (m_FrameRate.num / m_FrameRate.denom));
 	size_t sample_bytes = sample_count * NumChannels * (BitsPerSample >> 3);
