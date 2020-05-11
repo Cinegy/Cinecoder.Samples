@@ -252,3 +252,4 @@ _toolkits/
 #Cinegy license strings
 /common/cinecoder_license_string.h
 /common/cinecoder_license_string.cs
+appveyor-tools/
