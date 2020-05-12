@@ -248,6 +248,38 @@ void DecodeDaniel2::UnmapFrame(C_Block* pBlock)
 }
 
 #if defined(__WIN32__)
+BOOL GetFileVersion(LPCTSTR szPath, LARGE_INTEGER &lgVersion)
+{
+	if (szPath == NULL)
+		return FALSE;
+
+	DWORD dwHandle;
+	UINT  cb;
+	cb = GetFileVersionInfoSize(szPath, &dwHandle);
+	if (cb > 0)
+	{
+		BYTE* pFileVersionBuffer = new BYTE[cb];
+		if (pFileVersionBuffer == NULL)
+			return FALSE;
+
+		if (GetFileVersionInfo(szPath, 0, cb, pFileVersionBuffer))
+		{
+			VS_FIXEDFILEINFO* pVersion = NULL;
+			if (VerQueryValue(pFileVersionBuffer, TEXT("\\"), (VOID**)&pVersion, &cb) &&
+				pVersion != NULL)
+			{
+				lgVersion.HighPart = pVersion->dwFileVersionMS;
+				lgVersion.LowPart = pVersion->dwFileVersionLS;
+				delete[] pFileVersionBuffer;
+				return TRUE;
+			}
+		}
+
+		delete[] pFileVersionBuffer;
+	}
+	return FALSE;
+}
+
 HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 {
 	char strCinecoder[] = "Cinecoder.dll";
@@ -261,6 +293,48 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 		strPluginDLL += pluginDLL;
 	}
 	else return E_FAIL;
+
+	LARGE_INTEGER lgVersion;
+	std::wstring wstr(strPluginDLL.begin(), strPluginDLL.end());
+	GetFileVersion(wstr.c_str(), lgVersion);
+	printf("%s # File Version: %d.%d.%d.%d\n", pluginDLL, HIWORD(lgVersion.HighPart), LOWORD(lgVersion.HighPart), HIWORD(lgVersion.LowPart), LOWORD(lgVersion.LowPart));
+
+	//std::wstring strWPluginDLL(strPluginDLL.begin(), strPluginDLL.end());
+	//LPCTSTR szVersionFile = strWPluginDLL.c_str();
+
+	//DWORD verHandle = 0;
+	//DWORD verSize = GetFileVersionInfoSize(szVersionFile, &verHandle);
+
+	//if (verSize != NULL)
+	//{
+	//	std::vector<char> verData(verSize);
+	//	UINT size = 0;
+	//	LPBYTE lpBuffer = NULL;
+
+	//	if (GetFileVersionInfo(szVersionFile, verHandle, verSize, verData.data()))
+	//	{
+	//		if (VerQueryValue(verData.data(), TEXT("\\"), (VOID FAR* FAR*)&lpBuffer, &size))
+	//		{
+	//			if (size)
+	//			{
+	//				VS_FIXEDFILEINFO *verInfo = (VS_FIXEDFILEINFO *)lpBuffer;
+	//				if (verInfo->dwSignature == 0xfeef04bd)
+	//				{
+	//					// Doesn't matter if you are on 32 bit or 64 bit,
+	//					// DWORD is always 32 bits, so first two revision numbers
+	//					// come from dwFileVersionMS, last two come from dwFileVersionLS
+
+	//					//wchar_t szBuffer[2048];
+	//					//swprintf_s(szBuffer, L"%d.%d.%d.%d", HIWORD(verInfo->dwProductVersionMS), LOWORD(verInfo->dwProductVersionMS),
+	//					//	HIWORD(verInfo->dwProductVersionLS), LOWORD(verInfo->dwProductVersionLS));
+
+	//					printf("%s # File Version: %d.%d.%d.%d\n",
+	//					pluginDLL, HIWORD(verInfo->dwFileVersionMS), LOWORD(verInfo->dwFileVersionMS), HIWORD(verInfo->dwFileVersionLS), LOWORD(verInfo->dwFileVersionLS));
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
 
 	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR(strPluginDLL.c_str());
 	return m_piFactory->LoadPlugin(plugin_filename_str); // no error here
