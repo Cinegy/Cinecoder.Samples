@@ -50,6 +50,7 @@ public:
 		fbfd = open("/dev/fb0", O_RDWR);
 		if (fbfd == -1) {
 			perror("Error: cannot open framebuffer device");
+			fbfd = 0;
 			//exit(1);
 			return -1;
 		}
