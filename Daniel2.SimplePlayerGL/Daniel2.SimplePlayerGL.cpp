@@ -332,11 +332,11 @@ int main(int argc, char **argv)
 
 	timerqFPSMode.StartTimer();
 
-	decodeD2->StartDecode(); // Start decoding
-
 #if defined(__USE_GLUT_RENDER__)
 	if (g_bGlutWindow)
 	{
+		decodeD2->StartDecode(); // Start decoding
+
 		// Start mainloop
 		glutMainLoop(); // Wait
 	}
@@ -376,6 +376,7 @@ int main(int argc, char **argv)
 			thMouse = std::thread(CLI_OnMouseMove);
 		}
 #endif
+		decodeD2->StartDecode(); // Start decoding
 
 		while (true)
 		{
