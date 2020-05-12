@@ -8,6 +8,7 @@
 #pragma comment(lib, "windowscodecs.lib") // for IID_IDXGIFactory
 #endif
 #include "CinecoderErrorHandler.h"
+C_CinecoderErrorHandler *g_ErrorHandler = nullptr;
 
 #ifdef max
 #undef max
@@ -300,7 +301,8 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 #endif
 
 //#ifdef _DEBUG
-	Cinecoder_SetErrorHandler(&g_ErrorHandler); // set error handler
+	if (FAILED(hr = Cinecoder_SetErrorHandler(g_ErrorHandler))) // set error handler
+		printf("Error: call Cinecoder_SetErrorHandler() return 0x%x\n", hr);
 //#endif
 
 	CLSID clsidDecoder;

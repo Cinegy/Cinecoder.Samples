@@ -37,5 +37,5 @@ class C_CinecoderErrorHandler : public ICC_ErrorHandler
 
 		return 0;
 	}
-}
-g_ErrorHandler;
+};
+
