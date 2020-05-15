@@ -11,14 +11,14 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.17.21304-alpha/sources -I../packages/Cinecoder.3.33.17.21304-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
+INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.18.24912-alpha/sources -I../packages/Cinecoder.3.33.18.24912-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
 CFLAGS = -Wall -std=c++14 -fexceptions
 RESINC = 
-LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.17.21304-alpha/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-arm64/native/release
+LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.18.24912-alpha/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-arm64/native/release
 LIB = -lGL -lGLU -lglut -lGLEW -lopenal -lpthread -lCinecoder -lcudaconvertlib -lX11 -ldl
 LDFLAGS = -Wl,-rpath='.'
 
-INC_DEBUG = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.17.21304-alpha/sources -I../packages/Cinecoder.3.33.17.21304-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
+INC_DEBUG = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.18.24912-alpha/sources -I../packages/Cinecoder.3.33.18.24912-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
 CFLAGS_DEBUG = $(CFLAGS) -Wall -std=c++14 -g -D_DEBUG
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
@@ -29,7 +29,7 @@ OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/Daniel2.SimplePlayerGL
 
-INC_RELEASE = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.17.21304-alpha/sources -I../packages/Cinecoder.3.33.17.21304-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
+INC_RELEASE = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.18.24912-alpha/sources -I../packages/Cinecoder.3.33.18.24912-alpha/sources/winclude -I../packages/CUDAConvertLib.1.0.0.13/sources
 CFLAGS_RELEASE = $(CFLAGS) -O2 -Wall -std=c++14
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
@@ -53,7 +53,7 @@ before_debug:
 	test -d $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL
 
 after_debug: 
-	cp ../packages/Cinecoder.3.33.17.21304-alpha/runtimes/linux-x64/native/release/*.so bin/Debug
+	cp ../packages/Cinecoder.3.33.18.24912-alpha/runtimes/linux-x64/native/release/*.so bin/Debug
 	cp ../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-arm64/native/release/*.so bin/Debug
 
 debug: before_debug out_debug after_debug
@@ -89,7 +89,7 @@ before_release:
 	test -d $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL
 
 after_release: 
-	cp ../packages/Cinecoder.3.33.17.21304-alpha/runtimes/linux-x64/native/release/*.so bin/Release
+	cp ../packages/Cinecoder.3.33.18.24912-alpha/runtimes/linux-x64/native/release/*.so bin/Release
 	cp ../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-arm64/native/release/*.so bin/Release
 
 release: before_release out_release after_release
