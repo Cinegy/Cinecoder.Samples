@@ -521,16 +521,16 @@ int DecodeDaniel2::DestroyDecoder()
 
 	if (m_pVideoDec != nullptr)
 	{
-		hr = m_pVideoDec->Done(CC_FALSE); __hr(hr) // call done for decoder with param CC_FALSE (without flush data to DataReady)
+		hr = m_pVideoDec->Done(CC_FALSE); // call done for decoder with param CC_FALSE (without flush data to DataReady)
 	}
 
 	m_pVideoDec = nullptr;
 
 	//CC_BOOL bOpened; 
-	//hr = m_pMediaReader->get_IsOpened(&bOpened); __hr(hr)
+	//hr = m_pMediaReader->get_IsOpened(&bOpened);
 	//if (bOpened)
 	//{
-	//	hr = m_pMediaReader->Close(); __hr(hr)
+	//	hr = m_pMediaReader->Close();
 	//}
 	m_pMediaReader = nullptr;
 
@@ -741,10 +741,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			if (FAILED(hr)) return hr;
 
 			//CC_BOOL bOpened = FALSE;
-			//hr = m_pMediaReader->get_IsOpened(&bOpened); __hr(hr)
+			//hr = m_pMediaReader->get_IsOpened(&bOpened);
 			//if (bOpened)
 			//{
-			//	hr = m_pMediaReader->Close(); __hr(hr)
+			//	hr = m_pMediaReader->Close();
 			//	if (FAILED(hr)) return hr;
 			//}
 			m_pMediaReader = nullptr;
