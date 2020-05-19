@@ -521,7 +521,7 @@ int DecodeDaniel2::DestroyDecoder()
 
 	if (m_pVideoDec != nullptr)
 	{
-		hr = m_pVideoDec->Done(CC_FALSE); __hr(hr) // call done for decoder with param CC_FALSE (without flush data to DataReady)
+		hr = m_pVideoDec->Done(CC_FALSE); // call done for decoder with param CC_FALSE (without flush data to DataReady)
 	}
 
 	m_pVideoDec = nullptr;
