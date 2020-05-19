@@ -70,6 +70,8 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 	m_dec_scale_factor = (CC_VDEC_SCALE_FACTOR)iScale;
 
+	m_filename = filename;
+
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
 	iMaxCountDecoders = std::max((size_t)1, std::min(iMaxCountDecoders, (size_t)4)); // 1..4
@@ -515,10 +517,22 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 
 int DecodeDaniel2::DestroyDecoder()
 {
+	HRESULT hr = S_OK;
+
 	if (m_pVideoDec != nullptr)
-		m_pVideoDec->Done(CC_FALSE); // call done for decoder with param CC_FALSE (without flush data to DataReady)
+	{
+		hr = m_pVideoDec->Done(CC_FALSE); __hr(hr) // call done for decoder with param CC_FALSE (without flush data to DataReady)
+	}
 
 	m_pVideoDec = nullptr;
+
+	//CC_BOOL bOpened; 
+	//hr = m_pMediaReader->get_IsOpened(&bOpened); __hr(hr)
+	//if (bOpened)
+	//{
+	//	hr = m_pMediaReader->Close(); __hr(hr)
+	//}
+	m_pMediaReader = nullptr;
 
 	m_piFactory = nullptr;
 
@@ -696,9 +710,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #endif // #ifdef USE_CUDA_SDK
 
 			if (m_llDuration > 0)
-				pBlock->iFrameNumber = static_cast<size_t>(PTS) / m_llDuration; // save PTS (in our case this is the frame number)
+				pBlock->iFrameNumber = static_cast<size_t>(PTS) / static_cast<size_t>(m_llDuration); // save PTS (in our case this is the frame number)
 			else
-				pBlock->iFrameNumber = (PTS * m_FrameRate.num) / (m_llTimeBase * m_FrameRate.denom);
+				pBlock->iFrameNumber = static_cast<size_t>(PTS * m_FrameRate.num) / static_cast<size_t>(m_llTimeBase * m_FrameRate.denom);
 
 			m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 		} // if (pBlock)
@@ -707,8 +721,40 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	{
 		if (FrameRate.num == 0)
 		{
-			printf("===> Warning: video frame rate == 0, set to 1!\n");
-			FrameRate.num = 1;
+			printf("Error: video frame rate == 0\n");
+
+			hr = m_piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
+			if (FAILED(hr)) return hr;
+
+			const char* filename = m_filename.c_str();
+
+#if defined(__WIN32__)
+			CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+#elif defined(__APPLE__) || defined(__LINUX__)
+			CC_STRING file_name_str = const_cast<CC_STRING>(filename);
+#endif
+			hr = m_pMediaReader->Open(file_name_str);
+			if (FAILED(hr)) return hr;
+
+			CC_FRAME_RATE FrameRateMR;
+			hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
+			if (FAILED(hr)) return hr;
+
+			//CC_BOOL bOpened = FALSE;
+			//hr = m_pMediaReader->get_IsOpened(&bOpened); __hr(hr)
+			//if (bOpened)
+			//{
+			//	hr = m_pMediaReader->Close(); __hr(hr)
+			//	if (FAILED(hr)) return hr;
+			//}
+			m_pMediaReader = nullptr;
+
+			if (FrameRateMR.num == 0)
+				return E_FAIL;
+
+			printf("Set frame rate (MediaReader): %.2f\n", ((float)FrameRateMR.num / (float)FrameRateMR.denom));
+
+			FrameRate = FrameRateMR;
 		}
 
 		m_FrameRate = FrameRate;

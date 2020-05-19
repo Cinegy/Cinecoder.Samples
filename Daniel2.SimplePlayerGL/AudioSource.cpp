@@ -143,6 +143,8 @@ int AudioSource::InitOpenAL()
 			ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
 			ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 
+			memset(data, 0x00, size);
+
 			alBufferData(buffers[i], format, data, size, frequency); __al
 		}
 	}
@@ -205,7 +207,8 @@ int AudioSource::OpenFile(const char* const filename)
 	if (FAILED(hr)) return hr;
 
 	hr = piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr))
+		return printf("AudioSource::OpenFile: AssignLicense failed!\n"), hr;
 
 	hr = piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
 	if (FAILED(hr)) return hr;
@@ -253,7 +256,7 @@ int AudioSource::OpenFile(const char* const filename)
 	CC_BITRATE BitRate;
 	CC_UINT BitsPerSample;
 	CC_UINT ChannelMask;
-	CC_FRAME_RATE FrameRate;
+	CC_FRAME_RATE FrameRateAS;
 	CC_UINT NumChannels;
 	CC_UINT SampleRate;
 	CC_ELEMENTARY_STREAM_TYPE StreamType;
@@ -267,7 +270,7 @@ int AudioSource::OpenFile(const char* const filename)
 	hr = m_pAudioStreamInfo->get_ChannelMask(&ChannelMask);
 	if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_FrameRate(&FrameRate);
+	hr = m_pAudioStreamInfo->get_FrameRate(&FrameRateAS);
 	if (FAILED(hr)) return hr;
 
 	hr = m_pAudioStreamInfo->get_NumChannels(&NumChannels);
@@ -281,10 +284,10 @@ int AudioSource::OpenFile(const char* const filename)
 
 	BitsPerSample = 16; // always play in PCM16
 
-	m_FrameRate = FrameRate;
-
-	if (FrameRate.num == 0)
+	if (FrameRateMR.num != 0)
 		m_FrameRate = FrameRateMR;
+	else if (FrameRateAS.num != 0)
+		m_FrameRate = FrameRateAS;
 
 	size_t sample_count = (SampleRate / (m_FrameRate.num / m_FrameRate.denom));
 	size_t sample_bytes = sample_count * NumChannels * (BitsPerSample >> 3);

@@ -57,6 +57,10 @@ int ReadFileDN2::OpenFile(const char* filename)
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&piFactory);
 	if (FAILED(hr)) return hr;
 
+	hr = piFactory->AssignLicense(COMPANYNAME, LICENSEKEY); // set license
+	if (FAILED(hr))
+		return printf("ReadFileDN2::OpenFile: AssignLicense failed!\n"), hr;
+
 	if (SUCCEEDED(hr)) hr = piFactory->CreateInstance(CLSID_CC_MvxFile, IID_ICC_MvxFile, (IUnknown**)&m_fileMvx);
 
 #if defined(__WIN32__)
