@@ -13,7 +13,7 @@ class GPURenderDX;
 class DecodeDaniel2 : public C_SimpleThread<DecodeDaniel2>, public ICC_DataReadyCallback
 {
 private:
-	std::wstring m_filename;
+	std::string m_filename;
 
 	size_t m_width;
 	size_t m_height;
