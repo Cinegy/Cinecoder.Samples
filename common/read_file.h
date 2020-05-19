@@ -12,13 +12,18 @@ typedef int file_handle_t;
 #define INVALID_FILE_HANDLE (-1)
 #endif
 
+#include <string>
+
 class C_ReadFile
 {
 private:
 	file_handle_t hFile;
+	std::string sfilename;
 
 public:
 	C_ReadFile() { hFile = INVALID_FILE_HANDLE; }
+
+	const char* GetFileName() { return sfilename.c_str(); }
 
 	int OpenFile(const char* filename, bool unbuffered)
 	{
@@ -34,6 +39,8 @@ public:
 #endif
 		if (!hFile)
 			return -1;
+
+		sfilename = filename;
 
 		return 0;
 	}
