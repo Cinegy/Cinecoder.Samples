@@ -9,7 +9,7 @@ environment:
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "c6Jor2CH8TTpYi6J8aXwK6gyztHjvNMfGoRShL0TVwaa2L5aBvU="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "NKpzkGFnHuGs1zMCgroD+T9XEye1KPyI5lAZUW16KFLDgfniCTg="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "QQZDPj6NN8fYWR7zWX3eaNjOxUrZZaDS/p0fLuOsZ4MiE/L26p8="
 - cmd: nuget restore
 build:
   project: Cinecoder.Samples.sln
