@@ -11,9 +11,9 @@ environment:
     secure: HoPi66gFKt8h5PdYW230+wTaEJCbtOqH115vgOYeHW/8UhFQu/xA4LuD+Fi2AjJ+
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-- cmd: echo "%LicensePassword%"
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret "%LicensePassword%" -salt "lQ/1ksnkDMA7zemdgNW2TRyoY/tpgCePcWlNrOVswBbxMtd2YHk="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret "%LicensePassword%" -salt "0nZIG7+uy0/niGTU2YFyi77+JD76jqZCtXlVx1Hx43Nhk5iIN3U="
+- cmd: echo %LicensePassword%
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %LicensePassword% -salt "lQ/1ksnkDMA7zemdgNW2TRyoY/tpgCePcWlNrOVswBbxMtd2YHk="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %LicensePassword% -salt "0nZIG7+uy0/niGTU2YFyi77+JD76jqZCtXlVx1Hx43Nhk5iIN3U="
 - cmd: nuget restore
 build:
   project: Cinecoder.Samples.sln
