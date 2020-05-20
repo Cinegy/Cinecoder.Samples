@@ -103,9 +103,6 @@ namespace Daniel2.Managed.Tests
         
         [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder", ExpectedResult = true)] //should correctly create object
         [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder_CUDA", ExpectedResult = true)] //should correctly create object
-        [TestCase(License.Companyname, License.Licensekey, "DanielVideoEncoder_FAKE", ExpectedResult = false)] //should fail by invalid name
-        [TestCase("FAKECOMPANY", License.Licensekey, "DanielVideoEncoder",ExpectedResult = false)] //wrong company name should fail to create object
-        [TestCase(License.Companyname, "AAA6F6YDRHG51CEM1SC79SN1U4ZC6T3NYB4KWS54GBFTC7KPM1TJCY4HUF5CC4NG", "DanielVideoEncoder", ExpectedResult = false)] //invalid key should fail to create object
         public bool CreateEncoder(string companyName, string licenseKey, string instanceTypeName)
         {
             try
