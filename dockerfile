@@ -15,7 +15,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
         build-essential git nano gnupg apt-utils unzip sudo bzip2 \
         apt-transport-https curl wget ca-certificates cpio \
         mono-complete libboost-dev uuid-dev libssl-dev software-properties-common \
-        jq libopenal-dev freeglut3-dev libglew-dev
+        jq libopenal-dev freeglut3-dev libglew-dev ocl-icd-opencl-dev && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
 
 #add powershell core & dotnet 3
 RUN cd /tmp && \
@@ -24,7 +26,7 @@ RUN cd /tmp && \
   rm packages-microsoft-prod.deb && \
   apt-get update && \
   apt-get install -y powershell && \
-  apt-get install -y dotnet-sdk-3.0 && \
+  apt-get install -y dotnet-sdk-3.1 && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
