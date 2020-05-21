@@ -38,6 +38,6 @@ after_build:
     
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
 - sh: >-
-    7z a CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip $APPVEYOR_BUILD_FOLDER\_bin
+    7z a CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip $APPVEYOR_BUILD_FOLDER/_bin
     
     appveyor PushArtifact CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip
