@@ -1,6 +1,9 @@
 version: 0.0.{build}
 pull_requests:
   do_not_increment_build_number: true
+image:
+ - Ubuntu1804
+ - Visual Studio 2015
 configuration: Release
 platform: x64
 environment:
@@ -9,21 +12,32 @@ environment:
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "c6Jor2CH8TTpYi6J8aXwK6gyztHjvNMfGoRShL0TVwaa2L5aBvU="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "c6Jor2CH8TTpYi6J8aXwK6gyztHjvNMfGoRShL0TVwaa2L5aBvU="
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "QQZDPj6NN8fYWR7zWX3eaNjOxUrZZaDS/p0fLuOsZ4MiE/L26p8="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "QQZDPj6NN8fYWR7zWX3eaNjOxUrZZaDS/p0fLuOsZ4MiE/L26p8="
 - cmd: nuget restore
-build:
-  project: Cinecoder.Samples.sln
-  verbosity: minimal
-test_script:
+build_script:
+- cmd: MSBuild Cinecoder.Samples.sln
+#- sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
+- sh: docker run --rm -v /home/appveyor/projects/:/data/dev lewk2/cinecodersamples-build sh -c "cd /data/dev/cinecoder-samples && ./build_samples.sh"
+  test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
+    if($IsWindows){
+      
     _bin\Release.x64\Daniel2.Native.Tests.exe --gtest_output=xml:tests.xml
 
     $wc = New-Object 'System.Net.WebClient'
 
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path tests.xml))
+
+    }
 after_build:
 - cmd: >-
     7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\_bin\Release.x64
     
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
+- sh: >-
+    7z a CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip $APPVEYOR_BUILD_FOLDER\_bin
+    
+    appveyor PushArtifact CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip
