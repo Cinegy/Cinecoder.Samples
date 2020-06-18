@@ -556,11 +556,11 @@ int DecodeDaniel2::InitValues()
 
 		size_t size = 0;
 
-		if (strcmp(m_strStreamType, "HEVC") == 0 ||
-			strcmp(m_strStreamType, "H264") == 0 ||
-			strcmp(m_strStreamType, "HVC1") == 0 ||
-			strcmp(m_strStreamType, "AVC1") == 0)
-			size = m_stride * m_height * 3 / 2;
+		//if (strcmp(m_strStreamType, "HEVC") == 0 ||
+		//	strcmp(m_strStreamType, "H264") == 0 ||
+		//	strcmp(m_strStreamType, "HVC1") == 0 ||
+		//	strcmp(m_strStreamType, "AVC1") == 0)
+		//	size = m_stride * m_height * 3 / 2;
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 		
