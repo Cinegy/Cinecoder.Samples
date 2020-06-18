@@ -16,19 +16,25 @@
 #include <AL/alc.h>
 #endif
 
+// alGetError() returns AL_INVALID_OPERATION if a current context is not set.
+
 #ifndef NDEBUG
-	#define __al { \
+#define __al { \
+	if (alcGetCurrentContext()) \
+	{ \
 	ALuint alRes = alGetError(); \
 	if (alRes != AL_NO_ERROR) { \
 	printf("al error = 0x%x line = %d\n", alRes, __LINE__); \
 	return alRes; \
-	} }
+	} } }
 
 #define __al_void { \
+	if (alcGetCurrentContext()) \
+	{ \
 	ALuint alRes = alGetError(); \
 	if (alRes != AL_NO_ERROR) { \
 	printf("al error = 0x%x line = %d\n", alRes, __LINE__); \
-	} }
+	} } }
 #else
 	#define __al
 	#define __al_void

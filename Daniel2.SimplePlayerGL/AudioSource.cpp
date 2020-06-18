@@ -164,6 +164,8 @@ int AudioSource::InitOpenAL()
 
 int AudioSource::DestroyOpenAL()
 {
+	alSourceStop(source); __al
+
 	alDeleteSources(1, &source); __al
 	alDeleteBuffers(NUM_BUFFERS, buffers); __al
 
