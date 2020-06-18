@@ -699,7 +699,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 		{
-			//h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
+			h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
 		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_NV12)
