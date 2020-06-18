@@ -92,6 +92,7 @@ public:
 	C_Buffer coded_frame;
 	size_t coded_frame_size;
 	size_t frame_number;
+	size_t coding_number;
 	size_t flags;
 
 	CodedFrame(const CodedFrame&) = default;
@@ -151,7 +152,7 @@ public:
 	int StartPipe();
 	int StopPipe();
 
-	int ReadFrame(size_t frame, C_Buffer & buffer, size_t & size);
+	int ReadFrame(size_t frame, C_Buffer & buffer, size_t & size, size_t & frameNum);
 
 	size_t GetCountFrames()
 	{ 

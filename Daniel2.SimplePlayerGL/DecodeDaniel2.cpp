@@ -81,13 +81,14 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
+	size_t frameNum = 0;
 
 	CodedFrame buffer;
 
 	if (res == 0)
 	{
 		coded_frame_size = 0;
-		res = m_file.ReadFrame(0, buffer.coded_frame, coded_frame_size); // get 0-coded frame for add decoder and init values after decode first frame
+		res = m_file.ReadFrame(0, buffer.coded_frame, coded_frame_size, frameNum); // get 0-coded frame for add decoder and init values after decode first frame
 	}
 
 	if (res == 0)
@@ -98,11 +99,13 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 		m_eventInitDecoder.Reset();
 
-		hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, 0); __check_hr
+		CC_TIME pts = (frameNum * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
+
+		hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 
 		for (size_t i = 0; i < 2; i++)
 		{
-			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
+			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 
 			if (FAILED(hr)) // add coded frame to decoder
 			{
@@ -647,6 +650,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 	hr = pVideoFrameInfo->get_PTS(&PTS); __check_hr
 
+	if (PTS < 0)
+	{
+		printf("Warning: PTS < 0\n");
+		PTS = 0;
+	}
+
 	///////////////////////////////////////////////
 
 	if (m_bProcess)
@@ -946,6 +955,7 @@ long DecodeDaniel2::ThreadProc()
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
 	size_t frame_number = 0;
+	size_t coding_number = 0;
 
 	HRESULT hr = S_OK;
 
@@ -999,13 +1009,14 @@ long DecodeDaniel2::ThreadProc()
 		{
 			coded_frame = frame->coded_frame.GetPtr(); // poiter to coded frame
 			coded_frame_size = frame->coded_frame_size; // size of coded frame
-			frame_number = frame->frame_number; // number of coded frame
+			frame_number = frame->frame_number; // number of display frame
+			coding_number = frame->coding_number; // number of coding frame
 
 			if (m_bDecode)
 			{
 				CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
 
-				if (frame_number == 0 || frame->flags == 1) // seek
+				if (coding_number == 0 || frame->flags == 1) // seek
 				{
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
 					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr

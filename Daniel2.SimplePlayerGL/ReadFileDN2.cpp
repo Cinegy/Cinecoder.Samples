@@ -146,7 +146,7 @@ int ReadFileDN2::StopPipe()
 	return 0;
 }
 
-int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
+int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size, size_t & frameNum)
 {
 	C_AutoLock lock(&m_critical_read);
 
@@ -167,6 +167,7 @@ int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
 
 		size_t offset = (size_t)Idx.Offset;
 		size = Idx.Size;
+		frameNum = Idx.FrameNumber;
 
 		size_t size_hdr = 0;
 		size_t size_data = size;
@@ -238,6 +239,7 @@ void ReadFileDN2::UnmapFrame(CodedFrame* pFrame)
 long ReadFileDN2::ThreadProc()
 {
 	int iCurEncodedFrame = 0;
+	size_t frameNum = 0;
 
 	m_bProcess = true;
 	m_bReadFile = true;
@@ -259,14 +261,16 @@ long ReadFileDN2::ThreadProc()
 
 			if (m_bReadFile)
 			{
-				res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size);
+				res = ReadFrame(iCurEncodedFrame, frame->coded_frame, frame->coded_frame_size, frameNum);
 				data_rate += frame->coded_frame_size;
 			}
 			
 			frame->flags = 0;
 			if (bSeek) { frame->flags = 1; bSeek = false; }
 
-			frame->frame_number = iCurEncodedFrame;
+			//frame->frame_number = iCurEncodedFrame;
+			frame->frame_number = frameNum;
+			frame->coding_number = iCurEncodedFrame;
 			m_queueFrames.Queue(frame);
 
 			if (res != 0)
