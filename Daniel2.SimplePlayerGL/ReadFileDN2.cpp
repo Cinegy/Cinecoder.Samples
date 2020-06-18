@@ -271,8 +271,8 @@ long ReadFileDN2::ThreadProc()
 
 			if (res != 0)
 			{
-				//assert(0);
-				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=%p\n", res, frame->coded_frame_size, frame->coded_frame.GetPtr());
+				_assert(0);
+				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=0x%p\n", res, frame->coded_frame_size, frame->coded_frame.GetPtr());
 			}
 		}
 

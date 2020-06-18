@@ -11,8 +11,8 @@ static void ReverseSamples(BYTE *p, int iSize, int nBlockAlign)
 {
 	long lActual = iSize;
 
-	if (lActual == 0) { assert(0); return; };
-	if (nBlockAlign != 4) { assert(0); return; };
+	if (lActual == 0) { _assert(0); return; };
+	if (nBlockAlign != 4) { _assert(0); return; };
 
 	UINT64 *p_src = (UINT64 *)(p);
 	UINT64 *p_dst = ((UINT64 *)(p + lActual)) - 1;
@@ -32,8 +32,8 @@ static void AliasingSamples(BYTE *p, int iSize, int nBlockAlign, int nChannels)
 
 	const long iMaxValue = 32;
 
-	if (lActual == 0) { assert(0); return; };
-	if (nBlockAlign != 4) { assert(0); return; };
+	if (lActual == 0) { _assert(0); return; };
+	if (nBlockAlign != 4) { _assert(0); return; };
 
 	if (lActual / nBlockAlign < 2 * iMaxValue) return;
 

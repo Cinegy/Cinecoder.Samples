@@ -388,7 +388,7 @@ BOOL GPURenderGL::CreateGL()
 	{
 		if (!SetPixelFormat(hdc, PixFormat, &PixFormatDesc))
 		{
-			assert(0);
+			_assert(0);
 			DWORD le = GetLastError();
 			return -1;
 		}
@@ -400,7 +400,7 @@ BOOL GPURenderGL::CreateGL()
 
 	if (!pglC)
 	{
-		assert(0);
+		_assert(0);
 		return GetLastError();
 	}
 
@@ -410,7 +410,7 @@ BOOL GPURenderGL::CreateGL()
 
 	if (!wglMakeCurrent(hdc, pglC))
 	{
-		assert(0);
+		_assert(0);
 		return GetLastError();
 	}
 

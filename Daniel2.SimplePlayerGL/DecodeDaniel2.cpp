@@ -106,7 +106,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 
 			if (FAILED(hr)) // add coded frame to decoder
 			{
-				assert(0);
+				_assert(0);
 
 				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
 
@@ -1020,7 +1020,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (FAILED(hr)) // add coded frame to decoder
 				{
-					assert(0);
+					_assert(0);
 
 					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p frame_number = %zd\n", hr, coded_frame_size, coded_frame, frame_number);
 
