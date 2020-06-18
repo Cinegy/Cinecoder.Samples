@@ -421,14 +421,19 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			break;
 
 		case CC_ES_TYPE_VIDEO_HVC1:
-			clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV;
-			m_strStreamType = "HVC1";
+			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
+			//m_strStreamType = "HVC1";
+			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
+			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
 
 		case CC_ES_TYPE_VIDEO_AVC1:
-			clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV;
-			m_strStreamType = "AVC1";
+			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
+			//m_strStreamType = "AVC1";
+
+			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
+			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
 #endif
@@ -551,7 +556,10 @@ int DecodeDaniel2::InitValues()
 
 		size_t size = 0;
 
-		if (strcmp(m_strStreamType, "HEVC") == 0)
+		if (strcmp(m_strStreamType, "HEVC") == 0 ||
+			strcmp(m_strStreamType, "H264") == 0 ||
+			strcmp(m_strStreamType, "HVC1") == 0 ||
+			strcmp(m_strStreamType, "AVC1") == 0)
 			size = m_stride * m_height * 3 / 2;
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
@@ -798,7 +806,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		}
 
 #if defined(__WIN32__)
-		if (strcmp(m_strStreamType, "HEVC") == 0)
+		if (strcmp(m_strStreamType, "HEVC") == 0 ||
+			strcmp(m_strStreamType, "H264") == 0 ||
+			strcmp(m_strStreamType, "HVC1") == 0 ||
+			strcmp(m_strStreamType, "AVC1") == 0)
 		{
 			com_ptr<ICC_D3D11VideoObject> d3d11VideoObject;
 			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoObject**)&d3d11VideoObject)))

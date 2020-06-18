@@ -201,6 +201,13 @@ int ReadFileDN2::ReadFrame(size_t frame, C_Buffer & buffer, size_t & size)
 		if (size_hdr > 0)
 			memcpy(buffer.GetPtr(), hdr, size_hdr);
 
+		DWORD ret_size = 0;
+
+		if (!SUCCEEDED(m_fileMvx->UnwrapFrame(buffer.GetPtr(), size, 0, &ret_size)))
+			return -1;
+
+		size = ret_size;
+
 		return 0;
 	}
 
