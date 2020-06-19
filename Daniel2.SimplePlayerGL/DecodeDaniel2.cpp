@@ -404,35 +404,40 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			bIntraFormat = false;
 			break;
 
+#if !defined(__WIN32__)
 		case CC_ES_TYPE_VIDEO_H264:
+		case CC_ES_TYPE_VIDEO_AVC1:
 			clsidDecoder = CLSID_CC_H264VideoDecoder;
 			useCuda = false;
 			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
-			
-#if defined(__WIN32__)
+
 		case CC_ES_TYPE_VIDEO_HEVC:
-			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
-			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
-			m_strStreamType = "HEVC";
-			bIntraFormat = false;
-			break;
-
 		case CC_ES_TYPE_VIDEO_HVC1:
-			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
-			//m_strStreamType = "HVC1";
-			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
+			clsidDecoder = CLSID_CC_HEVCVideoDecoder;
+			useCuda = false;
 			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
-
+#else
+		case CC_ES_TYPE_VIDEO_H264:
 		case CC_ES_TYPE_VIDEO_AVC1:
 			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "AVC1";
-
+			useCuda = m_pRender ? true : false;
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
 			m_strStreamType = "H264";
+			bIntraFormat = false;
+			break;
+
+		case CC_ES_TYPE_VIDEO_HEVC:
+		case CC_ES_TYPE_VIDEO_HVC1:
+			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
+			//m_strStreamType = "HVC1";
+			useCuda = m_pRender ? true : false;
+			clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
+			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
 #endif
