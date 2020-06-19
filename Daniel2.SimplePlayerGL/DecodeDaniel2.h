@@ -58,6 +58,8 @@ private:
 	ULONGLONG m_llTimeBase;
 	bool bIntraFormat;
 
+	LONGLONG m_iNegativePTS;
+
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();
