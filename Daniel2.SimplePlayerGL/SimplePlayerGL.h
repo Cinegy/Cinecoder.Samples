@@ -1945,8 +1945,8 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		g_bDecoder = !g_bDecoder;
 		decodeD2->SetDecode(g_bDecoder);
 
-		if (m_bDecoder)
-			m_decodeD2->SeekFrame(iCurPlayFrameNumber);
+		if (decodeD2)
+			decodeD2->SeekFrame(iCurPlayFrameNumber);
 
 		if (g_bDecoder)
 			printf("decoder: on\n");
