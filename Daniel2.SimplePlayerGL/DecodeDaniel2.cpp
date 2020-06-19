@@ -955,6 +955,8 @@ long DecodeDaniel2::ThreadProc()
 	size_t frame_number = 0;
 	size_t coding_number = 0;
 
+	size_t frame_number_prev = 0;
+
 	HRESULT hr = S_OK;
 
 	for (auto it = m_listBlocks.begin(); it != m_listBlocks.end(); ++it)
@@ -1037,6 +1039,8 @@ long DecodeDaniel2::ThreadProc()
 
 					__check_hr
 				}
+
+				frame_number_prev = frame_number;
 			}
 			else
 			{
@@ -1046,7 +1050,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (pBlock)
 				{
-					pBlock->iFrameNumber = frame_number; // save frame number
+					pBlock->iFrameNumber = frame_number_prev++; // save frame number
 					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 				}
 			}
