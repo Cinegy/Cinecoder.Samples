@@ -390,6 +390,9 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		{
 			m_bDecoder = !m_bDecoder;
 			m_decodeD2->SetDecode(m_bDecoder);
+			
+			if (m_bDecoder)	
+				m_decodeD2->SeekFrame(iCurPlayFrameNumber);
 
 			if (m_bDecoder)
 				printf("decoder: on\n");
