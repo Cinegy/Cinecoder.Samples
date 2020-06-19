@@ -104,7 +104,13 @@ int GPURenderDX::CopyBufferToTexture(C_Block *pBlock)
 			HRESULT hr = m_pd3dDeviceContext->Map(m_pTexture, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms); __hr(hr)
 			if (ms.pData && pFrameData)
 			{
-				memcpy(ms.pData, pFrameData, size_tex_data);
+				if (pBlock->Pitch() == ms.RowPitch)
+					memcpy(ms.pData, pFrameData, size_tex_data);
+				else
+				{
+					for (int y = 0; y < pBlock->Height(); y++)
+						memcpy((unsigned char*)ms.pData + (y * ms.RowPitch), pFrameData + (y * pBlock->Pitch()), min(pBlock->Pitch(), ms.RowPitch));
+				}
 			}
 			m_pd3dDeviceContext->Unmap(m_pTexture, NULL);
 		}
