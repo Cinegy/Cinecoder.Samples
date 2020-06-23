@@ -92,6 +92,7 @@ public:
 	C_Buffer coded_frame;
 	size_t coded_frame_size;
 	size_t frame_number;
+	size_t coding_number;
 	size_t flags;
 
 	CodedFrame(const CodedFrame&) = default;
@@ -151,7 +152,7 @@ public:
 	int StartPipe();
 	int StopPipe();
 
-	int ReadFrame(size_t frame, C_Buffer & buffer, size_t & size);
+	int ReadFrame(size_t frame, C_Buffer & buffer, size_t & size, size_t & frameNum);
 
 	size_t GetCountFrames()
 	{ 
@@ -192,6 +193,22 @@ public:
 	bool GetReadFile() { return m_bReadFile; }
 
 	size_t GetDataRate(bool bClearData) { size_t ret = data_rate; if (bClearData) data_rate = 0; return ret; }
+
+	HRESULT GetFrameRate(CC_FRAME_RATE& frame_rate)
+	{
+		HRESULT hr = S_OK;
+
+		com_ptr<ICC_FrameRateProp> pFrameRateProp = nullptr;
+		hr = m_fileMvx->QueryInterface(IID_ICC_FrameRateProp, (void**)&pFrameRateProp);
+		if (SUCCEEDED(hr) && pFrameRateProp)
+		{
+			hr = pFrameRateProp->get_FrameRate(&frame_rate); __check_hr
+		}
+		else
+			return E_NOINTERFACE;
+
+		return hr;
+	}
 
 public:
 	CodedFrame* MapFrame();

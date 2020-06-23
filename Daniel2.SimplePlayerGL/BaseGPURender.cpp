@@ -113,8 +113,8 @@ int BaseGPURender::Init(std::string filename, size_t iMaxCountDecoders, bool use
 			}
 		}
 
-		//m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
-		//m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
+		m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
+		m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
 	}
 
 	int res = m_decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, useCuda, iScale, outputFormat);
@@ -390,6 +390,9 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		{
 			m_bDecoder = !m_bDecoder;
 			m_decodeD2->SetDecode(m_bDecoder);
+			
+			if (m_bDecoder)	
+				m_decodeD2->SeekFrame(iCurPlayFrameNumber);
 
 			if (m_bDecoder)
 				printf("decoder: on\n");
@@ -699,7 +702,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 		}
 		else if (output_format == IMAGE_FORMAT_BGRA8BIT)
 		{
-			//h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
+			h_convert_Y216_to_BGRA32_BtT(PARAMS); __vrcu
 		}
 	}
 	else if (buffer_format == BUFFER_FORMAT_NV12)

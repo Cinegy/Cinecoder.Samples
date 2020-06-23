@@ -34,10 +34,12 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_pMediaReader(nullptr),
 	m_strStreamType("Unknown"),
 	bIntraFormat(false),
+	bCalculatePTS(false),
 	m_llDuration(1),
-	m_llTimeBase(1)
+	m_llTimeBase(1),
+	m_iNegativePTS(0)
 {
-	m_FrameRate.num = 60;
+	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
 
 	m_dec_scale_factor = CC_VDEC_NO_SCALE;
@@ -79,34 +81,34 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 	if (res == 0)
 		res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
 
-	unsigned char* coded_frame = nullptr;
-	size_t coded_frame_size = 0;
-
-	CodedFrame buffer;
-
 	if (res == 0)
 	{
-		coded_frame_size = 0;
-		res = m_file.ReadFrame(0, buffer.coded_frame, coded_frame_size); // get 0-coded frame for add decoder and init values after decode first frame
-	}
-
-	if (res == 0)
-	{
-		coded_frame = buffer.coded_frame.GetPtr(); // poiter to 0-coded frame
+		unsigned char* coded_frame = nullptr;
+		size_t coded_frame_size = 0;
+		size_t frame_number = 0;
+		
+		CodedFrame buffer;
 
 		HRESULT hr = S_OK;
 
 		m_eventInitDecoder.Reset();
 
-		hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, 0); __check_hr
-
-		for (size_t i = 0; i < 2; i++)
+		for (size_t i = 0; i < 1; i++)
 		{
-			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
+			coded_frame_size = 0;
+			res = m_file.ReadFrame(i, buffer.coded_frame, coded_frame_size, frame_number); // get i-coded frame for add decoder and init values after decode first frames
+
+			if (res != 0) continue;
+
+			coded_frame = buffer.coded_frame.GetPtr(); // poiter to i-coded frame
+			
+			CC_TIME pts = 0; // (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
+
+			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 
 			if (FAILED(hr)) // add coded frame to decoder
 			{
-				assert(0);
+				_assert(0);
 
 				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
 
@@ -405,30 +407,33 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			bIntraFormat = false;
 			break;
 
+#if !defined(__WIN32__)
 		case CC_ES_TYPE_VIDEO_H264:
+		case CC_ES_TYPE_VIDEO_AVC1:
 			clsidDecoder = CLSID_CC_H264VideoDecoder;
 			useCuda = false;
 			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
-			
-#if defined(__WIN32__)
-		case CC_ES_TYPE_VIDEO_HEVC:
-			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
-			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
-			m_strStreamType = "HEVC";
-			bIntraFormat = false;
-			break;
-
-		case CC_ES_TYPE_VIDEO_HVC1:
-			clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV;
-			m_strStreamType = "HVC1";
-			bIntraFormat = false;
-			break;
-
+#else
+		case CC_ES_TYPE_VIDEO_H264:
 		case CC_ES_TYPE_VIDEO_AVC1:
-			clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV;
-			m_strStreamType = "AVC1";
+			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
+			//m_strStreamType = "AVC1";
+			useCuda = m_pRender && useCuda ? true : false;
+			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
+			m_strStreamType = "H264";
+			bIntraFormat = false;
+			break;
+
+		case CC_ES_TYPE_VIDEO_HEVC:
+		case CC_ES_TYPE_VIDEO_HVC1:
+			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
+			//m_strStreamType = "HVC1";
+			useCuda = m_pRender && useCuda ? true : false;
+			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
+			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
+			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
 #endif
@@ -512,6 +517,16 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	if (FAILED(hr = m_pVideoDec->Init()))
 		return printf("DecodeDaniel2: Init failed!\n"), hr;
 
+	com_ptr<ICC_FrameRateProp> pFrameRateProp = nullptr;
+	hr = m_pVideoDec->QueryInterface(IID_ICC_FrameRateProp, (void**)&pFrameRateProp);
+	if (SUCCEEDED(hr) && pFrameRateProp)
+	{
+		CC_FRAME_RATE frame_rate;
+		if (SUCCEEDED(hr)) hr = m_file.GetFrameRate(frame_rate);
+		if (SUCCEEDED(hr)) hr = pFrameRateProp->put_FrameRate(frame_rate);
+		if (SUCCEEDED(hr)) m_FrameRate = frame_rate;
+	}
+
 	return 0;
 }
 
@@ -551,8 +566,11 @@ int DecodeDaniel2::InitValues()
 
 		size_t size = 0;
 
-		if (strcmp(m_strStreamType, "HEVC") == 0)
-			size = m_stride * m_height * 3 / 2;
+		//if (strcmp(m_strStreamType, "HEVC") == 0 ||
+		//	strcmp(m_strStreamType, "H264") == 0 ||
+		//	strcmp(m_strStreamType, "HVC1") == 0 ||
+		//	strcmp(m_strStreamType, "AVC1") == 0)
+		//	size = m_stride * m_height * 3 / 2;
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 		
@@ -638,6 +656,16 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	}
 
 	hr = pVideoFrameInfo->get_PTS(&PTS); __check_hr
+	hr = pVideoFrameInfo->get_CodingNumber(&CodingNumber); __check_hr
+
+	if (PTS < m_iNegativePTS)
+	{
+		m_iNegativePTS = PTS;
+	}
+
+	PTS -= m_iNegativePTS;
+
+	//printf("DataReady: coding_num = %d PTS = %d\n", CodingNumber, PTS);
 
 	///////////////////////////////////////////////
 
@@ -721,40 +749,48 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	{
 		if (FrameRate.num == 0)
 		{
-			printf("Error: video frame rate == 0\n");
+			if (m_FrameRate.num == 0)
+			{
+				//printf("Error: video frame rate == 0\n");
 
-			hr = m_piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
-			if (FAILED(hr)) return hr;
+				hr = m_piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
+				if (FAILED(hr)) return hr;
 
-			const char* filename = m_filename.c_str();
+				const char* filename = m_filename.c_str();
 
 #if defined(__WIN32__)
-			CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+				CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
-			CC_STRING file_name_str = const_cast<CC_STRING>(filename);
+				CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
-			hr = m_pMediaReader->Open(file_name_str);
-			if (FAILED(hr)) return hr;
+				hr = m_pMediaReader->Open(file_name_str);
+				if (FAILED(hr)) return hr;
 
-			CC_FRAME_RATE FrameRateMR;
-			hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
-			if (FAILED(hr)) return hr;
+				CC_FRAME_RATE FrameRateMR;
+				hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
+				if (FAILED(hr)) return hr;
 
-			//CC_BOOL bOpened = FALSE;
-			//hr = m_pMediaReader->get_IsOpened(&bOpened);
-			//if (bOpened)
-			//{
-			//	hr = m_pMediaReader->Close();
-			//	if (FAILED(hr)) return hr;
-			//}
-			m_pMediaReader = nullptr;
+				//CC_BOOL bOpened = FALSE;
+				//hr = m_pMediaReader->get_IsOpened(&bOpened);
+				//if (bOpened)
+				//{
+				//	hr = m_pMediaReader->Close();
+				//	if (FAILED(hr)) return hr;
+				//}
+				m_pMediaReader = nullptr;
 
-			if (FrameRateMR.num == 0)
-				return E_FAIL;
+				if (FrameRateMR.num == 0)
+					return E_FAIL;
 
-			printf("Set frame rate (MediaReader): %.2f\n", ((float)FrameRateMR.num / (float)FrameRateMR.denom));
+				printf("Set frame rate (MediaReader): %.2f\n", ((float)FrameRateMR.num / (float)FrameRateMR.denom));
 
-			FrameRate = FrameRateMR;
+				bCalculatePTS = true;
+				FrameRate = FrameRateMR;
+			}
+			else
+			{
+				FrameRate = m_FrameRate;
+			}
 		}
 
 		m_FrameRate = FrameRate;
@@ -798,7 +834,10 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		}
 
 #if defined(__WIN32__)
-		if (strcmp(m_strStreamType, "HEVC") == 0)
+		if (strcmp(m_strStreamType, "HEVC") == 0 ||
+			strcmp(m_strStreamType, "H264") == 0 ||
+			strcmp(m_strStreamType, "HVC1") == 0 ||
+			strcmp(m_strStreamType, "AVC1") == 0)
 		{
 			com_ptr<ICC_D3D11VideoObject> d3d11VideoObject;
 			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoObject**)&d3d11VideoObject)))
@@ -935,6 +974,9 @@ long DecodeDaniel2::ThreadProc()
 	unsigned char* coded_frame = nullptr;
 	size_t coded_frame_size = 0;
 	size_t frame_number = 0;
+	size_t coding_number = 0;
+
+	size_t frame_number_prev = 0;
 
 	HRESULT hr = S_OK;
 
@@ -988,20 +1030,21 @@ long DecodeDaniel2::ThreadProc()
 		{
 			coded_frame = frame->coded_frame.GetPtr(); // poiter to coded frame
 			coded_frame_size = frame->coded_frame_size; // size of coded frame
-			frame_number = frame->frame_number; // number of coded frame
+			frame_number = frame->frame_number; // number of display frame
+			coding_number = frame->coding_number; // number of coding frame
 
 			if (m_bDecode)
 			{
 				CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
-
-				if (frame_number == 0 || frame->flags == 1) // seek
+				//printf("ProcessData: coding_num = %d frame_num = %d pts = %d\n", coding_number, frame_number, pts);
+				if (coding_number == 0 || frame->flags == 1) // seek
 				{
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
 					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 				}
 				else
 				{
-					if (bIntraFormat)
+					if (bIntraFormat || bCalculatePTS)
 						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
 					else
 						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
@@ -1009,7 +1052,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (FAILED(hr)) // add coded frame to decoder
 				{
-					assert(0);
+					_assert(0);
 
 					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p frame_number = %zd\n", hr, coded_frame_size, coded_frame, frame_number);
 
@@ -1017,6 +1060,8 @@ long DecodeDaniel2::ThreadProc()
 
 					__check_hr
 				}
+
+				frame_number_prev = frame_number;
 			}
 			else
 			{
@@ -1026,7 +1071,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (pBlock)
 				{
-					pBlock->iFrameNumber = frame_number; // save frame number
+					pBlock->iFrameNumber = frame_number_prev++; // save frame number
 					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 				}
 			}

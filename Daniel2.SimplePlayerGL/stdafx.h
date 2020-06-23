@@ -136,6 +136,8 @@ using namespace cinegy::threading_std;
 	} \
 }
 
+#define _assert(exp)
+
 #if defined(__WIN32__)
 #include <GL/glew.h> // GLEW framework
 #endif
