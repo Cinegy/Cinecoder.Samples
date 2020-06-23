@@ -18,8 +18,8 @@ before_build:
 - cmd: nuget restore
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln
-#- sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
-- sh: docker run --rm -v /home/appveyor/projects/:/data/dev lewk2/cinecodersamples-build sh -c "cd /data/dev/cinecoder-samples && ./build_samples.sh"
+- sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
+- sh: docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinecodersamples sh -c "cd /data/dev/cinecoder-samples && ./build_samples.sh"
   test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
