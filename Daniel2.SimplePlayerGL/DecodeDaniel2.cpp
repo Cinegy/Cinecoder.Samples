@@ -34,11 +34,12 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_pMediaReader(nullptr),
 	m_strStreamType("Unknown"),
 	bIntraFormat(false),
+	bCalculatePTS(false),
 	m_llDuration(1),
 	m_llTimeBase(1),
 	m_iNegativePTS(0)
 {
-	m_FrameRate.num = 60;
+	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
 
 	m_dec_scale_factor = CC_VDEC_NO_SCALE;
@@ -100,8 +101,10 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			if (res != 0) continue;
 
 			coded_frame = buffer.coded_frame.GetPtr(); // poiter to i-coded frame
+			
+			CC_TIME pts = 0; // (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
 
-			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr
+			if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 
 			if (FAILED(hr)) // add coded frame to decoder
 			{
@@ -514,6 +517,16 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	if (FAILED(hr = m_pVideoDec->Init()))
 		return printf("DecodeDaniel2: Init failed!\n"), hr;
 
+	com_ptr<ICC_FrameRateProp> pFrameRateProp = nullptr;
+	hr = m_pVideoDec->QueryInterface(IID_ICC_FrameRateProp, (void**)&pFrameRateProp);
+	if (SUCCEEDED(hr) && pFrameRateProp)
+	{
+		CC_FRAME_RATE frame_rate;
+		if (SUCCEEDED(hr)) hr = m_file.GetFrameRate(frame_rate);
+		if (SUCCEEDED(hr)) hr = pFrameRateProp->put_FrameRate(frame_rate);
+		if (SUCCEEDED(hr)) m_FrameRate = frame_rate;
+	}
+
 	return 0;
 }
 
@@ -736,40 +749,48 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	{
 		if (FrameRate.num == 0)
 		{
-			printf("Error: video frame rate == 0\n");
+			if (m_FrameRate.num == 0)
+			{
+				//printf("Error: video frame rate == 0\n");
 
-			hr = m_piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
-			if (FAILED(hr)) return hr;
+				hr = m_piFactory->CreateInstance(CLSID_CC_MediaReader, IID_ICC_MediaReader, (IUnknown**)&m_pMediaReader);
+				if (FAILED(hr)) return hr;
 
-			const char* filename = m_filename.c_str();
+				const char* filename = m_filename.c_str();
 
 #if defined(__WIN32__)
-			CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+				CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
-			CC_STRING file_name_str = const_cast<CC_STRING>(filename);
+				CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
-			hr = m_pMediaReader->Open(file_name_str);
-			if (FAILED(hr)) return hr;
+				hr = m_pMediaReader->Open(file_name_str);
+				if (FAILED(hr)) return hr;
 
-			CC_FRAME_RATE FrameRateMR;
-			hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
-			if (FAILED(hr)) return hr;
+				CC_FRAME_RATE FrameRateMR;
+				hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
+				if (FAILED(hr)) return hr;
 
-			//CC_BOOL bOpened = FALSE;
-			//hr = m_pMediaReader->get_IsOpened(&bOpened);
-			//if (bOpened)
-			//{
-			//	hr = m_pMediaReader->Close();
-			//	if (FAILED(hr)) return hr;
-			//}
-			m_pMediaReader = nullptr;
+				//CC_BOOL bOpened = FALSE;
+				//hr = m_pMediaReader->get_IsOpened(&bOpened);
+				//if (bOpened)
+				//{
+				//	hr = m_pMediaReader->Close();
+				//	if (FAILED(hr)) return hr;
+				//}
+				m_pMediaReader = nullptr;
 
-			if (FrameRateMR.num == 0)
-				return E_FAIL;
+				if (FrameRateMR.num == 0)
+					return E_FAIL;
 
-			printf("Set frame rate (MediaReader): %.2f\n", ((float)FrameRateMR.num / (float)FrameRateMR.denom));
+				printf("Set frame rate (MediaReader): %.2f\n", ((float)FrameRateMR.num / (float)FrameRateMR.denom));
 
-			FrameRate = FrameRateMR;
+				bCalculatePTS = true;
+				FrameRate = FrameRateMR;
+			}
+			else
+			{
+				FrameRate = m_FrameRate;
+			}
 		}
 
 		m_FrameRate = FrameRate;
@@ -1023,7 +1044,7 @@ long DecodeDaniel2::ThreadProc()
 				}
 				else
 				{
-					if (bIntraFormat)
+					if (bIntraFormat || bCalculatePTS)
 						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts);
 					else
 						hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size)); __check_hr

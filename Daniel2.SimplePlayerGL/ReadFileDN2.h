@@ -194,6 +194,22 @@ public:
 
 	size_t GetDataRate(bool bClearData) { size_t ret = data_rate; if (bClearData) data_rate = 0; return ret; }
 
+	HRESULT GetFrameRate(CC_FRAME_RATE& frame_rate)
+	{
+		HRESULT hr = S_OK;
+
+		com_ptr<ICC_FrameRateProp> pFrameRateProp = nullptr;
+		hr = m_fileMvx->QueryInterface(IID_ICC_FrameRateProp, (void**)&pFrameRateProp);
+		if (SUCCEEDED(hr) && pFrameRateProp)
+		{
+			hr = pFrameRateProp->get_FrameRate(&frame_rate); __check_hr
+		}
+		else
+			return E_NOINTERFACE;
+
+		return hr;
+	}
+
 public:
 	CodedFrame* MapFrame();
 	void UnmapFrame(CodedFrame* pFrame);

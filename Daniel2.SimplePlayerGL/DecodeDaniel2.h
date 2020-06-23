@@ -52,11 +52,11 @@ private:
 	com_ptr<ICC_VideoDecoder> m_pVideoDec;
 
 	com_ptr<ICC_MediaReader> m_pMediaReader;
-	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
 
 	ULONGLONG m_llDuration;
 	ULONGLONG m_llTimeBase;
 	bool bIntraFormat;
+	bool bCalculatePTS;
 
 	LONGLONG m_iNegativePTS;
 
