@@ -19,7 +19,7 @@ set(HEADERS
 
 include_directories("../common")
 include_directories("${Cinecoder_INCLUDE_DIRS}")
-include_directories("../packages/Cinecoder.Plugin.Multiplexers.1.2.2/sources")
+include_directories("../packages/Cinecoder.Plugin.Multiplexers.1.2.3/sources")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")

@@ -20,7 +20,7 @@
 					<Add option="-D_DEBUG" />
 				</Compiler>
 				<ExtraCommands>
-					<Add after="cp ../packages/Cinecoder.3.33.21.47311/runtimes/linux-x64/native/release/*.so bin/Debug" />
+					<Add after="cp ../packages/Cinecoder.3.33.22.14679/runtimes/linux-x64/native/release/*.so bin/Debug" />
 					<Add after="cp ../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-x64/native/release/*.so bin/Debug" />
 				</ExtraCommands>
 			</Target>
@@ -40,7 +40,7 @@
 					<Add option="-s" />
 				</Linker>
 				<ExtraCommands>
-					<Add after="cp ../packages/Cinecoder.3.33.21.47311/runtimes/linux-x64/native/release/*.so bin/Release" />
+					<Add after="cp ../packages/Cinecoder.3.33.22.14679/runtimes/linux-x64/native/release/*.so bin/Release" />
 					<Add after="cp ../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-x64/native/release/*.so bin/Release" />
 				</ExtraCommands>
 			</Target>
@@ -52,8 +52,8 @@
 			<Add option="-fexceptions" />
 			<Add directory="/usr/include/AL" />
 			<Add directory="/usr/include/GL " />
-			<Add directory="../packages/Cinecoder.3.33.21.47311/sources" />
-			<Add directory="../packages/Cinecoder.3.33.21.47311/sources/winclude" />
+			<Add directory="../packages/Cinecoder.3.33.22.14679/sources" />
+			<Add directory="../packages/Cinecoder.3.33.22.14679/sources/winclude" />
 			<Add directory="../packages/CUDAConvertLib.1.0.0.13/sources" />
 		</Compiler>
 		<Linker>
@@ -71,7 +71,7 @@
 			<Add library="dl" />
 			<Add directory="/usr/lib/x86_64-linux-gnu" />
 			<Add directory="/usr/local/cuda/lib64" />
-			<Add directory="../packages/Cinecoder.3.33.21.47311/runtimes/linux-x64/native/release" />
+			<Add directory="../packages/Cinecoder.3.33.22.14679/runtimes/linux-x64/native/release" />
 			<Add directory="../packages/CUDAConvertLib.1.0.0.13/runtimes/linux-x64/native/release" />
 		</Linker>
 		<Unit filename="../Daniel2.SimplePlayerGL/AudioSource.cpp" />
