@@ -25,7 +25,7 @@ alias nuget="mono /usr/local/bin/nuget.exe"
 
 #add cmake 3.17.3
 RUN mkdir -p /usr/src/cmake \
-&& curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3.tar.gz -o /usr/src/cmake/cmake.tar.gz -sS \
+&& curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.tar.gz -o /usr/src/cmake/cmake.tar.gz -sS \
 && tar -C /usr/src/cmake -xvzf /usr/src/cmake/cmake.tar.gz \
 && ln -s /usr/src/cmake/cmake-3.17.3-Linux-x86_64/bin/cmake /usr/bin/cmake \
 && rm /usr/src/cmake/cmake.tar.gz
