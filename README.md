@@ -39,6 +39,19 @@ This project is designed to show off the raw speed of Daniel2 encoding, using C+
 Our approach with this project is to take an input file(s) and read directly into CUDA pinned
 memory, and then upload into the GPU for encoding. It also uses several reading threads and no reading cache to get the maximum possible reading bandwidth. On top-end cards, the PCI bus speed becomes the major limiting factor of the encoding process.
 
+### Daniel2.Benchmark
+
+This project is a light-weight cross-platform console benchmark written in C++, showing off the maximal potential performance of Cinecoder codecs on different platforms.
+
+It has several goals:
+
+educational:
+- to show the approach of using Cinecoder encoders and decoders at their maximal speed with minimal overhead
+
+practical:
+- to show the maximal potential performance of a particular Cinecoder codec on a particular platform
+- to discover any hidden pitfalls in pipelines - for example, why the processing is slow if you use not-pinned memory with CUDA codecs
+
 ### Dependencies
 
 We rely on a few packages we publish on NuGet for these samples:
