@@ -48,7 +48,6 @@ private:
 	bool m_bInitialize;
 
 	com_ptr<ICC_MediaReader> m_pMediaReader;
-	com_ptr<ICC_AudioStreamInfo> m_pAudioStreamInfo;
 
 	std::vector<BYTE> audioChunk;
 
@@ -62,12 +61,14 @@ private:
 	int m_iSpeed;
 
 	CC_FRAME_RATE m_FrameRate;
+	CC_AUDIO_FMT m_AudioFormat;
 
 	ALCdevice *device;
 	ALCcontext *context;
 
 	ALuint source;
 	ALuint buffers[NUM_BUFFERS];
+	ALenum ALformat;
 
 	bool m_bAudioPause;
 	bool m_bProcess;

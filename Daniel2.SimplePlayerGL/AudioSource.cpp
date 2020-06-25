@@ -79,6 +79,15 @@ AudioSource::AudioSource() :
 	m_iSpeed(1),
 	m_bProcess(false)
 {
+	m_iSampleCount = 0;
+	m_iSampleRate = 0;
+	m_iSampleBytes = 0;
+	m_iNumChannels = 0;
+	m_iBitsPerSample = 0;
+	m_iBlockAlign = 0;
+
+	m_AudioFormat = CAF_PCM16;
+	ALformat = AL_FORMAT_STEREO16;
 }
 
 AudioSource::~AudioSource()
@@ -134,14 +143,15 @@ int AudioSource::InitOpenAL()
 
 		BYTE* pb = audioChunk.data();
 		DWORD cb = static_cast<DWORD>(audioChunk.size());
-
-		hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, i * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
+		
+		//hr = m_pMediaReader->GetAudioSamples(m_AudioFormat, i * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
+		cbRetSize = cb;
 		if (SUCCEEDED(hr) && cbRetSize > 0)
 		{
 			ALvoid* data = pb;
 			ALsizei size = static_cast<ALsizei>(cbRetSize);
 			ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
-			ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+			ALenum  format = ALformat;
 
 			memset(data, 0x00, size);
 
@@ -235,73 +245,119 @@ int AudioSource::OpenFile(const char* const filename)
 		return -1;
 	}
 
-	CC_UINT iCurrentAudioTrackNumber = 0;
+	CC_INT iCurrentAudioTrackNumber = 0;
 
-	hr = m_pMediaReader->put_CurrentAudioTrackNumber(iCurrentAudioTrackNumber);
-	if (FAILED(hr)) return hr;
+	for (CC_INT i = 0; i < numAudioTracks; i++)
+	{
+		hr = m_pMediaReader->put_CurrentAudioTrackNumber(i);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pMediaReader->get_CurrentAudioTrackInfo((ICC_AudioStreamInfo**)&m_pAudioStreamInfo);
-	if (FAILED(hr)) return hr;
+		com_ptr<ICC_AudioStreamInfo> pAudioStreamInfo;
+		hr = m_pMediaReader->get_CurrentAudioTrackInfo((ICC_AudioStreamInfo**)&pAudioStreamInfo);
+		if (FAILED(hr)) return hr;
 
-	CC_TIME Duration = 0;
-	hr = m_pMediaReader->get_Duration(&Duration);
-	if (FAILED(hr)) return hr;
+		CC_TIME Duration = 0;
+		hr = m_pMediaReader->get_Duration(&Duration);
+		if (FAILED(hr)) return hr;
 
-	CC_INT FrameCount = 0;
-	hr = m_pMediaReader->get_NumberOfFrames(&FrameCount);
-	if (FAILED(hr)) return hr;
+		CC_INT FrameCount = 0;
+		hr = m_pMediaReader->get_NumberOfFrames(&FrameCount);
+		if (FAILED(hr)) return hr;
 
-	CC_FRAME_RATE FrameRateMR;
-	hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
-	if (FAILED(hr)) return hr;
+		CC_FRAME_RATE FrameRateMR;
+		hr = m_pMediaReader->get_FrameRate(&FrameRateMR);
+		if (FAILED(hr)) return hr;
 
-	CC_BITRATE BitRate;
-	CC_UINT BitsPerSample;
-	CC_UINT ChannelMask;
-	CC_FRAME_RATE FrameRateAS;
-	CC_UINT NumChannels;
-	CC_UINT SampleRate;
-	CC_ELEMENTARY_STREAM_TYPE StreamType;
+		CC_BITRATE BitRate;
+		CC_UINT BitsPerSample;
+		CC_UINT ChannelMask;
+		CC_FRAME_RATE FrameRateAS;
+		CC_UINT NumChannels;
+		CC_UINT SampleRate;
+		CC_ELEMENTARY_STREAM_TYPE StreamType;
 
-	hr = m_pAudioStreamInfo->get_BitRate(&BitRate);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_BitRate(&BitRate);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_BitsPerSample(&BitsPerSample);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_BitsPerSample(&BitsPerSample);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_ChannelMask(&ChannelMask);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_ChannelMask(&ChannelMask);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_FrameRate(&FrameRateAS);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_FrameRate(&FrameRateAS);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_NumChannels(&NumChannels);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_NumChannels(&NumChannels);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_SampleRate(&SampleRate);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_SampleRate(&SampleRate);
+		if (FAILED(hr)) return hr;
 
-	hr = m_pAudioStreamInfo->get_StreamType(&StreamType);
-	if (FAILED(hr)) return hr;
+		hr = pAudioStreamInfo->get_StreamType(&StreamType);
+		if (FAILED(hr)) return hr;
 
-	BitsPerSample = 16; // always play in PCM16
+		printf("audio track #%d: ", i);
+		switch (StreamType)
+		{
+		case CC_ES_TYPE_AUDIO_AAC: printf("AAC / "); break;
+		case CC_ES_TYPE_AUDIO_AC3: printf("AC3 / "); break;
+		case CC_ES_TYPE_AUDIO_AC3_DVB: printf("AC3_DVB / "); break;
+		case CC_ES_TYPE_AUDIO_AES3: printf("AES3 / "); break;
+		case CC_ES_TYPE_AUDIO_DOLBY_E: printf("DOLBY E / "); break;
+		case CC_ES_TYPE_AUDIO_DTS: printf("DTS / "); break;
+		case CC_ES_TYPE_AUDIO_LATM: printf("LATM / "); break;
+		case CC_ES_TYPE_AUDIO_LPCM: printf("LPCM / "); break;
+		case CC_ES_TYPE_AUDIO_MPEG1: printf("MPEG1 / "); break;
+		case CC_ES_TYPE_AUDIO_MPEG2: printf("MPEG2 / "); break;
+		case CC_ES_TYPE_AUDIO_SMPTE302: printf("SMPTE302 / "); break;
+		}
+		if (NumChannels == 1) printf("1 channel / ");
+		else printf("%zu channels / ", NumChannels);
+		printf("%.2f kHz / ", ((double)SampleRate / 1000.0));
+		printf("%zu bits", BitsPerSample);
+		printf("\n");
 
-	if (FrameRateMR.num != 0)
-		m_FrameRate = FrameRateMR;
-	else if (FrameRateAS.num != 0)
-		m_FrameRate = FrameRateAS;
+		if (iCurrentAudioTrackNumber == i)
+		{
+			//BitsPerSample = 16; // always play in PCM16
+			BitsPerSample = BitsPerSample;
 
-	size_t sample_count = (SampleRate / (m_FrameRate.num / m_FrameRate.denom));
-	size_t sample_bytes = sample_count * NumChannels * (BitsPerSample >> 3);
+			if (BitsPerSample == 8)
+				m_AudioFormat = CAF_PCM8;
+			else if (BitsPerSample == 16)
+				m_AudioFormat = CAF_PCM16;
 
-	m_iSampleCount = sample_count;
-	m_iSampleRate = SampleRate;
-	m_iSampleBytes = sample_bytes;
-	m_iNumChannels = NumChannels;
-	m_iBitsPerSample = BitsPerSample;
-	m_iBlockAlign = (m_iNumChannels * m_iBitsPerSample) / 8;
+			if (FrameRateMR.num != 0)
+				m_FrameRate = FrameRateMR;
+			else if (FrameRateAS.num != 0)
+				m_FrameRate = FrameRateAS;
 
-	audioChunk.resize(sample_bytes);
+			size_t sample_count = (SampleRate / (m_FrameRate.num / m_FrameRate.denom));
+			size_t sample_bytes = sample_count * NumChannels * (BitsPerSample >> 3);
+
+			m_iSampleCount = sample_count;
+			m_iSampleRate = SampleRate;
+			m_iSampleBytes = sample_bytes;
+			m_iNumChannels = NumChannels;
+			m_iBitsPerSample = BitsPerSample;
+			m_iBlockAlign = (m_iNumChannels * m_iBitsPerSample) / 8;
+
+			ALformat = (m_iNumChannels == 2) ?
+				((m_AudioFormat == CAF_PCM8) ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16)
+				: ((m_AudioFormat == CAF_PCM8) ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16);
+
+			audioChunk.resize(sample_bytes);
+		}
+	}
+	printf("-------------------------------------\n");
+
+	if (m_iBitsPerSample != 16)
+	{
+		printf("error: BitsPerSample != 16 bits (support only 16 bits)\n");
+		m_pMediaReader = nullptr;
+		return -1;
+	}
 
 	return InitOpenAL();
 }
@@ -369,8 +425,7 @@ long AudioSource::ThreadProc()
 				if (UpdateAudioChunk(iCurFrame, &data, &size) == S_OK && data && size > 0)
 				{
 					ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
-					ALenum  format = (m_iNumChannels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-
+					ALenum  format = ALformat;
 					ALuint buffer;
 
 					alSourceUnqueueBuffers(source, 1, &buffer); __al
@@ -393,13 +448,16 @@ long AudioSource::ThreadProc()
 
 HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* size)
 {
+	if (!m_pMediaReader)
+		return E_FAIL;
+
 	HRESULT hr = S_OK;
 	DWORD cbRetSize = 0;
 
 	BYTE* pb = audioChunk.data();
 	DWORD cb = static_cast<DWORD>(audioChunk.size());
 
-	hr = m_pMediaReader->GetAudioSamples(CAF_PCM16, iFrame * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
+	hr = m_pMediaReader->GetAudioSamples(m_AudioFormat, iFrame * m_iSampleCount, (CC_UINT)m_iSampleCount, pb, cb, &cbRetSize);
 	if (SUCCEEDED(hr) && cbRetSize > 0)
 	{
 		// if we playing in the opposite direction we need reverse audio samples
