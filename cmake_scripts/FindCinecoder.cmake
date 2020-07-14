@@ -29,6 +29,12 @@ endfunction()
 GetNToolkitDir()
 GetNPackageVersion("Cinecoder")
 
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64.*|AARCH64.*|arm64.*|ARM64.*)")
+	set(AARCH64 1)
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm.*|ARM.*)")
+	set(ARM 1)
+endif()
+
 if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 	set(Cinecoder_VERSION_STRING "${NPACKAGE_VERSION}")
 	set(Cinecoder_ROOT_DIR "${CMAKE_SOURCE_DIR}/${NREPOSITORY_PATH}/Cinecoder.${NPACKAGE_VERSION}")
@@ -41,10 +47,19 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 		set(Cinecoder_LIBRARY_DIRS
 			"${Cinecoder_ROOT_DIR}/runtimes/osx-x64/native/release/"
 		)
+	
 	elseif(UNIX)
-		set(Cinecoder_LIBRARY_DIRS
-			"${Cinecoder_ROOT_DIR}/runtimes/linux-x64/native/release/"
-		)
+
+		if (AARCH64 OR ARM)
+			set(Cinecoder_LIBRARY_DIRS
+				"${Cinecoder_ROOT_DIR}/runtimes/linux-arm64/native/release/"
+			)
+		else()	
+			set(Cinecoder_LIBRARY_DIRS
+				"${Cinecoder_ROOT_DIR}/runtimes/linux-x64/native/release/"
+			)
+		endif()
+
 	endif()
 
 	find_library(Cinecoder_LIBRARIES NAME  Cinecoder
