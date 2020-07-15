@@ -232,10 +232,15 @@ namespace Daniel2.MXFTranscoder
                     return Factory.CreateInstanceByName("MpegVideoDecoder") as ICC_VideoDecoder;
 
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_H264:
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_AVC1:
                     return Factory.CreateInstanceByName("H264VideoDecoder") as ICC_VideoDecoder;
 
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_AVC_INTRA:
                     return Factory.CreateInstanceByName("AVCIntraDecoder2") as ICC_VideoDecoder;
+
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_HEVC:
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_HVC1:
+                    return Factory.CreateInstanceByName("HEVCVideoDecoder") as ICC_VideoDecoder;
 
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_J2K:
                     return Factory.CreateInstanceByName("J2K_VideoDecoder") as ICC_VideoDecoder;
@@ -256,8 +261,13 @@ namespace Daniel2.MXFTranscoder
                     return Factory.CreateInstanceByName("MpegVideoSplitter") as ICC_VideoSplitter;
 
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_H264:
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_AVC1:
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_AVC_INTRA:
                     return Factory.CreateInstanceByName("H264VideoSplitter") as ICC_VideoSplitter;
+
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_HEVC:
+                case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_HVC1:
+                    return Factory.CreateInstanceByName("HEVCVideoSplitter") as ICC_VideoSplitter;
 
                 case CC_ELEMENTARY_STREAM_TYPE.CC_ES_TYPE_VIDEO_J2K:
                     return Factory.CreateInstanceByName("J2K_VideoSplitter") as ICC_VideoSplitter;
@@ -309,7 +319,7 @@ namespace Daniel2.MXFTranscoder
                 "This application transcodes any MXF file into a\n"+
                 "Daniel2 MXF file optimized to show fast usage and managed code interop\n"+
                 "\n"+
-                "Usage: Daniel2.MXFTranscoder.exe <inputfile.MXF> <output_file.MXF> [<switches>]\n"+
+                "Usage: Daniel2.MXFTranscoder.exe <inputfile.[MXF|MP4|TS]> <output_file.MXF> [<switches>]\n"+
                 "\n"+
                 "Where the switches are:\n"+
                 "  /cbr=#     - CBR mode encoding where the arg is the bitrate value is in Mbps\n"+
