@@ -49,11 +49,46 @@ namespace Daniel2.MXFTranscoder
             return OpenResult.OK;
         }
 
-        public byte[] ReadFrame(long frame_no)
+        private unsafe byte[] ReadFrameInternal(long frame_no)
         {
             CC_MVX_ENTRY entry = IndexFile.FindEntryByCodingNumber((uint)frame_no);
             InputFile.BaseStream.Position = (long)entry.offset;
-            return InputFile.ReadBytes((int)entry.size);
+            var coded_frame = InputFile.ReadBytes((int)entry.size);
+
+            if (entry.Type != 1) // add header for I-frames only
+                return coded_frame;
+
+            if (!(IndexFile is ICC_CodedStreamHeaderProp))
+                return coded_frame;
+
+            var CodedStreamHeaderGetter = IndexFile as ICC_CodedStreamHeaderProp;
+
+            var hdr_size = CodedStreamHeaderGetter.GetCodedStreamHeader(IntPtr.Zero, 0);
+
+            if (hdr_size == 0)
+                return coded_frame;
+
+            var coded_frame_ext = new byte[hdr_size + coded_frame.Length];
+
+            fixed (byte* p = coded_frame_ext)
+                CodedStreamHeaderGetter.GetCodedStreamHeader((IntPtr)p, hdr_size);
+
+            Array.Copy(coded_frame, 0, coded_frame_ext, hdr_size, coded_frame.Length);
+
+            return coded_frame_ext;
+        }
+
+        public unsafe byte[] ReadFrame(long frame_no)
+        {
+        	var coded_frame = ReadFrameInternal(frame_no);
+
+            fixed (byte* p = coded_frame)
+            {
+                var new_size = IndexFile.UnwrapFrame((IntPtr)p, (uint)coded_frame.Length, 0);
+                Array.Resize(ref coded_frame, (int)new_size);
+            }
+
+            return coded_frame;
         }
 
         public long Length
