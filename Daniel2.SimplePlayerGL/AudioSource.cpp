@@ -313,9 +313,9 @@ int AudioSource::OpenFile(const char* const filename)
 		case CC_ES_TYPE_AUDIO_SMPTE302: printf("SMPTE302 / "); break;
 		}
 		if (NumChannels == 1) printf("1 channel / ");
-		else printf("%zu channels / ", NumChannels);
+		else printf("%lu channels / ", NumChannels);
 		printf("%.2f kHz / ", ((double)SampleRate / 1000.0));
-		printf("%zu bits", BitsPerSample);
+		printf("%lu bits", BitsPerSample);
 		printf("\n");
 
 		if (iCurrentAudioTrackNumber == i)
