@@ -6,6 +6,32 @@
 enum IMAGE_FORMAT { IMAGE_FORMAT_UNKNOWN, IMAGE_FORMAT_RGBA8BIT, IMAGE_FORMAT_BGRA8BIT, IMAGE_FORMAT_RGBA16BIT, IMAGE_FORMAT_BGRA16BIT, IMAGE_FORMAT_RGB30 };
 enum BUFFER_FORMAT { BUFFER_FORMAT_UNKNOWN, BUFFER_FORMAT_RGBA32, BUFFER_FORMAT_RGBA64, BUFFER_FORMAT_YUY2, BUFFER_FORMAT_Y216, BUFFER_FORMAT_NV12, BUFFER_FORMAT_P016 };
 
+enum VIDEO_DECODER_TYPE 
+{ 
+	VD_TYPE_UNKNOWN = -1,
+	
+	VD_TYPE_CPU = 0,		// CPU
+	VD_TYPE_CUDA,			// NVIVIA GPU(CUDA)
+	VD_TYPE_QuickSync,		// Intel GPU(QuickSync)
+	VD_TYPE_OpenCL			// OpenCL
+};
+
+struct ST_VIDEO_DECODER_PARAMS
+{
+	size_t max_count_decoders;
+	VIDEO_DECODER_TYPE type;
+	CC_VDEC_SCALE_FACTOR scale_factor;
+	IMAGE_FORMAT outputFormat;
+
+	ST_VIDEO_DECODER_PARAMS()
+	{
+		max_count_decoders = 2;
+		scale_factor = CC_VDEC_NO_SCALE;
+		outputFormat = IMAGE_FORMAT_UNKNOWN;
+		type = VD_TYPE_CPU;
+	}
+};
+
 #if defined(__WIN32__)
 class GPURenderDX;
 #endif
@@ -23,13 +49,11 @@ private:
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
 
-	IMAGE_FORMAT m_setOutputFormat;
-
 	CC_FRAME_RATE m_FrameRate;
 	CC_CHROMA_FORMAT m_ChromaFormat;
 	DWORD m_BitDepth;
 
-	CC_VDEC_SCALE_FACTOR m_dec_scale_factor;
+	ST_VIDEO_DECODER_PARAMS m_dec_params;
 
 	bool m_bProcess;
 	bool m_bPause;
@@ -63,9 +87,9 @@ private:
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();
-
+	
 public:
-	int OpenFile(const char* const filename, size_t iMaxCountDecoders = 2, bool useCuda = false, size_t iScale = 0, IMAGE_FORMAT outputFormat = IMAGE_FORMAT_UNKNOWN);
+	int OpenFile(const char* const filename, ST_VIDEO_DECODER_PARAMS dec_params);
 	int StartDecode();
 	int StopDecode();
 
@@ -125,7 +149,7 @@ private:
 #endif
 
 private:
-	int CreateDecoder(size_t iMaxCountDecoders, bool useCuda = false);
+	int CreateDecoder();
 	int DestroyDecoder();
 
 	int InitValues();

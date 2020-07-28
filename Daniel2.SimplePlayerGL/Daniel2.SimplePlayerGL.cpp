@@ -8,6 +8,7 @@ bool g_bVSync = false;
 bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
+bool g_useQuickSync = false;
 bool g_useOpenCL = false;
 bool g_useDirectX11 = false;
 bool g_useModernOGL = false;
@@ -97,6 +98,7 @@ void printHelp(void)
 #ifdef USE_CUDA_SDK
 	printf("-cuda               enable CUDA decoding (default: disable, PC only)\n");
 #endif
+	//printf("-quicksync          enable QuickSync decoding (default: disable, PC only)\n");
 #if defined(__WIN32__)
 	printf("-d3d11 [adapter]   enable DirectX11 pipeline (default: OpenGL)\n");
 	printf("    any:            Any Graphics Adapter (without cuda)\n");
@@ -196,6 +198,11 @@ int main(int argc, char **argv)
 	}
 #endif
 
+	if (checkCmdLineArg(argc, (const char **)argv, "quicksync"))
+	{
+		g_useQuickSync = true; // use QuickSync decoder
+	}
+
 	size_t gpuDevice = 1;
 #if defined(__WIN32__)
 	if (checkCmdLineArg(argc, (const char **)argv, "d3d11"))
@@ -266,6 +273,19 @@ int main(int argc, char **argv)
 
 	int res = 0;
 	
+	ST_VIDEO_DECODER_PARAMS dec_params;
+
+	dec_params.max_count_decoders = iMaxCountDecoders;
+	dec_params.scale_factor = (CC_VDEC_SCALE_FACTOR)iScale;
+	dec_params.outputFormat = outputFormat;
+	dec_params.type = VD_TYPE_CPU;
+
+	if (g_useCuda)
+		dec_params.type = VD_TYPE_CUDA;
+
+	//if (g_useQuickSync)
+	//	dec_params.type = VD_TYPE_QuickSync;
+
 #if defined(__WIN32__) && !defined(__USE_GLUT_RENDER__)
 	std::shared_ptr<BaseGPURender> render = nullptr; // pointer to render (OpenGL or DirectX11)
 
@@ -276,7 +296,7 @@ int main(int argc, char **argv)
 
 	if (render && !render->IsInit())
 	{
-		int res = render->Init(filename, iMaxCountDecoders, g_useCuda, gpuDevice, iScale, outputFormat); // init render
+		int res = render->Init(filename, dec_params, gpuDevice); // init render
 
 		if (res == 0)
 			res = render->SetParameters(g_bVSync, g_bRotate, g_bMaxFPS); // set startup parameters
@@ -297,7 +317,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	res = decodeD2->OpenFile(filename.c_str(), iMaxCountDecoders, g_useCuda, iScale, outputFormat); // Open input DN2 file
+	res = decodeD2->OpenFile(filename.c_str(), dec_params); // Open input DN2 file
 
 	if (res != 0)
 	{
