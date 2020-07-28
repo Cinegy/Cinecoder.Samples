@@ -42,8 +42,6 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
 
-	m_dec_scale_factor = CC_VDEC_NO_SCALE;
-
 #if defined(__WIN32__)
 	m_pVideoDecD3D11 = nullptr;
 	m_pRender = nullptr;
@@ -62,24 +60,24 @@ DecodeDaniel2::~DecodeDaniel2()
 	m_file.CloseFile(); // close reading DN2 file
 }
 
-int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda, size_t iScale, IMAGE_FORMAT outputFormat)
+int DecodeDaniel2::OpenFile(const char* const filename, ST_VIDEO_DECODER_PARAMS dec_params)
 {
 	m_bInitDecoder = false;
 
+	m_dec_params = dec_params;
+
+	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+
 	m_bUseCuda = useCuda;
-
-	m_setOutputFormat = outputFormat;
-
-	m_dec_scale_factor = (CC_VDEC_SCALE_FACTOR)iScale;
-
+	
 	m_filename = filename;
 
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
-	iMaxCountDecoders = std::max((size_t)1, std::min(iMaxCountDecoders, (size_t)4)); // 1..4
+	size_t iMaxCountDecoders = std::max((size_t)1, std::min(m_dec_params.max_count_decoders, (size_t)4)); // 1..4
 
 	if (res == 0)
-		res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
+		res = CreateDecoder(); // create decoders
 
 	if (res == 0)
 	{
@@ -138,7 +136,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			res = DestroyDecoder();
 
 			if (res == 0)
-				res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
+				res = CreateDecoder(); // create decoders
 		}
 
 		if (res == 0)
@@ -154,9 +152,9 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
-		if (m_dec_scale_factor != CC_VDEC_NO_SCALE)
+		if (m_dec_params.scale_factor != CC_VDEC_NO_SCALE)
 		{
-			size_t factor = (2 << (m_dec_scale_factor - 1));
+			size_t factor = (2 << (m_dec_params.scale_factor - 1));
 			printf("scale factor  : 1/%zd (original size %zu x %zu)\n", factor, m_width * factor, m_height * factor);
 		}
 		if (strcmp(m_strStreamType, "Daniel") == 0) 
@@ -345,11 +343,16 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 }
 #endif
 
-int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
+int DecodeDaniel2::CreateDecoder()
 {
 	HRESULT hr = S_OK;
 
 	m_piFactory = nullptr;
+
+	size_t iMaxCountDecoders = std::max((size_t)1, std::min(m_dec_params.max_count_decoders, (size_t)4)); // 1..4
+
+	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
 
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&m_piFactory); // get Factory
 	if (FAILED(hr)) 
@@ -422,6 +425,7 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 			//m_strStreamType = "AVC1";
 			useCuda = m_pRender && useCuda ? true : false;
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
+			clsidDecoder = useQuickSync ? CLSID_CC_H264VideoDecoder_IMDK : clsidDecoder;
 			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
@@ -502,13 +506,13 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	else m_pVideoDecD3D11 = nullptr;
 #endif
 
-	if (m_dec_scale_factor > 0)
+	if (m_dec_params.scale_factor > 0)
 	{
 		com_ptr<ICC_VDecFixedScaleFactorProp> pVDecFixedScaleFactorProp = nullptr;
 		hr = m_pVideoDec->QueryInterface(IID_ICC_VDecFixedScaleFactorProp, (void**)&pVDecFixedScaleFactorProp);
 		if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
 		{
-			CC_VDEC_SCALE_FACTOR v = (CC_VDEC_SCALE_FACTOR)(m_dec_scale_factor);
+			CC_VDEC_SCALE_FACTOR v = (CC_VDEC_SCALE_FACTOR)(m_dec_params.scale_factor);
 			hr = pVDecFixedScaleFactorProp->put_FixedScaleFactor(v);
 		}
 	}
@@ -816,7 +820,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		//hr = m_pVideoDec->QueryInterface((ICC_VDecFixedScaleFactorProp**)&pVDecFixedScaleFactorProp);
 		//if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
 		//{
-		//	hr = pVDecFixedScaleFactorProp->get_FixedScaleFactor(&m_dec_scale_factor);
+		//	hr = pVDecFixedScaleFactorProp->get_FixedScaleFactor(&m_dec_params.scale_factor);
 		//}
 
 		com_ptr<ICC_VideoAccelerationInfo> pVideoAccelerationInfo;
@@ -888,9 +892,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		CC_COLOR_FMT fmt = CCF_B8G8R8A8; // set output format
 
 		// set user settings for output format
-		if (m_setOutputFormat == IMAGE_FORMAT_RGBA8BIT)
+		if (m_dec_params.outputFormat == IMAGE_FORMAT_RGBA8BIT)
 			BitDepth = 8;
-		else if (m_setOutputFormat == IMAGE_FORMAT_RGBA16BIT)
+		else if (m_dec_params.outputFormat == IMAGE_FORMAT_RGBA16BIT)
 			BitDepth = 16;
 
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
