@@ -58,8 +58,12 @@ void* mem_alloc(MemType type, size_t size)
     return ptr;
 #elif defined(__APPLE__)
 	return (LPBYTE)malloc(size);
+#elif defined(__ANDROID__)
+	  void *ptr = nullptr;
+	  posix_memalign(&ptr, 4096, size);
+	  return ptr;
 #else
-	return (LPBYTE)aligned_alloc(4096, size);
+	 return (LPBYTE)aligned_alloc(4096, size);
 #endif		
   }
 
@@ -418,6 +422,8 @@ int main(int argc, char* argv[])
   int max_frames = 0x7fffffff;
   int update_mask = 0x07;
   
+  auto g_t0 = system_clock::now();
+
   for(int frame_no = 0; frame_no < max_frames; frame_no++)
   {
     size_t idx = frame_no % (source_frames.size()*2-1);
@@ -447,7 +453,7 @@ int main(int argc, char* argv[])
 		  std::this_thread::sleep_for(milliseconds{ Tideal - Treal });
 	}
 
-    if((frame_count & update_mask) == 0)
+    /*if((frame_count & update_mask) == 0)
     {
  	  auto t1 = system_clock::now();
       auto dT = duration<double>(t1 - t0).count();
@@ -466,7 +472,7 @@ int main(int argc, char* argv[])
         update_mask = (update_mask>>1) | 1;
         dT /= 2;
       }
-    }
+    }*/
 
     frame_count++;
     total_frame_count++;
@@ -479,6 +485,9 @@ int main(int argc, char* argv[])
   if(FAILED(hr)) return hr;
 
   auto t1 = system_clock::now();
+
+  auto g_dT = duration<double>(t1 - g_t0).count();
+  fprintf(stderr, " ========> %.3f fps %.3f GB/s \r", frame_count / g_dT, uncompressed_frame_size / 1E9 * frame_count / g_dT);
 
   pEncoder = NULL;
 
