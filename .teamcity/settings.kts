@@ -1,17 +1,17 @@
-import jetbrains.buildServer.configs.kotlin.v2018_2.*
-import jetbrains.buildServer.configs.kotlin.v2018_2.ui.*
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.MSBuildStep
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.exec
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.msBuild
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.nuGetInstaller
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.powerShell
-import jetbrains.buildServer.configs.kotlin.v2018_2.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.v2018_2.vcs.GitVcsRoot
-import jetbrains.buildServer.configs.kotlin.v2018_2.projectFeatures.dockerRegistry
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildFeatures.dockerSupport
-import jetbrains.buildServer.configs.kotlin.v2018_2.buildSteps.dockerCommand
+import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.ui.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.MSBuildStep
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.exec
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.msBuild
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.nuGetInstaller
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.powerShell
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
+import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
+import jetbrains.buildServer.configs.kotlin.v2019_2.projectFeatures.dockerRegistry
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 
-version = "2019.1"
+version = "2020.1"
 
 project {
     features {
@@ -33,14 +33,14 @@ object DockerContainers : Project({
     name = "Build Containers"
     description = "Docker container images for use with Cinecoder Samples"
 
-    buildType(Ubuntu1804CinecoderSamples)
+    buildType(UbuntuCinecoderSamples)
 })
 
-object Ubuntu1804CinecoderSamples : BuildType({
-    name = "Ubuntu 18.04 Build Container"
+object UbuntuCinecoderSamples : BuildType({
+    name = "Ubuntu Build Container"
     description = "Docker container image for compiling Cinecoder Samples binaries on x86/x64 Linux"
 
-    buildNumberPattern = "19.%build.counter%"
+    buildNumberPattern = "20.%build.counter%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -54,8 +54,8 @@ object Ubuntu1804CinecoderSamples : BuildType({
                     path = "dockerfile"
                 }
                 namesAndTags = """
-                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest
-                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:%build.number%
+                    registry.cinegy.com/docker/docker-builds/ubuntu2004/devcinecodersamples:latest
+                    registry.cinegy.com/docker/docker-builds/ubuntu2004/devcinecodersamples:%build.number%
                 """.trimIndent()
                 commandArgs = "--pull"
             }
@@ -65,8 +65,8 @@ object Ubuntu1804CinecoderSamples : BuildType({
             name = "Push"
             commandType = push {
                 namesAndTags = """
-                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest
-                    registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:%build.number%
+                    registry.cinegy.com/docker/docker-builds/ubuntu2004/devcinecodersamples:latest
+                    registry.cinegy.com/docker/docker-builds/ubuntu2004/devcinecodersamples:%build.number%
                 """.trimIndent()
                 removeImageAfterPush = false
             }
@@ -89,9 +89,10 @@ object SampleBinaries : Project({
     buildType(Version)
     buildType(BuildWin)
     buildType(BuildLinux)
+    buildType(BuildLinuxArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -187,7 +188,6 @@ object BuildWin : BuildType({
             args = "-p:Configuration=Release"
         }
     }
-
 })
 
 object BuildLinux : BuildType({
@@ -213,20 +213,75 @@ object BuildLinux : BuildType({
             name = "(patch) Version (from version step)"
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
         }
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
             arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
         }
         exec {
             name = "(build) Samples Script"
-            path = "./build_samples.sh"
+            path = "./build_samples-linux.sh"
             arguments = "Release"            
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devcinecodersamples:latest"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devcinecodersamples:latest"
+        }
+    }
+
+    triggers {
+        vcs {
+            enabled = false
+            branchFilter = ""
+        }
+    }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+})
+
+object BuildLinuxArm64 : BuildType({
+    name = "build (linux-arm64)"
+    
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """README.md => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+        }
+        exec {
+            name = "(patch) Inject license"
+            path = "pwsh"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+        }
+        exec {
+            name = "(build) Samples Script"
+            enabled=false
+            path = "./build_samples-linux-arm64.sh"
+            arguments = "Release"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/gcc750aarch64:latest"
         }
     }
 
@@ -273,6 +328,16 @@ object BuildAggregation : BuildType({
             artifacts {
                 artifactRules = """
                     CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }          
+        dependency(BuildLinuxArm64) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
         }        
