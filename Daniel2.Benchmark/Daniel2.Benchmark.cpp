@@ -46,7 +46,7 @@ static decltype(system_clock::now()) g_DecoderTimeFirstFrameIn, g_DecoderTimeFir
 enum MemType { MEM_SYSTEM, MEM_PINNED, MEM_GPU };
 MemType g_mem_type = MEM_SYSTEM;
 
-void* mem_alloc(MemType type, size_t size)
+void* mem_alloc(MemType type, size_t size, int device = 0)
 {
   if(type == MEM_SYSTEM)
   {
@@ -76,10 +76,23 @@ void* mem_alloc(MemType type, size_t size)
 
   if(type == MEM_GPU)
   {
-    printf("Using CUDA GPU memory: %zd byte(s)\n", size);
+    printf("Using CUDA GPU memory: %zd byte(s) on Device %d\n", size, device);
+
+    int old_device;
+    auto err = cudaGetDevice(&old_device);
+    if(err)
+      return fprintf(stderr, "cudaGetDevice() error %d\n", err), nullptr;
+
+    if(device != old_device && (err = cudaSetDevice(device)) != 0)
+      return fprintf(stderr, "cudaSetDevice(%d) error %d\n", device, err), nullptr;
+
     void *ptr = nullptr;
-  	auto err = cudaMalloc(&ptr, size);
-    if(err) fprintf(stderr, "CUDA error %d\n", err);
+  	err = cudaMalloc(&ptr, size);
+    if(err)
+      return fprintf(stderr, "CUDA error %d\n", err), nullptr;
+
+    cudaSetDevice(old_device);
+
     return ptr;
   }
 
@@ -111,7 +124,7 @@ int main(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#]");
+    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#]");
     puts("Where the <codec> is one of the following:");
     puts("\t'D2'           -- Daniel2 CPU codec test");
 	if(g_CudaEnabled)
@@ -276,6 +289,7 @@ int main(int argc, char* argv[])
   CC_COLOR_FMT cOutputFormat = cFormat;
   int DecoderScale = 0;
   double TargetFps = 0;
+  int EncDeviceID = -2, DecDeviceID = -2;
 
   for(int i = 5; i < argc; i++)
   {
@@ -287,7 +301,7 @@ int main(int argc, char* argv[])
         return fprintf(stderr, "Can't create the file %s", argv[i] + 9), -i;
     }
 
-    if(0 == strncmp(argv[i], "/outfmt=", 8))
+    else if(0 == strncmp(argv[i], "/outfmt=", 8))
     {
       cOutputFormat = ParseColorFmt(strOutputFormat = argv[i] + 8);
 
@@ -295,15 +309,28 @@ int main(int argc, char* argv[])
         return fprintf(stderr, "Unknown output raw data type '%s'\n", argv[i]), -i;
     }
 
-    if(0 == strncmp(argv[i], "/outscale=", 10))
+    else if(0 == strncmp(argv[i], "/outscale=", 10))
     {
  	  DecoderScale = atoi(argv[i] + 10);
     }
 
-    if(0 == strncmp(argv[i], "/fps=", 5))
+    else if(0 == strncmp(argv[i], "/fps=", 5))
     {
  	  TargetFps = atof(argv[i] + 5);
     }
+
+    else if(0 == strncmp(argv[i], "/device=", 8))
+    {
+ 	  EncDeviceID = atoi(argv[i] + 8);
+    }
+
+    else if(0 == strncmp(argv[i], "/device2=", 9))
+    {
+ 	  DecDeviceID = atoi(argv[i] + 9);
+    }
+
+    else
+      return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
   }
 
 //  cudaSetDeviceFlags(cudaDeviceMapHost);
@@ -345,20 +372,43 @@ int main(int argc, char* argv[])
   //	  hr = pTCP->put_ThreadsCount(1);
   //if (FAILED(hr)) return hr;
 
-  hr = pEncoder->InitByXml(pProfile);
-  if(FAILED(hr)) return hr;
-
-  int DeviceID = 0;
   com_ptr<ICC_DeviceIDProp> pDevId;
-  if(S_OK == pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
+  pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId);
+
+  if(EncDeviceID >= -1)
+  {
+    if(pDevId)
     {
       printf("Encoder has ICC_DeviceIDProp interface.\n");
 
-    if(FAILED(hr = pDevId->get_DeviceID(&DeviceID)))
-        return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
-
-    printf("Encoder device id = %d\n", DeviceID);
+      if(EncDeviceID >= -1)
+      {
+        if(FAILED(hr = pDevId->put_DeviceID(EncDeviceID)))
+          return fprintf(stderr, "Failed to assign DeviceId=%d to the encoder", EncDeviceID), hr;
+      }
+    }
+    else
+    {
+      printf("Encoder has no ICC_DeviceIDProp interface. Using default device (unknown)\n");
+    }
   }
+
+  hr = pEncoder->InitByXml(pProfile);
+  if(FAILED(hr)) return hr;
+
+  if(EncDeviceID < -1)
+  {
+    if(pDevId)
+    {
+      if(FAILED(hr = pDevId->get_DeviceID(&EncDeviceID)))
+        return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
+    }
+    else
+      EncDeviceID = 0;
+  }
+
+  if(EncDeviceID >= -1)
+    printf("Encoder device id = %d\n", EncDeviceID);
 
   C_FileWriter *pFileWriter = new C_FileWriter(outf);
   hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
@@ -408,7 +458,7 @@ int main(int argc, char* argv[])
     if(read_size < uncompressed_frame_size)
       break;
 
-    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, EncDeviceID);
     if(!buf)
       return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
     else
@@ -526,14 +576,17 @@ int main(int argc, char* argv[])
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
 
-  if(S_OK == pDecoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
+  if(DecDeviceID < -1 && EncDeviceID >= -1)
+    DecDeviceID = EncDeviceID;
+
+  if(DecDeviceID >= -1 && S_OK == pDecoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
   {
     printf("Decoder has ICC_DeviceIDProp interface.\n");
     
-    if(FAILED(hr = pDevId->put_DeviceID(DeviceID)))
-      return fprintf(stderr, "Failed to assign DeviceId %d to the decoder", DeviceID), hr;
-    
-    printf("Decoder device id = %d\n", DeviceID);
+    if(FAILED(hr = pDevId->put_DeviceID(DecDeviceID)))
+      return fprintf(stderr, "Failed to assign DeviceId %d to the decoder", DecDeviceID), hr;
+
+    printf("Decoder device id = %d\n", DecDeviceID);
   }
 
   hr = pDecoder->Init();
@@ -544,7 +597,7 @@ int main(int argc, char* argv[])
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
-  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
   else
