@@ -2,6 +2,7 @@
 #include <malloc.h>
 #include <vector>
 #include <utility>
+#include <atomic>
 
 //------------------------------------------------------------------
 class C_FileWriter : public ICC_ByteStreamCallback, public ICC_DataWriterEx
@@ -12,7 +13,7 @@ class C_FileWriter : public ICC_ByteStreamCallback, public ICC_DataWriterEx
   FILE *m_File;
 
   int m_NumFrames;
-  long long m_TotalDataSize;
+  std::atomic<long long> m_TotalDataSize;
 
   bool m_bCatchFrames;
 
@@ -121,5 +122,12 @@ public:
   	*ppos = _ftelli64(m_File);
 
   	return S_OK;
+  }
+
+  //-----------------------------------------------------------------------------
+  long long GetTotalBytesWritten()
+  //-----------------------------------------------------------------------------
+  {
+    return m_TotalDataSize;
   }
 };

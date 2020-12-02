@@ -336,11 +336,11 @@ int main(int argc, char* argv[])
   int DeviceID = 0;
   com_ptr<ICC_DeviceIDProp> pDevId;
   if(S_OK == pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
-  {
-    printf("Encoder has ICC_DeviceIDProp interface.\n");
-    
+    {
+      printf("Encoder has ICC_DeviceIDProp interface.\n");
+
     if(FAILED(hr = pDevId->get_DeviceID(&DeviceID)))
-      return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
+        return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
     
     printf("Encoder device id = %d\n", DeviceID);
   }
@@ -411,6 +411,8 @@ int main(int argc, char* argv[])
   int frame_count = 0, total_frame_count = 0;
   auto t0 = t00;
 
+  auto coded_size0 = pFileWriter->GetTotalBytesWritten();
+
   g_EncoderTimeFirstFrameIn = t00;
 
   printf("Performing encoding loop, press ESC to break\n");
@@ -451,11 +453,17 @@ int main(int argc, char* argv[])
     {
  	  auto t1 = system_clock::now();
       auto dT = duration<double>(t1 - t0).count();
+	  auto coded_size = pFileWriter->GetTotalBytesWritten();
 
-      fprintf(stderr, " %d, %.3f fps %.3f GB/s, CPU load: %.1f%%    \r", frame_no, frame_count / dT, uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      fprintf(stderr, " %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
+      	frame_no, frame_count / dT, 
+      	uncompressed_frame_size / 1E9 * frame_count / dT,
+      	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	cpuLoadMeter.GetLoad());
       
       t0 = t1;
       frame_count = 0;
+      coded_size0 = coded_size;
 
       if(dT < 0.5)
       {
@@ -507,7 +515,7 @@ int main(int argc, char* argv[])
     
     if(FAILED(hr = pDevId->put_DeviceID(DeviceID)))
       return fprintf(stderr, "Failed to assign DeviceId %d to the decoder", DeviceID), hr;
-
+    
     printf("Decoder device id = %d\n", DeviceID);
   }
 
@@ -565,6 +573,8 @@ int main(int argc, char* argv[])
 
   int warm_up_frames = 4;
 
+  coded_size0 = 0; long long coded_size = 0;
+
   if(int num_coded_frames = (int)pFileWriter->GetCodedSequenceLength())
   for(int frame_no = 0; frame_no < max_frames; frame_no++)
   {
@@ -576,6 +586,8 @@ int main(int argc, char* argv[])
       pDecoder = NULL;
       return hr;
     }
+
+    coded_size += codedFrame.second;
 
     if(TargetFps > 0)
     {
@@ -606,9 +618,13 @@ int main(int argc, char* argv[])
       else if(dT > 2)
         update_mask = (update_mask>>1) | 1;
 
-      fprintf(stderr, " %d, %.3f fps %.3f GB/s, CPU load: %.1f%%    \r", frame_no, frame_count / dT, uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      fprintf(stderr, " %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
+      	frame_no, frame_count / dT, 
+      	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
       
       t0 = t1;
+      coded_size0 = coded_size;
 
       frame_count = 0;
     }
