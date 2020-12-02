@@ -130,6 +130,8 @@ int main(int argc, char* argv[])
     puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
+    puts("\t'MPEG'         -- MPEG s/w encoder");
+    puts("\t'H264'         -- H264 s/w encoder");
 #endif
     puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
     return 1;
@@ -239,6 +241,18 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_HEVCVideoDecoder_IMDK_SW;
     strEncName = "Intel QuickSync HEVC (SOFTWARE)";
     bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "H264"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder; 
+    clsidDec = CLSID_CC_H264VideoDecoder; 
+    strEncName = "H264"; 
+  }
+  if(0 == strcmp(argv[1], "MPEG"))
+  { 
+    clsidEnc = CLSID_CC_MpegVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "MPEG"; 
   }
 #endif
 
