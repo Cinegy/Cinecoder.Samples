@@ -410,6 +410,18 @@ int main(int argc, char* argv[])
   if(EncDeviceID >= -1)
     printf("Encoder device id = %d\n", EncDeviceID);
 
+  CC_AMOUNT concur_level = 0;
+  com_ptr<ICC_ConcurrencyLevelProp> pConcur;
+  if(S_OK == pEncoder->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur))
+  {
+    printf("Encoder has ICC_ConcurrencyLevelProp interface.\n");
+    
+    if(FAILED(hr = pConcur->get_ConcurrencyLevel(&concur_level)))
+      return fprintf(stderr, "Failed to get ConcurrencyLevel from the encoder"), hr;
+    
+    printf("Encoder concurrency level = %d\n", concur_level);
+  }
+
   C_FileWriter *pFileWriter = new C_FileWriter(outf);
   hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
   if(FAILED(hr)) return hr;
@@ -589,8 +601,24 @@ int main(int argc, char* argv[])
     printf("Decoder device id = %d\n", DecDeviceID);
   }
 
+  if(concur_level != 0 && S_OK == pDecoder->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur))
+  {
+    printf("Decoder has ICC_ConcurrencyLevelProp interface.\n");
+    
+    if(FAILED(hr = pConcur->put_ConcurrencyLevel(concur_level)))
+      return fprintf(stderr, "Failed to assign ConcurrencyLevel %d to the decoder", concur_level), hr;
+  }
+
   hr = pDecoder->Init();
   if(FAILED(hr)) return hr;
+
+  if(pConcur)
+  {
+    if(FAILED(hr = pConcur->get_ConcurrencyLevel(&concur_level)))
+      return fprintf(stderr, "Failed to get ConcurrencyLevel from the decoder"), hr;
+    
+    printf("Decoder concurrency level = %d\n", concur_level);
+  }
 
   if(!bForceGetFrameOnDecode)
   	cFormat = CCF_UNKNOWN;
