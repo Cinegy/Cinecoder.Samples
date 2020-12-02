@@ -99,7 +99,8 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
-  return CCF_UNKNOWN;
+  if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
+  return (CC_COLOR_FMT)-1;
 }
 
 //-----------------------------------------------------------------------------
@@ -130,7 +131,7 @@ int main(int argc, char* argv[])
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
 #endif
-    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA'");
+    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
     return 1;
   }
 
@@ -250,7 +251,7 @@ int main(int argc, char* argv[])
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
-  if(cFormat == CCF_UNKNOWN)
+  if(cFormat == (CC_COLOR_FMT)-1)
     return fprintf(stderr, "Unknown raw data type '%s'\n", argv[3]), -3;
 
   FILE *inpf = fopen(argv[4], "rb");
@@ -276,7 +277,7 @@ int main(int argc, char* argv[])
     {
       cOutputFormat = ParseColorFmt(strOutputFormat = argv[i] + 8);
 
-      if(cOutputFormat == CCF_UNKNOWN)
+      if(cOutputFormat == (CC_COLOR_FMT)-1)
         return fprintf(stderr, "Unknown output raw data type '%s'\n", argv[i]), -i;
     }
 
@@ -341,7 +342,7 @@ int main(int argc, char* argv[])
 
     if(FAILED(hr = pDevId->get_DeviceID(&DeviceID)))
         return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
-    
+
     printf("Encoder device id = %d\n", DeviceID);
   }
 
@@ -368,7 +369,9 @@ int main(int argc, char* argv[])
   DWORD frame_pitch = 0, dec_frame_pitch = 0;
   if(FAILED(hr = pEncoder->GetStride(cFormat, &frame_pitch)))
     return fprintf(stderr, "Failed to get frame pitch from the encoder: code=%08x", hr), hr;
-  if(FAILED(hr = pEncoder->GetStride(cOutputFormat, &dec_frame_pitch)))
+  if(cOutputFormat == CCF_UNKNOWN)
+    dec_frame_pitch = frame_pitch;
+  else if(FAILED(hr = pEncoder->GetStride(cOutputFormat, &dec_frame_pitch)))
     return fprintf(stderr, "Failed to get frame pitch for the decoder: code=%08x", hr), hr;
 
   //__declspec(align(32)) static BYTE buffer[];
