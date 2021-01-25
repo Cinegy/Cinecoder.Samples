@@ -4,7 +4,10 @@ find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
 find_package(GLEW   REQUIRED)
-find_package(OpenCL)
+
+if(NOT APPLE)
+	find_package(OpenCL)
+endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
