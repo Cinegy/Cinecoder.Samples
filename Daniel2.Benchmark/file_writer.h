@@ -1,5 +1,7 @@
 #include "implement_iunknown_static.h"
+#ifdef __LINUX__
 #include <malloc.h>
+#endif
 #include <vector>
 #include <utility>
 
