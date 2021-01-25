@@ -142,12 +142,12 @@ using namespace cinegy::threading_std;
 #include <GL/glew.h> // GLEW framework
 #endif
 
-#if defined(__USE_GLUT_RENDER__) // Was added for fix #error:  gl.h included before glew.h
+#if defined(__WIN32__)
+#if defined(__USE_GLUT_RENDER__) // Was added for fix #error: gl.h included before glew.h
 #include <GL/glew.h> // GLEW framework
 #include <GL/freeglut.h> // GLUT framework
 #endif
 
-#if defined(__WIN32__)
 #include "GPURenderGL.h"
 #include "GPURenderDX.h"
 #endif
