@@ -43,7 +43,7 @@ include_directories("${CUDAConvertLib_INCLUDE_DIRS}")
 link_directories("${CUDAConvertLib_LIBRARY_DIRS}")
 endif()
 
-if (GLEW_FOUND)
+if(NOT "${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
     include_directories(${GLEW_INCLUDE_DIRS})
     link_libraries(${GLEW_LIBRARIES})
 endif()
@@ -70,6 +70,10 @@ endif()
 
 if(UNIX AND NOT APPLE)
 target_link_libraries(${PROJECT_NAME} X11)
+endif()
+
+if("${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
+     target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
 endif()
 
 if (OpenCL_FOUND)
