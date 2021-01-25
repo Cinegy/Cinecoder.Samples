@@ -39,7 +39,7 @@ CFrameBuffer frame_buffer;
 
 #if defined(__WIN32__)
 #include<conio.h>
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__) 
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -1031,7 +1031,9 @@ void gpu_initGLBuffers()
 
 	OGL_CHECK_ERROR_GL();
 
+#ifdef USE_CUDA_SDK
 	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
+#endif
 }
 
 void gpu_UpdateGLSettings()
