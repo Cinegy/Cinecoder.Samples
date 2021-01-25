@@ -11,6 +11,14 @@
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
+
+// for XCode
+//#define GLEW_STATIC
+//#include </usr/local/include/GL/glew.h>
+//#include <GLUT/glut.h>
+//#include <OpenGL/OpenGL.h>
+//#include <CoreGraphics/CoreGraphics.h>
+
 #define sprintf_s sprintf
 #elif defined(__LINUX__)
 #include <X11/Xlib.h>
@@ -1015,9 +1023,10 @@ void gpu_initGLBuffers()
 
 		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
 	}
+
+	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
 #endif
 
-	
 #ifdef USE_OPENCL_SDK
 
 	context = NULL;
@@ -1030,10 +1039,6 @@ void gpu_initGLBuffers()
 #endif
 
 	OGL_CHECK_ERROR_GL();
-
-#ifdef USE_CUDA_SDK
-	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
-#endif
 }
 
 void gpu_UpdateGLSettings()
