@@ -1,5 +1,7 @@
 project (Daniel2_SimplePlayerGL)
 
+cmake_minimum_required(VERSION 3.10)
+
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
