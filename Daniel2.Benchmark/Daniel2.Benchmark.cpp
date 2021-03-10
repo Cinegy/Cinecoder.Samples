@@ -576,7 +576,7 @@ int main(int argc, char* argv[])
         update_mask = (update_mask>>1) | 1;
         dT /= 2;
       }
-    }*/
+    }
 
     frame_count++;
     total_frame_count++;
