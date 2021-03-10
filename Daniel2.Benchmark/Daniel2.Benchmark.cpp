@@ -528,7 +528,7 @@ int main(int argc, char* argv[])
 		  std::this_thread::sleep_for(milliseconds{ Tideal - Treal });
 	}
 
-    if((frame_count & update_mask) == 0)
+    if((frame_count & update_mask) == update_mask)
     {
  	  auto t1 = system_clock::now();
       auto dT = duration<double>(t1 - t0).count();
