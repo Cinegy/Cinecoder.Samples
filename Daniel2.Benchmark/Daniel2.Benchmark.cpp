@@ -520,8 +520,6 @@ int main(int argc, char* argv[])
   int max_frames = 0x7fffffff;
   int update_mask = 0x07;
   
-  auto g_t0 = system_clock::now();
-
   for(int frame_no = 0; frame_no < max_frames; frame_no++)
   {
     size_t idx = frame_no % (source_frames.size()*2-1);
@@ -589,9 +587,6 @@ int main(int argc, char* argv[])
   if(FAILED(hr)) return hr;
 
   auto t1 = system_clock::now();
-
-  auto g_dT = duration<double>(t1 - g_t0).count();
-  fprintf(stderr, " ========> %.3f fps %.3f GB/s \r", frame_count / g_dT, uncompressed_frame_size / 1E9 * frame_count / g_dT);
 
   pEncoder = NULL;
 
