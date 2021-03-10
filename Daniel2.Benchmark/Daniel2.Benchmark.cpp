@@ -290,6 +290,7 @@ int main(int argc, char* argv[])
   int DecoderScale = 0;
   double TargetFps = 0;
   int EncDeviceID = -2, DecDeviceID = -2;
+  int NumThreads = 0;
 
   for(int i = 5; i < argc; i++)
   {
@@ -327,6 +328,11 @@ int main(int argc, char* argv[])
     else if(0 == strncmp(argv[i], "/device2=", 9))
     {
  	  DecDeviceID = atoi(argv[i] + 9);
+    }
+
+    else if(0 == strncmp(argv[i], "/numthreads=", 12))
+    {
+ 	  NumThreads = atoi(argv[i] + 12);
     }
 
     else
@@ -368,9 +374,20 @@ int main(int argc, char* argv[])
   hr = pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder);
   if(FAILED(hr)) return hr;
 
-  //if (CComQIPtr<ICC_ThreadsCountProp> pTCP = pEncoder)
-  //	  hr = pTCP->put_ThreadsCount(1);
-  //if (FAILED(hr)) return hr;
+  if(NumThreads > 0)
+  {
+    fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ");
+
+    com_ptr<ICC_ThreadsCountProp> pTCP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
+
+    else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
 
   com_ptr<ICC_DeviceIDProp> pDevId;
   pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId);
@@ -587,6 +604,21 @@ int main(int argc, char* argv[])
   com_ptr<ICC_VideoDecoder> pDecoder;
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
+
+  if(NumThreads > 0)
+  {
+    fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ");
+
+    com_ptr<ICC_ThreadsCountProp> pTCP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
+
+    else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
 
   if(DecDeviceID < -1 && EncDeviceID >= -1)
     DecDeviceID = EncDeviceID;
