@@ -89,6 +89,9 @@ typedef cudaError_t(*FTcudaFree)(void *devPtr);
 typedef cudaError_t(*FTcudaMallocHost)(void **ptr, size_t size);
 typedef cudaError_t(*FTcudaFreeHost)(void *ptr);
 
+typedef cudaError_t(*FTcudaGetDevice)(int *);
+typedef cudaError_t(*FTcudaSetDevice)(int);
+
 typedef cudaError_t(*FTcudaStreamCreate)(cudaStream_t *pStream);
 typedef cudaError_t(*FTcudaStreamDestroy)(cudaStream_t stream);
 typedef cudaError_t(*FTcudaStreamSynchronize)(cudaStream_t stream);
@@ -127,6 +130,9 @@ _extern FTcudaFree FUNC_CUDA(cudaFree);
 
 _extern FTcudaMallocHost FUNC_CUDA(cudaMallocHost);
 _extern FTcudaFreeHost FUNC_CUDA(cudaFreeHost);
+
+_extern FTcudaGetDevice FUNC_CUDA(cudaGetDevice);
+_extern FTcudaSetDevice FUNC_CUDA(cudaSetDevice);
 
 _extern FTcudaStreamCreate FUNC_CUDA(cudaStreamCreate);
 _extern FTcudaStreamDestroy FUNC_CUDA(cudaStreamDestroy);
@@ -194,6 +200,9 @@ static int initCUDA()
 		FUNC_CUDA(cudaMallocHost) = (FTcudaMallocHost)GetProcAddress(hCuda, "cudaMallocHost");
 		FUNC_CUDA(cudaFreeHost) = (FTcudaFreeHost)GetProcAddress(hCuda, "cudaFreeHost");
 
+		FUNC_CUDA(cudaGetDevice) = (FTcudaGetDevice)GetProcAddress(hCuda, "cudaGetDevice");
+		FUNC_CUDA(cudaSetDevice) = (FTcudaSetDevice)GetProcAddress(hCuda, "cudaSetDevice");
+
 		FUNC_CUDA(cudaStreamCreate) = (FTcudaStreamCreate)GetProcAddress(hCuda, "cudaStreamCreate");
 		FUNC_CUDA(cudaStreamDestroy) = (FTcudaStreamDestroy)GetProcAddress(hCuda, "cudaStreamDestroy");
 		FUNC_CUDA(cudaStreamSynchronize) = (FTcudaStreamSynchronize)GetProcAddress(hCuda, "cudaStreamSynchronize");
@@ -222,16 +231,18 @@ static int initCUDA()
 		FUNC_CUDA(cudaFreeArray) = (FTcudaFreeArray)GetProcAddress(hCuda, "cudaFreeArray");
 		FUNC_CUDA(cudaCreateChannelDesc) = (FTcudaCreateChannelDesc)GetProcAddress(hCuda, "cudaCreateChannelDesc");
 	}
+	else
+		return fprintf(stderr, "CUDA init error: failed to load %s\n", CUDART_FILENAME), -1;
 
 	if (!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) ||
 		!FUNC_CUDA(cudaMalloc) || !FUNC_CUDA(cudaMemset) || !FUNC_CUDA(cudaFree) ||
 		!FUNC_CUDA(cudaGraphicsGLRegisterImage) || !FUNC_CUDA(cudaGraphicsUnregisterResource) ||
 		!FUNC_CUDA(cudaGraphicsMapResources) || !FUNC_CUDA(cudaGraphicsUnmapResources) ||
 		!FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) || !FUNC_CUDA(cudaMemcpy2DToArray))
-		return -1;
+		return fprintf(stderr, "CUDA init error: failed to find required functions\n"), -2;
 
 	return 0;
-}
+}                                                                           
 
 static void destroyCUDA()
 {
