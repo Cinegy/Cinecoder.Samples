@@ -14,10 +14,11 @@
 #include <conio.h>
 
 #include <Cinecoder_h.h>
+#include <cinecoder_errors.h>
 #include <Cinecoder.Plugin.Multiplexers.h>
 #include <iostream>
 #include <limits.h>
 
 #include "../common/com_ptr.h"
 
-int print_error(int err, const char *str = nullptr);
+int print_error(int err, const char *str = nullptr, ...);
