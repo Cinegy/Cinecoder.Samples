@@ -11,6 +11,7 @@
 #include "../common/cinecoder_error_handler.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 
 int parse_args(int argc, TCHAR *argv[], TEST_PARAMS *encpar);
 int print_help();
@@ -108,10 +109,22 @@ int _tmain(int argc, TCHAR *argv[])
 }
 
 //---------------------------------------------------------------
-int print_error(int err, const char *str)
+int print_error(int err, const char *str, ...)
 //---------------------------------------------------------------
 {
-	fprintf(stderr, "\nError: %s%s", str?str:"", str?", ":"");
+	char err_text[4096];
+	va_list ap;
+
+	if(str)
+	{
+		va_start(ap, str);
+		vsprintf(err_text, str, ap);
+		va_end(ap);
+
+		str = err_text;
+	}
+
+	fprintf(stderr, "\n%s: %s%s", FAILED(err) ? "Error" : "Warning", str?str:"", str?", ":"");
 
 	if(SUCCEEDED(err))
 	{
