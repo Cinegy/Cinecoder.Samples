@@ -422,13 +422,6 @@ int main(int argc, char* argv[])
     printf("Encoder concurrency level = %d\n", concur_level);
   }
 
-  C_FileWriter *pFileWriter = new C_FileWriter(outf);
-  hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
-  if(FAILED(hr)) return hr;
-
-  com_ptr<ICC_VideoConsumerExtAsync> pEncAsync = 0;
-  pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync);
-
   CC_VIDEO_FRAME_DESCR vpar = { cFormat };
 
   printf("Encoder: %s\n", strEncName);
@@ -461,9 +454,9 @@ int main(int argc, char* argv[])
     printf("Compressed buffer address  : 0x%p\n", read_buffer);
 
   std::vector<BYTE*> source_frames;
-  int num_frames_in_loop = 12;
+  int max_num_frames_in_loop = 32;
 
-  for(int i = 0; i < num_frames_in_loop; i++)
+  for(int i = 0; i < max_num_frames_in_loop; i++)
   {
     size_t read_size = fread(read_buffer, 1, uncompressed_frame_size, inpf);
 
@@ -483,6 +476,13 @@ int main(int argc, char* argv[])
 
   	source_frames.push_back(buf);
   }
+
+  C_FileWriter *pFileWriter = new C_FileWriter(outf, true, source_frames.size());
+  hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
+  if(FAILED(hr)) return hr;
+
+  com_ptr<ICC_VideoConsumerExtAsync> pEncAsync = 0;
+  pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync);
 
   CpuLoadMeter cpuLoadMeter;
   
