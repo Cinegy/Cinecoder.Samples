@@ -39,6 +39,7 @@ set(HEADERS
 )
 
 include_directories("../common")
+include_directories("../libraries/glew-2.1.0/include")
 include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
 
