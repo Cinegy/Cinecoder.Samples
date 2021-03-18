@@ -5,7 +5,9 @@ cmake_minimum_required(VERSION 3.10)
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
-find_package(GLEW   REQUIRED)
+#find_package(GLEW   REQUIRED)
+
+set(GLEW_USE_STATIC_LIBS TRUE)
 
 if(NOT APPLE)
 	find_package(OpenCL)
@@ -22,6 +24,8 @@ set(SOURCES
 	DecodeDaniel2.cpp
 	ReadFileDN2.cpp
 	Daniel2.SimplePlayerGL.cpp
+
+	../libraries/glew-2.1.0/src/glew.c
 )
 
 set(HEADERS
@@ -43,10 +47,10 @@ include_directories("${CUDAConvertLib_INCLUDE_DIRS}")
 link_directories("${CUDAConvertLib_LIBRARY_DIRS}")
 endif()
 
-if(NOT "${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
-    include_directories(${GLEW_INCLUDE_DIRS})
-    link_libraries(${GLEW_LIBRARIES})
-endif()
+#if(NOT "${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
+#    include_directories(${GLEW_INCLUDE_DIRS})
+#    link_libraries(${GLEW_LIBRARIES})
+#endif()
 
 if (OpenCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
@@ -72,9 +76,9 @@ if(UNIX AND NOT APPLE)
 target_link_libraries(${PROJECT_NAME} X11)
 endif()
 
-if("${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
-     target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
-endif()
+#if("${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
+#     target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
+#endif()
 
 if (OpenCL_FOUND)
     target_link_libraries(${PROJECT_NAME} OpenCL)

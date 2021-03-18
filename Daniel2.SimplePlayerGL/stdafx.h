@@ -81,7 +81,7 @@ using namespace cinegy::threading_std;
 #include <CL/cl_gl.h>
 #endif
 
-// for build this code on Windows for example need add "glew.v140" and "freeglut.3.0.0.v140" nuget packages (nuget.org)
+// for build this code on Windows for example need add "glew.v140"/glew.c and "freeglut.3.0.0.v140" nuget packages (nuget.org)
 #if !defined(__WIN32__)
 	#define __USE_GLUT_RENDER__ 
 #endif
@@ -137,6 +137,10 @@ using namespace cinegy::threading_std;
 }
 
 #define _assert(exp)
+
+#ifndef GLEW_STATIC
+	#define GLEW_STATIC // use GLEW as building glew.c
+#endif
 
 #if defined(__WIN32__)
 #include <GL/glew.h> // GLEW framework
