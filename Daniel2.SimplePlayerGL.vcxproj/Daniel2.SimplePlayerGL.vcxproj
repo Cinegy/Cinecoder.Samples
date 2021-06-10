@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\VPUtils.1.3.8\build\VPUtils.props" Condition="Exists('..\packages\VPUtils.1.3.8\build\VPUtils.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props')" />
   <Import Project="..\packages\Cinecoder.3.33.54.32690\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.33.54.32690\build\Cinecoder.props')" />
   <Import Project="..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props" Condition="Exists('..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props')" />
@@ -268,6 +267,5 @@
     <Error Condition="!Exists('..\packages\Cinecoder.3.33.54.32690\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.54.32690\build\Cinecoder.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets'))" />
-    <Error Condition="!Exists('..\packages\VPUtils.1.3.8\build\VPUtils.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\VPUtils.1.3.8\build\VPUtils.props'))" />
   </Target>
 </Project>
