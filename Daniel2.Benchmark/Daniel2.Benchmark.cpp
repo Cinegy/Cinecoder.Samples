@@ -380,7 +380,7 @@ int main(int argc, char* argv[])
 
   if(NumThreads > 0)
   {
-    fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ");
+    fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ", NumThreads);
 
     com_ptr<ICC_ThreadsCountProp> pTCP;
 
@@ -611,7 +611,7 @@ int main(int argc, char* argv[])
 
   if(NumThreads > 0)
   {
-    fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ");
+    fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ", NumThreads);
 
     com_ptr<ICC_ThreadsCountProp> pTCP;
 
