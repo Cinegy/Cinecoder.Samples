@@ -198,13 +198,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/sources,
-					$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/sources/winclude,
+					$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/sources,
+					$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/sources/winclude,
 					/usr/local/Cellar/glew/2.1.0/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/runtimes/osx-x64/native/release";
+				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/runtimes/osx-x64/native/release";
 				OTHER_LDFLAGS = (
-					"$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/runtimes/osx-x64/native/release/libCinecoder.dylib",
+					"$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/runtimes/osx-x64/native/release/libCinecoder.dylib",
 					/usr/local/Cellar/glew/2.1.0/lib/libGLEW.dylib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -217,13 +217,13 @@
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/sources,
-					$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/sources/winclude,
+					$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/sources,
+					$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/sources/winclude,
 					/usr/local/Cellar/glew/2.1.0/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/runtimes/osx-x64/native/release";
+				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/runtimes/osx-x64/native/release";
 				OTHER_LDFLAGS = (
-					"$PROJECT_DIR/packages/Cinecoder.3.33.29.41258/runtimes/osx-x64/native/release/libCinecoder.dylib",
+					"$PROJECT_DIR/packages/Cinecoder.3.33.54.32690/runtimes/osx-x64/native/release/libCinecoder.dylib",
 					/usr/local/Cellar/glew/2.1.0/lib/libGLEW.dylib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
