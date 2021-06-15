@@ -423,7 +423,10 @@ int DecodeDaniel2::CreateDecoder()
 		case CC_ES_TYPE_VIDEO_AVC1:
 			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "AVC1";
+
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
+#endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
 			clsidDecoder = useQuickSync ? CLSID_CC_H264VideoDecoder_IMDK : clsidDecoder;
 			m_strStreamType = "H264";
@@ -434,7 +437,10 @@ int DecodeDaniel2::CreateDecoder()
 		case CC_ES_TYPE_VIDEO_HVC1:
 			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "HVC1";
+
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
+#endif
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
 			m_strStreamType = "HEVC";
@@ -911,8 +917,37 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			if (err)
 			{
 				err = false;
-				return printf("IsFormatSupported failed!\n"), hr;
+				return printf("IsFormatSupported failed! (error = 0x%x)\n", hr), hr;
 			}
+		}
+
+		if (bRes) // fix problem when IsFormatSupported return OK, but GetFrame return error MPG_E_FORMAT_NOT_SUPPORTED
+		{
+			std::vector<CC_COLOR_FMT> list_fmt;
+			list_fmt.push_back(fmt);
+			list_fmt.push_back(CCF_B8G8R8A8); // default format for copy to texture - RGBA, for YUY need add convertor
+
+			for (size_t i = 0; i < list_fmt.size(); i++)
+			{
+				DWORD iStride = 0;
+				pVideoProducer->GetStride(list_fmt[i], &iStride); // get stride
+
+				C_Block block;
+				long lres = block.Init(m_width, m_height, iStride, 0, m_bUseCuda);
+				if (lres == 0)
+				{
+					DWORD cb = 0;
+					hr = pVideoProducer->GetFrame(list_fmt[i], m_bUseCuda ? block.DataGPUPtr() : block.DataPtr(), block.Size(), block.Pitch(), &cb);
+					if (SUCCEEDED(hr))
+					{
+						fmt = list_fmt[i]; break;
+					}
+					else printf("InitDecoder: GetFrame(fmt = %d) failed! (error = 0x%x)\n", list_fmt[i], hr);
+				}
+			}
+
+			if (FAILED(hr))
+				return hr;
 		}
 
 		if (bRes)
@@ -927,9 +962,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_B8G8R8A8)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
-			else if (m_fmt == CCF_R16G16B16A16)
+			else if (m_fmt == CCF_R16G16B16A16 || m_fmt == CCF_RGB64)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
-			else if (m_fmt == CCF_B16G16R16A16)
+			else if (m_fmt == CCF_B16G16R16A16 || m_fmt == CCF_BGR64)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
@@ -937,6 +972,16 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_Y216)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			else if (m_fmt == CCF_NV12)
+			{
+				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+				m_outputBufferFormat = BUFFER_FORMAT_NV12;
+			}
+			else if (m_fmt == CCF_P016)
+			{
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+				m_outputBufferFormat = BUFFER_FORMAT_P016;
+			}
 
 			m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_RGBA32 : BUFFER_FORMAT_RGBA64;
 
@@ -979,8 +1024,6 @@ long DecodeDaniel2::ThreadProc()
 	size_t coded_frame_size = 0;
 	size_t frame_number = 0;
 	size_t coding_number = 0;
-
-	size_t frame_number_prev = 0;
 
 	HRESULT hr = S_OK;
 
@@ -1064,8 +1107,6 @@ long DecodeDaniel2::ThreadProc()
 
 					__check_hr
 				}
-
-				frame_number_prev = frame_number;
 			}
 			else
 			{
@@ -1075,7 +1116,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (pBlock)
 				{
-					pBlock->iFrameNumber = frame_number_prev++; // save frame number
+					pBlock->iFrameNumber = frame_number; // save frame number
 					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 				}
 			}
