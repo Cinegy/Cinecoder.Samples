@@ -584,6 +584,11 @@ int DecodeDaniel2::InitValues()
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 		
+		if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
+		{
+			size = (m_stride * m_height) + (m_stride * (m_height / 2));
+		}
+
 		if (res != 0)
 		{
 			printf("InitBlocks: Init() return error - %d\n", res);
@@ -937,7 +942,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				if (lres == 0)
 				{
 					DWORD cb = 0;
-					hr = pVideoProducer->GetFrame(list_fmt[i], m_bUseCuda ? block.DataGPUPtr() : block.DataPtr(), block.Size(), block.Pitch(), &cb);
+					hr = pVideoProducer->GetFrame(list_fmt[i], m_bUseCuda ? block.DataGPUPtr() : block.DataPtr(), (DWORD)block.Size(), (INT)block.Pitch(), &cb);
 					if (SUCCEEDED(hr))
 					{
 						fmt = list_fmt[i]; break;
