@@ -192,6 +192,8 @@ public:
 			cur_page = (cur_page + 1) % 2;
 			cur_offset = cur_page * page_size;
 		}
+
+		return 0;
 	}
 };
 
