@@ -253,3 +253,4 @@ _toolkits/
 /common/cinecoder_license_string.h
 /common/cinecoder_license_string.cs
 appveyor-tools/
+*.mxf
