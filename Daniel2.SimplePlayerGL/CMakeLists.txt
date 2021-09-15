@@ -24,7 +24,6 @@ set(HEADERS
 	AudioSource.h
 	Block.h
 	CinecoderErrorHandler.h
-	cudaDefines.h
 	DecodeDaniel2.h
 	ReadFileDN2.h
 )

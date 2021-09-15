@@ -107,7 +107,8 @@ using namespace cinegy::threading_std;
 #pragma comment(lib, "dxgi.lib")
 #endif
 
-#include "cudaDefines.h"
+#define CUDA_DECLARE_EXPORT
+#include "../common/cuda_dyn_load.h"
 
 #if defined(__WIN32__) || defined(__LINUX__) // use CUDA convert library
 #include "CUDAConvertLib.h"

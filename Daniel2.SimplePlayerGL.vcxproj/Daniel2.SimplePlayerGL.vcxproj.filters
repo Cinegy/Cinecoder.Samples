@@ -39,9 +39,6 @@
     <ClInclude Include="..\Daniel2.SimplePlayerGL\utils\HMTSTDUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\cudaDefines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\AudioSource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
