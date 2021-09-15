@@ -182,7 +182,6 @@
     <ClInclude Include="..\Daniel2.SimplePlayerGL\AudioSource.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\BaseGPURender.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\CLI.h" />
-    <ClInclude Include="..\Daniel2.SimplePlayerGL\cudaDefines.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\CinecoderErrorHandler.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderDX.h" />
     <ClInclude Include="..\Daniel2.SimplePlayerGL\GPURenderGL.h" />

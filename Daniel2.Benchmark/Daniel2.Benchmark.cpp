@@ -16,7 +16,8 @@ using namespace std::chrono_literals;
 #include "cpu_load_meter.h"
 
 #define CUDA_WRAPPER
-#include "cuda_defines.h"
+#define CUDA_DECLARE_STATIC
+#include "../common/cuda_dyn_load.h"
 
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
