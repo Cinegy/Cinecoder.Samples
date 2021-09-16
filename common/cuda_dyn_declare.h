@@ -58,6 +58,7 @@ DECLARE_FUNC_CUDA(cudaGraphicsResourceSetMapFlags)
 DECLARE_FUNC_CUDA(cudaMemcpy2DToArray)
 DECLARE_FUNC_CUDA(cudaMemcpy2DToArrayAsync)
 DECLARE_FUNC_CUDA(cudaMemcpyArrayToArray)
+DECLARE_FUNC_CUDA(cudaMemcpy2DArrayToArray)
 
 DECLARE_FUNC_CUDA(cudaMallocArray)
 DECLARE_FUNC_CUDA(cudaFreeArray)

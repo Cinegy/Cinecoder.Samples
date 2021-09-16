@@ -59,6 +59,7 @@ enum cudaError
 
 typedef struct cudaGraphicsResource *cudaGraphicsResource_t;
 typedef struct cudaArray *cudaArray_t;
+typedef const struct cudaArray *cudaArray_const_t;
 typedef struct CUstream_st *cudaStream_t;
 typedef enum cudaError cudaError_t;
 
@@ -106,6 +107,7 @@ typedef cudaError_t(*FTcudaGraphicsResourceSetMapFlags)(cudaGraphicsResource_t r
 typedef cudaError_t(*FTcudaMemcpy2DToArray)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind);
 typedef cudaError_t(*FTcudaMemcpy2DToArrayAsync)(cudaArray_t dst, size_t wOffset, size_t hOffset, const void *src, size_t spitch, size_t width, size_t height, cudaMemcpyKind kind, cudaStream_t stream);
 typedef cudaError_t(*FTcudaMemcpyArrayToArray)(cudaArray_t dst, size_t wOffsetDst, size_t hOffsetDst, cudaArray_t src, size_t wOffsetSrc, size_t hOffsetSrc, size_t count, cudaMemcpyKind kind);
+typedef cudaError_t(*FTcudaMemcpy2DArrayToArray)(cudaArray_t dst, size_t wOffsetDst, size_t hOffsetDst, cudaArray_const_t src, size_t wOffsetSrc, size_t hOffsetSrc, size_t width, size_t height, cudaMemcpyKind kind);
 
 typedef cudaError_t(*FTcudaMallocArray)(cudaArray_t *array, const struct cudaChannelFormatDesc *desc, size_t width, size_t height, unsigned int flags);
 typedef cudaError_t(*FTcudaFreeArray)(cudaArray_t array);
@@ -183,6 +185,7 @@ static int initCUDA()
 		LOAD_CUDA_FUNC(cudaMemcpy2DToArray)
 		LOAD_CUDA_FUNC(cudaMemcpy2DToArrayAsync)
 		LOAD_CUDA_FUNC(cudaMemcpyArrayToArray)
+		LOAD_CUDA_FUNC(cudaMemcpy2DArrayToArray)
 
 		LOAD_CUDA_FUNC(cudaMallocArray)
 		LOAD_CUDA_FUNC(cudaFreeArray)
@@ -206,7 +209,7 @@ static int initCUDA()
 		!FUNC_CUDA(cudaGraphicsMapResources) || !FUNC_CUDA(cudaGraphicsUnmapResources) ||
 		!FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) || !FUNC_CUDA(cudaGraphicsResourceGetMappedPointer) ||
 		!FUNC_CUDA(cudaGraphicsResourceSetMapFlags) ||
-		!FUNC_CUDA(cudaMemcpy2DToArray) || !FUNC_CUDA(cudaMemcpy2DToArrayAsync) || !FUNC_CUDA(cudaMemcpyArrayToArray) ||
+		!FUNC_CUDA(cudaMemcpy2DToArray) || !FUNC_CUDA(cudaMemcpy2DToArrayAsync) || !FUNC_CUDA(cudaMemcpyArrayToArray) || !FUNC_CUDA(cudaMemcpy2DArrayToArray) ||
 		!FUNC_CUDA(cudaMallocArray) || !FUNC_CUDA(cudaFreeArray) || !FUNC_CUDA(cudaCreateChannelDesc)
 		)
 		return fprintf(stderr, "CUDA init error: failed to find required functions\n"), -2;

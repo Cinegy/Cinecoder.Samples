@@ -1007,7 +1007,8 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 
 			if (buffer_format == BUFFER_FORMAT_RGBA32 || buffer_format == BUFFER_FORMAT_RGBA64)
 			{
-				cudaMemcpyArrayToArray(texture_ptr, 0, 0, buffer_ptr, 0, 0, pBlock->Size(), cudaMemcpyDeviceToDevice); __vrcu
+				//cudaMemcpyArrayToArray(texture_ptr, 0, 0, buffer_ptr, 0, 0, pBlock->Size(), cudaMemcpyDeviceToDevice); __vrcu // was deprecated!
+				cudaMemcpy2DArrayToArray(texture_ptr, 0, 0, buffer_ptr, 0, 0, pBlock->Width(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
 			}
 			else if (buffer_format == BUFFER_FORMAT_YUY2)
 			{

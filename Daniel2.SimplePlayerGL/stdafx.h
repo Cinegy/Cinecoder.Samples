@@ -72,6 +72,7 @@ using namespace cinegy::threading_std;
 #if defined(__WIN32__) || defined(__LINUX__) // CUDA
 	#define USE_CUDA_SDK
 	#define CUDA_WRAPPER
+
 	//#define USE_OPENCL_SDK // for build this code on Windows for example need add "opencl-nug" nuget package (nuget.org)
 #endif
 
@@ -86,18 +87,27 @@ using namespace cinegy::threading_std;
 	#define __USE_GLUT_RENDER__ 
 #endif
 
+#if defined(__WIN32__)
+#include <GL/glew.h> // GLEW framework
+#endif
+
 #ifdef USE_CUDA_SDK
-#ifndef CUDA_WRAPPER
+
+#ifndef CUDA_WRAPPER // for build this code on Windows for example need add "CUDASDK"  nuget packages (Cinegy nuget packages)
 #include <cuda.h>
+//#if (CUDA_VERSION >= 10010)
+//#define CUDA_ENABLE_DEPRECATED // fix error C4996: 'cudaMemcpyArrayToArray': was declared deprecated
+//#endif
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
+#include <cuda_d3d11_interop.h>
 
 #if defined(__WIN32__)
 	#pragma comment(lib, "cudart_static.lib")
 #else defined(__LINUX__)
 	#pragma comment(lib, "libcudart_static.a")
 	#endif
-#endif
+#endif // #ifndef CUDA_WRAPPER
 
 #if defined(__WIN32__) // use DirectX 11
 #include <d3d11.h>
@@ -115,7 +125,8 @@ using namespace cinegy::threading_std;
 #ifndef __CUDAConvertLib__  
 #define __CUDAConvertLib__
 #endif
-#endif
+
+#endif // #ifdef USE_CUDA_SDK
 
 #define __vrcu \
 { \
@@ -138,10 +149,6 @@ using namespace cinegy::threading_std;
 }
 
 #define _assert(exp)
-
-#if defined(__WIN32__)
-#include <GL/glew.h> // GLEW framework
-#endif
 
 #if defined(__USE_GLUT_RENDER__) // Was added for fix #error:  gl.h included before glew.h
 #include <GL/glew.h> // GLEW framework
