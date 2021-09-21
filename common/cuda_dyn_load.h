@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 #ifdef CUDA_WRAPPER
 #define cudaArrayDefault                    0x00  /**< Default CUDA array allocation flag */
 #define cudaArrayLayered                    0x01  /**< Must be set in cudaMalloc3DArray to create a layered CUDA array */

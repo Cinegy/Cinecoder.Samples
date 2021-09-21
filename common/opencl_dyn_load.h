@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 //#ifdef OPENCL_WRAPPER
 
 #define CL_USE_DEPRECATED_OPENCL_1_1_APIS // for clGetExtensionFunctionAddress
