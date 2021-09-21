@@ -28,6 +28,9 @@
     <ClCompile Include="..\Daniel2.SimplePlayerGL\GPURenderGL.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="..\external\GLEW\src\glew.c">
+      <Filter>Render\GLEW</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h">
@@ -85,6 +88,9 @@
     </Filter>
     <Filter Include="Render">
       <UniqueIdentifier>{fe0c5d45-6946-43d8-a3ad-40a3ba05f068}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render\GLEW">
+      <UniqueIdentifier>{bb9f304e-7427-4e25-91cb-f319d5517e9a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@ project (Daniel2_SimplePlayerGL)
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
-find_package(GLEW   REQUIRED)
+#find_package(GLEW   REQUIRED)
 find_package(OpenCL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -17,6 +17,8 @@ set(SOURCES
 	DecodeDaniel2.cpp
 	ReadFileDN2.cpp
 	Daniel2.SimplePlayerGL.cpp
+
+	../external/GLEW/src/glew.c
 )
 
 set(HEADERS
@@ -30,6 +32,7 @@ set(HEADERS
 
 include_directories("../common")
 include_directories("../external/OpenCL")
+include_directories("../external/GLEW/include")
 
 include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")

@@ -1,3 +1,6 @@
 [submodule "external/OpenCL"]
 	path = external/OpenCL
 	url = https://github.com/KhronosGroup/OpenCL-Headers.git
+[submodule "external/GLEW"]
+	path = external/GLEW
+	url = https://github.com/edoren/glew.git
