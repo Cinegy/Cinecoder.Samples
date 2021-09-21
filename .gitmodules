@@ -1,0 +1,3 @@
+[submodule "external/OpenCL"]
+	path = external/OpenCL
+	url = https://github.com/KhronosGroup/OpenCL-Headers.git
