@@ -29,6 +29,8 @@ set(HEADERS
 )
 
 include_directories("../common")
+include_directories("../external/OpenCL")
+
 include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
 
