@@ -42,8 +42,6 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
 
-	m_dec_scale_factor = CC_VDEC_NO_SCALE;
-
 #if defined(__WIN32__)
 	m_pVideoDecD3D11 = nullptr;
 	m_pRender = nullptr;
@@ -62,24 +60,24 @@ DecodeDaniel2::~DecodeDaniel2()
 	m_file.CloseFile(); // close reading DN2 file
 }
 
-int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders, bool useCuda, size_t iScale, IMAGE_FORMAT outputFormat)
+int DecodeDaniel2::OpenFile(const char* const filename, ST_VIDEO_DECODER_PARAMS dec_params)
 {
 	m_bInitDecoder = false;
 
+	m_dec_params = dec_params;
+
+	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+
 	m_bUseCuda = useCuda;
-
-	m_setOutputFormat = outputFormat;
-
-	m_dec_scale_factor = (CC_VDEC_SCALE_FACTOR)iScale;
-
+	
 	m_filename = filename;
 
 	int res = m_file.OpenFile(filename); // open input DN2 file
 
-	iMaxCountDecoders = std::max((size_t)1, std::min(iMaxCountDecoders, (size_t)4)); // 1..4
+	size_t iMaxCountDecoders = std::max((size_t)1, std::min(m_dec_params.max_count_decoders, (size_t)4)); // 1..4
 
 	if (res == 0)
-		res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
+		res = CreateDecoder(); // create decoders
 
 	if (res == 0)
 	{
@@ -138,7 +136,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 			res = DestroyDecoder();
 
 			if (res == 0)
-				res = CreateDecoder(iMaxCountDecoders, useCuda); // create decoders
+				res = CreateDecoder(); // create decoders
 		}
 
 		if (res == 0)
@@ -154,9 +152,9 @@ int DecodeDaniel2::OpenFile(const char* const filename, size_t iMaxCountDecoders
 		printf("filename      : %s\n", filename);
 		printf("stream type   : %s\n", m_strStreamType);
 		printf("width x height: %zu x %zu\n", m_width, m_height);
-		if (m_dec_scale_factor != CC_VDEC_NO_SCALE)
+		if (m_dec_params.scale_factor != CC_VDEC_NO_SCALE)
 		{
-			size_t factor = (2 << (m_dec_scale_factor - 1));
+			size_t factor = (2 << (m_dec_params.scale_factor - 1));
 			printf("scale factor  : 1/%zd (original size %zu x %zu)\n", factor, m_width * factor, m_height * factor);
 		}
 		if (strcmp(m_strStreamType, "Daniel") == 0) 
@@ -345,11 +343,16 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 }
 #endif
 
-int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
+int DecodeDaniel2::CreateDecoder()
 {
 	HRESULT hr = S_OK;
 
 	m_piFactory = nullptr;
+
+	size_t iMaxCountDecoders = std::max((size_t)1, std::min(m_dec_params.max_count_decoders, (size_t)4)); // 1..4
+
+	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
 
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&m_piFactory); // get Factory
 	if (FAILED(hr)) 
@@ -420,8 +423,12 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 		case CC_ES_TYPE_VIDEO_AVC1:
 			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "AVC1";
+
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
+#endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
+			clsidDecoder = useQuickSync ? CLSID_CC_H264VideoDecoder_IMDK : clsidDecoder;
 			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
@@ -430,7 +437,10 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 		case CC_ES_TYPE_VIDEO_HVC1:
 			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "HVC1";
+
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
+#endif
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
 			m_strStreamType = "HEVC";
@@ -502,13 +512,13 @@ int DecodeDaniel2::CreateDecoder(size_t iMaxCountDecoders, bool useCuda)
 	else m_pVideoDecD3D11 = nullptr;
 #endif
 
-	if (m_dec_scale_factor > 0)
+	if (m_dec_params.scale_factor > 0)
 	{
 		com_ptr<ICC_VDecFixedScaleFactorProp> pVDecFixedScaleFactorProp = nullptr;
 		hr = m_pVideoDec->QueryInterface(IID_ICC_VDecFixedScaleFactorProp, (void**)&pVDecFixedScaleFactorProp);
 		if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
 		{
-			CC_VDEC_SCALE_FACTOR v = (CC_VDEC_SCALE_FACTOR)(m_dec_scale_factor);
+			CC_VDEC_SCALE_FACTOR v = (CC_VDEC_SCALE_FACTOR)(m_dec_params.scale_factor);
 			hr = pVDecFixedScaleFactorProp->put_FixedScaleFactor(v);
 		}
 	}
@@ -574,6 +584,11 @@ int DecodeDaniel2::InitValues()
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 		
+		if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
+		{
+			size = (m_stride * m_height) + (m_stride * (m_height / 2));
+		}
+
 		if (res != 0)
 		{
 			printf("InitBlocks: Init() return error - %d\n", res);
@@ -816,7 +831,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		//hr = m_pVideoDec->QueryInterface((ICC_VDecFixedScaleFactorProp**)&pVDecFixedScaleFactorProp);
 		//if (SUCCEEDED(hr) && pVDecFixedScaleFactorProp)
 		//{
-		//	hr = pVDecFixedScaleFactorProp->get_FixedScaleFactor(&m_dec_scale_factor);
+		//	hr = pVDecFixedScaleFactorProp->get_FixedScaleFactor(&m_dec_params.scale_factor);
 		//}
 
 		com_ptr<ICC_VideoAccelerationInfo> pVideoAccelerationInfo;
@@ -888,9 +903,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		CC_COLOR_FMT fmt = CCF_B8G8R8A8; // set output format
 
 		// set user settings for output format
-		if (m_setOutputFormat == IMAGE_FORMAT_RGBA8BIT)
+		if (m_dec_params.outputFormat == IMAGE_FORMAT_RGBA8BIT)
 			BitDepth = 8;
-		else if (m_setOutputFormat == IMAGE_FORMAT_RGBA16BIT)
+		else if (m_dec_params.outputFormat == IMAGE_FORMAT_RGBA16BIT)
 			BitDepth = 16;
 
 		if (BitDepth > 8) fmt = fmt == CCF_B8G8R8A8 ? CCF_B16G16R16A16 : CCF_R16G16B16A16;
@@ -907,8 +922,37 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			if (err)
 			{
 				err = false;
-				return printf("IsFormatSupported failed!\n"), hr;
+				return printf("IsFormatSupported failed! (error = 0x%x)\n", hr), hr;
 			}
+		}
+
+		if (bRes) // fix problem when IsFormatSupported return OK, but GetFrame return error MPG_E_FORMAT_NOT_SUPPORTED
+		{
+			std::vector<CC_COLOR_FMT> list_fmt;
+			list_fmt.push_back(fmt);
+			list_fmt.push_back(CCF_B8G8R8A8); // default format for copy to texture - RGBA, for YUY need add convertor
+
+			for (size_t i = 0; i < list_fmt.size(); i++)
+			{
+				DWORD iStride = 0;
+				pVideoProducer->GetStride(list_fmt[i], &iStride); // get stride
+
+				C_Block block;
+				long lres = block.Init(m_width, m_height, iStride, 0, m_bUseCuda);
+				if (lres == 0)
+				{
+					DWORD cb = 0;
+					hr = pVideoProducer->GetFrame(list_fmt[i], m_bUseCuda ? block.DataGPUPtr() : block.DataPtr(), (DWORD)block.Size(), (INT)block.Pitch(), &cb);
+					if (SUCCEEDED(hr))
+					{
+						fmt = list_fmt[i]; break;
+					}
+					else printf("InitDecoder: GetFrame(fmt = %d) failed! (error = 0x%x)\n", list_fmt[i], hr);
+				}
+			}
+
+			if (FAILED(hr))
+				return hr;
 		}
 
 		if (bRes)
@@ -923,9 +967,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_B8G8R8A8)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
-			else if (m_fmt == CCF_R16G16B16A16)
+			else if (m_fmt == CCF_R16G16B16A16 || m_fmt == CCF_RGB64)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
-			else if (m_fmt == CCF_B16G16R16A16)
+			else if (m_fmt == CCF_B16G16R16A16 || m_fmt == CCF_BGR64)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
@@ -933,6 +977,16 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_Y216)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+			else if (m_fmt == CCF_NV12)
+			{
+				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
+				m_outputBufferFormat = BUFFER_FORMAT_NV12;
+			}
+			else if (m_fmt == CCF_P016)
+			{
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+				m_outputBufferFormat = BUFFER_FORMAT_P016;
+			}
 
 			m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_RGBA32 : BUFFER_FORMAT_RGBA64;
 
@@ -975,8 +1029,6 @@ long DecodeDaniel2::ThreadProc()
 	size_t coded_frame_size = 0;
 	size_t frame_number = 0;
 	size_t coding_number = 0;
-
-	size_t frame_number_prev = 0;
 
 	HRESULT hr = S_OK;
 
@@ -1060,8 +1112,6 @@ long DecodeDaniel2::ThreadProc()
 
 					__check_hr
 				}
-
-				frame_number_prev = frame_number;
 			}
 			else
 			{
@@ -1071,7 +1121,7 @@ long DecodeDaniel2::ThreadProc()
 
 				if (pBlock)
 				{
-					pBlock->iFrameNumber = frame_number_prev++; // save frame number
+					pBlock->iFrameNumber = frame_number; // save frame number
 					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 				}
 			}

@@ -75,6 +75,9 @@ int CEncoderTest::CreateEncoder(const TEST_PARAMS &par)
 	if (FAILED(hr = pEncoder->Init(pSettings)))
 		return print_error(hr, "Encoder initialization error");
 
+	if (S_OK != pEncoder->IsFormatSupported(par.InputColorFormat))
+		return print_error(MPG_E_FORMAT_NOT_SUPPORTED, "The input color format 0x%08x is not supported or there is no color conversion path exists", par.InputColorFormat);
+
 	com_ptr<ICC_OutputFile> pFileWriter;
 	if (FAILED(hr = m_pFactory->CreateInstance(CLSID_CC_OutputFile, IID_ICC_OutputFile, (IUnknown**)&pFileWriter)))
 		return print_error(hr, "File writer creation error");

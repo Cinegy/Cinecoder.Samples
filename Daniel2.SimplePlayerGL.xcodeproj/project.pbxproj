@@ -53,8 +53,8 @@
 		47ACEE1520976C51003E1326 /* ReadFileDN2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ReadFileDN2.h; path = Daniel2.SimplePlayerGL/ReadFileDN2.h; sourceTree = "<group>"; };
 		47ACEE1620976C51003E1326 /* stdafx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stdafx.cpp; path = Daniel2.SimplePlayerGL/stdafx.cpp; sourceTree = "<group>"; };
 		47ACEE1720976C51003E1326 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stdafx.h; path = Daniel2.SimplePlayerGL/stdafx.h; sourceTree = "<group>"; };
-		47ACEE1820976C51003E1326 /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Timer.h; path = Daniel2.SimplePlayerGL/Timer.h; sourceTree = "<group>"; };
 		47ACEE2220977416003E1326 /* utils */ = {isa = PBXFileReference; lastKnownFileType = folder; name = utils; path = Daniel2.SimplePlayerGL/utils; sourceTree = "<group>"; };
+		960FEE7925BF360700A49E1D /* SimplePlayerGL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SimplePlayerGL.h; path = Daniel2.SimplePlayerGL/SimplePlayerGL.h; sourceTree = "<group>"; };
 		962900A221145528003F87AE /* AudioSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AudioSource.cpp; path = Daniel2.SimplePlayerGL/AudioSource.cpp; sourceTree = "<group>"; };
 		962900A421145530003F87AE /* AudioSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AudioSource.h; path = Daniel2.SimplePlayerGL/AudioSource.h; sourceTree = "<group>"; };
 		962DAD802111E40700DE5B63 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
@@ -84,6 +84,7 @@
 		96D13B31206CE5A700102F82 = {
 			isa = PBXGroup;
 			children = (
+				960FEE7925BF360700A49E1D /* SimplePlayerGL.h */,
 				9643B33D2121C3D60004A7E0 /* CinecoderErrorHandler.h */,
 				9643B33C2121C3CC0004A7E0 /* cudaDefines.h */,
 				962900A421145530003F87AE /* AudioSource.h */,
@@ -98,7 +99,6 @@
 				47ACEE0F20976C50003E1326 /* Daniel2.SimplePlayerGL.cpp */,
 				47ACEE1620976C51003E1326 /* stdafx.cpp */,
 				47ACEE1720976C51003E1326 /* stdafx.h */,
-				47ACEE1820976C51003E1326 /* Timer.h */,
 				96D13B3B206CE5A700102F82 /* Products */,
 				96D13B58206CE66D00102F82 /* Frameworks */,
 			);
@@ -198,11 +198,15 @@
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
+					$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/sources,
+					$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/sources/winclude,
+					/usr/local/Cellar/glew/2.1.0/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx/native/release";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx-x64/native/release/libCinecoder.dylib";
+				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/runtimes/osx-x64/native/release";
+				OTHER_LDFLAGS = (
+					"$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/runtimes/osx-x64/native/release/libCinecoder.dylib",
+					/usr/local/Cellar/glew/2.1.0/lib/libGLEW.dylib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -213,11 +217,15 @@
 				CODE_SIGN_STYLE = Automatic;
 				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = NO;
 				HEADER_SEARCH_PATHS = (
-					$PROJECT_DIR/_toolkits/cinecoder/sources,
-					$PROJECT_DIR/_toolkits/cinecoder/sources/winclude,
+					$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/sources,
+					$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/sources/winclude,
+					/usr/local/Cellar/glew/2.1.0/include,
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx-x64/native/release";
-				OTHER_LDFLAGS = "$(PROJECT_DIR)/_toolkits/cinecoder/runtimes/osx-x64/native/release/libCinecoder.dylib";
+				LIBRARY_SEARCH_PATHS = "$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/runtimes/osx-x64/native/release";
+				OTHER_LDFLAGS = (
+					"$PROJECT_DIR/packages/Cinecoder.3.33.55.49272/runtimes/osx-x64/native/release/libCinecoder.dylib",
+					/usr/local/Cellar/glew/2.1.0/lib/libGLEW.dylib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

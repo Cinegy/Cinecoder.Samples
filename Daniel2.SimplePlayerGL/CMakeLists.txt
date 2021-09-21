@@ -1,5 +1,7 @@
 project (Daniel2_SimplePlayerGL)
 
+cmake_minimum_required(VERSION 3.10)
+
 find_package(OpenAL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT   REQUIRED)
@@ -42,10 +44,10 @@ include_directories("${CUDAConvertLib_INCLUDE_DIRS}")
 link_directories("${CUDAConvertLib_LIBRARY_DIRS}")
 endif()
 
-if (GLEW_FOUND)
-    include_directories(${GLEW_INCLUDE_DIRS})
-    link_libraries(${GLEW_LIBRARIES})
-endif()
+#if(NOT "${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
+#    include_directories(${GLEW_INCLUDE_DIRS})
+#    link_libraries(${GLEW_LIBRARIES})
+#endif()
 
 if (OpenCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
@@ -70,6 +72,10 @@ endif()
 if(UNIX AND NOT APPLE)
 target_link_libraries(${PROJECT_NAME} X11)
 endif()
+
+#if("${GLEW_NO_GLEW_CMAKE}" STREQUAL "")
+#     target_link_libraries(${PROJECT_NAME} GLEW::GLEW)
+#endif()
 
 if (OpenCL_FOUND)
     target_link_libraries(${PROJECT_NAME} OpenCL)

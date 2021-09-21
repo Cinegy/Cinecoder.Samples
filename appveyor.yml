@@ -8,18 +8,18 @@ configuration: Release
 platform: x64
 environment:
   license_password:
-    secure: rVRg2AT/wH+VelQF/6iZ5RQjRN9vBjA+OvKPJz+2G+JGNUA7x0yf1Lt6FpxtTX0B
+    secure: LrYA+FL955M3RVUasw/68Q==
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "c6Jor2CH8TTpYi6J8aXwK6gyztHjvNMfGoRShL0TVwaa2L5aBvU="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "c6Jor2CH8TTpYi6J8aXwK6gyztHjvNMfGoRShL0TVwaa2L5aBvU="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "QQZDPj6NN8fYWR7zWX3eaNjOxUrZZaDS/p0fLuOsZ4MiE/L26p8="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "QQZDPj6NN8fYWR7zWX3eaNjOxUrZZaDS/p0fLuOsZ4MiE/L26p8="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "QMWLI6vR7K3QPgfytLxf0Mobi9Y+il91QbfcAvvRFXprTZU+Xqs="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "QMWLI6vR7K3QPgfytLxf0Mobi9Y+il91QbfcAvvRFXprTZU+Xqs="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "6loBjTQvkYHyl4M4HQ4riGwxOR0hX299FaTrYsOA2OvPKFEX6ms="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "6loBjTQvkYHyl4M4HQ4riGwxOR0hX299FaTrYsOA2OvPKFEX6ms="
 - cmd: nuget restore
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln
 - sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
-- sh: docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples.sh"
+- sh: docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"
   test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-

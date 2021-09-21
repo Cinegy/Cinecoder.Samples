@@ -1,7 +1,10 @@
 #include "implement_iunknown_static.h"
+#ifdef __LINUX__
 #include <malloc.h>
+#endif
 #include <vector>
 #include <utility>
+#include <atomic>
 
 //------------------------------------------------------------------
 class C_FileWriter : public ICC_ByteStreamCallback, public ICC_DataWriterEx
@@ -11,16 +14,17 @@ class C_FileWriter : public ICC_ByteStreamCallback, public ICC_DataWriterEx
 
   FILE *m_File;
 
-  int m_NumFrames;
-  long long m_TotalDataSize;
+  size_t m_NumFrames;
+  std::atomic<long long> m_TotalDataSize;
 
   bool m_bCatchFrames;
+  size_t m_MinSeqLength;
 
   typedef std::pair<BYTE*,size_t> CodedFrameData;
   std::vector< CodedFrameData > m_CaughtFrames;
 
 public:
-  C_FileWriter(FILE *f, bool bCatchFrames = true) : m_File(f), m_bCatchFrames(bCatchFrames)
+  C_FileWriter(FILE *f, bool bCatchFrames = true, size_t min_seq_length = 1) : m_File(f), m_bCatchFrames(bCatchFrames), m_MinSeqLength(min_seq_length)
   {
     m_NumFrames = 0;
     m_TotalDataSize = 0;
@@ -47,7 +51,7 @@ public:
         CC_FRAME_TYPE frame_type;
         pFrameInfo->get_FrameType(&frame_type);
 
-        if(frame_type == CC_I_FRAME && !m_CaughtFrames.empty())
+        if(frame_type == CC_I_FRAME && !m_CaughtFrames.empty() && m_NumFrames >= m_MinSeqLength)
         {
           printf("\n@@: collected %zd frame(s)\n", m_CaughtFrames.size());
           m_bCatchFrames = false;
@@ -121,5 +125,12 @@ public:
   	*ppos = _ftelli64(m_File);
 
   	return S_OK;
+  }
+
+  //-----------------------------------------------------------------------------
+  long long GetTotalBytesWritten()
+  //-----------------------------------------------------------------------------
+  {
+    return m_TotalDataSize;
   }
 };

@@ -47,7 +47,7 @@ static decltype(system_clock::now()) g_DecoderTimeFirstFrameIn, g_DecoderTimeFir
 enum MemType { MEM_SYSTEM, MEM_PINNED, MEM_GPU };
 MemType g_mem_type = MEM_SYSTEM;
 
-void* mem_alloc(MemType type, size_t size)
+void* mem_alloc(MemType type, size_t size, int device = 0)
 {
   if(type == MEM_SYSTEM)
   {
@@ -59,8 +59,12 @@ void* mem_alloc(MemType type, size_t size)
     return ptr;
 #elif defined(__APPLE__)
 	return (LPBYTE)malloc(size);
+#elif defined(__ANDROID__)
+	  void *ptr = nullptr;
+	  posix_memalign(&ptr, 4096, size);
+	  return ptr;
 #else
-	return (LPBYTE)aligned_alloc(4096, size);
+	 return (LPBYTE)aligned_alloc(4096, size);
 #endif		
   }
 
@@ -77,10 +81,23 @@ void* mem_alloc(MemType type, size_t size)
 
   if(type == MEM_GPU)
   {
-    printf("Using CUDA GPU memory: %zd byte(s)\n", size);
+    printf("Using CUDA GPU memory: %zd byte(s) on Device %d\n", size, device);
+
+    int old_device;
+    auto err = cudaGetDevice(&old_device);
+    if(err)
+      return fprintf(stderr, "cudaGetDevice() error %d\n", err), nullptr;
+
+    if(device != old_device && (err = cudaSetDevice(device)) != 0)
+      return fprintf(stderr, "cudaSetDevice(%d) error %d\n", device, err), nullptr;
+
     void *ptr = nullptr;
-  	auto err = cudaMalloc(&ptr, size);
-    if(err) fprintf(stderr, "CUDA error %d\n", err);
+  	err = cudaMalloc(&ptr, size);
+    if(err)
+      return fprintf(stderr, "CUDA error %d\n", err), nullptr;
+
+    cudaSetDevice(old_device);
+
     return ptr;
   }
 
@@ -100,7 +117,8 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
-  return CCF_UNKNOWN;
+  if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
+  return (CC_COLOR_FMT)-1;
 }
 
 //-----------------------------------------------------------------------------
@@ -111,7 +129,7 @@ int main(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#]");
+    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#]");
     puts("Where the <codec> is one of the following:");
     puts("\t'D2'           -- Daniel2 CPU codec test");
 	if(g_CudaEnabled)
@@ -130,8 +148,10 @@ int main(int argc, char* argv[])
     puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
+    puts("\t'MPEG'         -- MPEG s/w encoder");
+    puts("\t'H264'         -- H264 s/w encoder");
 #endif
-    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA'");
+    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
     return 1;
   }
 
@@ -240,6 +260,18 @@ int main(int argc, char* argv[])
     strEncName = "Intel QuickSync HEVC (SOFTWARE)";
     bLoadGpuCodecsPlugin = true;
   }
+  if(0 == strcmp(argv[1], "H264"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder; 
+    clsidDec = CLSID_CC_H264VideoDecoder; 
+    strEncName = "H264"; 
+  }
+  if(0 == strcmp(argv[1], "MPEG"))
+  { 
+    clsidEnc = CLSID_CC_MpegVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "MPEG"; 
+  }
 #endif
 
   if(!strEncName)
@@ -251,7 +283,7 @@ int main(int argc, char* argv[])
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
-  if(cFormat == CCF_UNKNOWN)
+  if(cFormat == (CC_COLOR_FMT)-1)
     return fprintf(stderr, "Unknown raw data type '%s'\n", argv[3]), -3;
 
   FILE *inpf = fopen(argv[4], "rb");
@@ -262,6 +294,8 @@ int main(int argc, char* argv[])
   CC_COLOR_FMT cOutputFormat = cFormat;
   int DecoderScale = 0;
   double TargetFps = 0;
+  int EncDeviceID = -2, DecDeviceID = -2;
+  int NumThreads = 0;
 
   for(int i = 5; i < argc; i++)
   {
@@ -273,23 +307,41 @@ int main(int argc, char* argv[])
         return fprintf(stderr, "Can't create the file %s", argv[i] + 9), -i;
     }
 
-    if(0 == strncmp(argv[i], "/outfmt=", 8))
+    else if(0 == strncmp(argv[i], "/outfmt=", 8))
     {
       cOutputFormat = ParseColorFmt(strOutputFormat = argv[i] + 8);
 
-      if(cOutputFormat == CCF_UNKNOWN)
+      if(cOutputFormat == (CC_COLOR_FMT)-1)
         return fprintf(stderr, "Unknown output raw data type '%s'\n", argv[i]), -i;
     }
 
-    if(0 == strncmp(argv[i], "/outscale=", 10))
+    else if(0 == strncmp(argv[i], "/outscale=", 10))
     {
  	  DecoderScale = atoi(argv[i] + 10);
     }
 
-    if(0 == strncmp(argv[i], "/fps=", 5))
+    else if(0 == strncmp(argv[i], "/fps=", 5))
     {
  	  TargetFps = atof(argv[i] + 5);
     }
+
+    else if(0 == strncmp(argv[i], "/device=", 8))
+    {
+ 	  EncDeviceID = atoi(argv[i] + 8);
+    }
+
+    else if(0 == strncmp(argv[i], "/device2=", 9))
+    {
+ 	  DecDeviceID = atoi(argv[i] + 9);
+    }
+
+    else if(0 == strncmp(argv[i], "/numthreads=", 12))
+    {
+ 	  NumThreads = atoi(argv[i] + 12);
+    }
+
+    else
+      return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
   }
 
 //  cudaSetDeviceFlags(cudaDeviceMapHost);
@@ -327,31 +379,70 @@ int main(int argc, char* argv[])
   hr = pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder);
   if(FAILED(hr)) return hr;
 
-  //if (CComQIPtr<ICC_ThreadsCountProp> pTCP = pEncoder)
-  //	  hr = pTCP->put_ThreadsCount(1);
-  //if (FAILED(hr)) return hr;
+  if(NumThreads > 0)
+  {
+    fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ", NumThreads);
+
+    com_ptr<ICC_ThreadsCountProp> pTCP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
+
+    else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  com_ptr<ICC_DeviceIDProp> pDevId;
+  pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId);
+
+  if(EncDeviceID >= -1)
+  {
+    if(pDevId)
+    {
+      printf("Encoder has ICC_DeviceIDProp interface.\n");
+
+      if(EncDeviceID >= -1)
+      {
+        if(FAILED(hr = pDevId->put_DeviceID(EncDeviceID)))
+          return fprintf(stderr, "Failed to assign DeviceId=%d to the encoder", EncDeviceID), hr;
+      }
+    }
+    else
+    {
+      printf("Encoder has no ICC_DeviceIDProp interface. Using default device (unknown)\n");
+    }
+  }
 
   hr = pEncoder->InitByXml(pProfile);
   if(FAILED(hr)) return hr;
 
-  int DeviceID = 0;
-  com_ptr<ICC_DeviceIDProp> pDevId;
-  if(S_OK == pEncoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
+  if(EncDeviceID < -1)
   {
-    printf("Encoder has ICC_DeviceIDProp interface.\n");
-    
-    if(FAILED(hr = pDevId->get_DeviceID(&DeviceID)))
-      return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
-    
-    printf("Encoder device id = %d\n", DeviceID);
+    if(pDevId)
+    {
+      if(FAILED(hr = pDevId->get_DeviceID(&EncDeviceID)))
+        return fprintf(stderr, "Failed to get DeviceId from the encoder"), hr;
+    }
+    else
+      EncDeviceID = 0;
   }
 
-  C_FileWriter *pFileWriter = new C_FileWriter(outf);
-  hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
-  if(FAILED(hr)) return hr;
+  if(EncDeviceID >= -1)
+    printf("Encoder device id = %d\n", EncDeviceID);
 
-  com_ptr<ICC_VideoConsumerExtAsync> pEncAsync = 0;
-  pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync);
+  CC_AMOUNT concur_level = 0;
+  com_ptr<ICC_ConcurrencyLevelProp> pConcur;
+  if(S_OK == pEncoder->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur))
+  {
+    printf("Encoder has ICC_ConcurrencyLevelProp interface.\n");
+    
+    if(FAILED(hr = pConcur->get_ConcurrencyLevel(&concur_level)))
+      return fprintf(stderr, "Failed to get ConcurrencyLevel from the encoder"), hr;
+    
+    printf("Encoder concurrency level = %d\n", concur_level);
+  }
 
   CC_VIDEO_FRAME_DESCR vpar = { cFormat };
 
@@ -369,7 +460,9 @@ int main(int argc, char* argv[])
   DWORD frame_pitch = 0, dec_frame_pitch = 0;
   if(FAILED(hr = pEncoder->GetStride(cFormat, &frame_pitch)))
     return fprintf(stderr, "Failed to get frame pitch from the encoder: code=%08x", hr), hr;
-  if(FAILED(hr = pEncoder->GetStride(cOutputFormat, &dec_frame_pitch)))
+  if(cOutputFormat == CCF_UNKNOWN)
+    dec_frame_pitch = frame_pitch;
+  else if(FAILED(hr = pEncoder->GetStride(cOutputFormat, &dec_frame_pitch)))
     return fprintf(stderr, "Failed to get frame pitch for the decoder: code=%08x", hr), hr;
 
   //__declspec(align(32)) static BYTE buffer[];
@@ -383,16 +476,16 @@ int main(int argc, char* argv[])
     printf("Compressed buffer address  : 0x%p\n", read_buffer);
 
   std::vector<BYTE*> source_frames;
-  int num_frames_in_loop = 12;
+  int max_num_frames_in_loop = 32;
 
-  for(int i = 0; i < num_frames_in_loop; i++)
+  for(int i = 0; i < max_num_frames_in_loop; i++)
   {
     size_t read_size = fread(read_buffer, 1, uncompressed_frame_size, inpf);
 
     if(read_size < uncompressed_frame_size)
       break;
 
-    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, EncDeviceID);
     if(!buf)
       return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
     else
@@ -406,11 +499,20 @@ int main(int argc, char* argv[])
   	source_frames.push_back(buf);
   }
 
+  C_FileWriter *pFileWriter = new C_FileWriter(outf, true, source_frames.size());
+  hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
+  if(FAILED(hr)) return hr;
+
+  com_ptr<ICC_VideoConsumerExtAsync> pEncAsync = 0;
+  pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync);
+
   CpuLoadMeter cpuLoadMeter;
   
   auto t00 = system_clock::now();
   int frame_count = 0, total_frame_count = 0;
   auto t0 = t00;
+
+  auto coded_size0 = pFileWriter->GetTotalBytesWritten();
 
   g_EncoderTimeFirstFrameIn = t00;
 
@@ -448,15 +550,21 @@ int main(int argc, char* argv[])
 		  std::this_thread::sleep_for(milliseconds{ Tideal - Treal });
 	}
 
-    if((frame_count & update_mask) == 0)
+    if((frame_count & update_mask) == update_mask)
     {
  	  auto t1 = system_clock::now();
       auto dT = duration<double>(t1 - t0).count();
+	  auto coded_size = pFileWriter->GetTotalBytesWritten();
 
-      fprintf(stderr, " %d, %.3f fps %.3f GB/s, CPU load: %.1f%%    \r", frame_no, frame_count / dT, uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      fprintf(stderr, " %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
+      	frame_no, frame_count / dT, 
+      	uncompressed_frame_size / 1E9 * frame_count / dT,
+      	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	cpuLoadMeter.GetLoad());
       
       t0 = t1;
       frame_count = 0;
+      coded_size0 = coded_size;
 
       if(dT < 0.5)
       {
@@ -502,25 +610,59 @@ int main(int argc, char* argv[])
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
 
-  if(S_OK == pDecoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
+  if(NumThreads > 0)
+  {
+    fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ", NumThreads);
+
+    com_ptr<ICC_ThreadsCountProp> pTCP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
+
+    else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(DecDeviceID < -1 && EncDeviceID >= -1)
+    DecDeviceID = EncDeviceID;
+
+  if(DecDeviceID >= -1 && S_OK == pDecoder->QueryInterface(IID_ICC_DeviceIDProp, (void**)&pDevId))
   {
     printf("Decoder has ICC_DeviceIDProp interface.\n");
     
-    if(FAILED(hr = pDevId->put_DeviceID(DeviceID)))
-      return fprintf(stderr, "Failed to assign DeviceId %d to the decoder", DeviceID), hr;
+    if(FAILED(hr = pDevId->put_DeviceID(DecDeviceID)))
+      return fprintf(stderr, "Failed to assign DeviceId %d to the decoder", DecDeviceID), hr;
 
-    printf("Decoder device id = %d\n", DeviceID);
+    printf("Decoder device id = %d\n", DecDeviceID);
+  }
+
+  if(concur_level != 0 && S_OK == pDecoder->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur))
+  {
+    printf("Decoder has ICC_ConcurrencyLevelProp interface.\n");
+    
+    if(FAILED(hr = pConcur->put_ConcurrencyLevel(concur_level)))
+      return fprintf(stderr, "Failed to assign ConcurrencyLevel %d to the decoder", concur_level), hr;
   }
 
   hr = pDecoder->Init();
   if(FAILED(hr)) return hr;
+
+  if(pConcur)
+  {
+    if(FAILED(hr = pConcur->get_ConcurrencyLevel(&concur_level)))
+      return fprintf(stderr, "Failed to get ConcurrencyLevel from the decoder"), hr;
+    
+    printf("Decoder concurrency level = %d\n", concur_level);
+  }
 
   if(!bForceGetFrameOnDecode)
   	cFormat = CCF_UNKNOWN;
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
-  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
   else
@@ -566,6 +708,8 @@ int main(int argc, char* argv[])
 
   int warm_up_frames = 4;
 
+  coded_size0 = 0; long long coded_size = 0;
+
   if(int num_coded_frames = (int)pFileWriter->GetCodedSequenceLength())
   for(int frame_no = 0; frame_no < max_frames; frame_no++)
   {
@@ -577,6 +721,8 @@ int main(int argc, char* argv[])
       pDecoder = NULL;
       return hr;
     }
+
+    coded_size += codedFrame.second;
 
     if(TargetFps > 0)
     {
@@ -607,9 +753,13 @@ int main(int argc, char* argv[])
       else if(dT > 2)
         update_mask = (update_mask>>1) | 1;
 
-      fprintf(stderr, " %d, %.3f fps %.3f GB/s, CPU load: %.1f%%    \r", frame_no, frame_count / dT, uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      fprintf(stderr, " %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
+      	frame_no, frame_count / dT, 
+      	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
       
       t0 = t1;
+      coded_size0 = coded_size;
 
       frame_count = 0;
     }

@@ -11,6 +11,14 @@
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
+
+// for XCode
+//#define GLEW_STATIC
+//#include </usr/local/include/GL/glew.h>
+//#include <GLUT/glut.h>
+//#include <OpenGL/OpenGL.h>
+//#include <CoreGraphics/CoreGraphics.h>
+
 #define sprintf_s sprintf
 #elif defined(__LINUX__)
 #include <X11/Xlib.h>
@@ -39,7 +47,7 @@ CFrameBuffer frame_buffer;
 
 #if defined(__WIN32__)
 #include<conio.h>
-#elif defined(__LINUX__)
+#elif defined(__LINUX__) || defined(__APPLE__) 
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -1021,6 +1029,8 @@ void gpu_initGLBuffers()
 
 		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
 	}
+
+	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
 #endif
 #ifdef USE_OPENCL_SDK
 	else if (g_useOpenCL)
@@ -1036,8 +1046,6 @@ void gpu_initGLBuffers()
 #endif
 
 	OGL_CHECK_ERROR_GL();
-
-	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
 }
 
 void gpu_UpdateGLSettings()
