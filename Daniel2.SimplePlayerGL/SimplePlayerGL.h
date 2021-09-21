@@ -874,6 +874,12 @@ int initOpenCLContext()
 	if (error != CL_SUCCESS)
 		return -1;
 
+	char buffer_str[1024];
+	error = clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(buffer_str), buffer_str, NULL); __rcl
+
+	printf("OpenCL device: %s\n", buffer_str);
+	printf("-------------------------------------\n");
+
 	return 0;
 }
 #endif
@@ -1016,17 +1022,17 @@ void gpu_initGLBuffers()
 		cuErr = cudaGraphicsGLRegisterImage(&cuda_tex_result_resource, tex_result, GL_TEXTURE_2D, cudaGraphicsRegisterFlagsSurfaceLoadStore); __vrcu
 	}
 #endif
-
-	
 #ifdef USE_OPENCL_SDK
+	else if (g_useOpenCL)
+	{
+		context = NULL;
+		device = NULL;
+		queue = NULL;
+		imageCL = NULL;
 
-	context = NULL;
-	device = NULL;
-	queue = NULL;
-	imageCL = NULL;
-
-	if (g_useOpenCL && initOpenCLContext() != 0)
-		g_useOpenCL = false;
+		if (g_useOpenCL && initOpenCLContext() != 0)
+			g_useOpenCL = false;
+	}
 #endif
 
 	OGL_CHECK_ERROR_GL();

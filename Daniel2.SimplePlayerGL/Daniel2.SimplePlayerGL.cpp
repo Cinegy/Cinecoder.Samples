@@ -95,7 +95,12 @@ void printHelp(void)
 	printf("-fpsmax             enable maximum playing fps (default: disable)\n");
 	printf("-rotate_frame       enable rotate frame (default: disable)\n");
 #ifdef USE_CUDA_SDK
-	printf("-cuda               enable CUDA decoding (default: disable, PC only)\n");
+	printf("-cuda               enable CUDA decoding (default: disable)\n");
+#endif
+#if defined(__USE_GLUT_RENDER__)
+#ifdef USE_OPENCL_SDK
+	printf("-opencl             enable OpenCL decoding (default: disable)\n");
+#endif
 #endif
 #if defined(__WIN32__)
 	printf("-d3d11 [adapter]   enable DirectX11 pipeline (default: OpenGL)\n");
@@ -185,15 +190,40 @@ int main(int argc, char **argv)
 	{
 		g_useCuda = true; // use CUDA decoder rather than CPU decoder
 	}
-
+#ifdef CUDA_WRAPPER
 	if (g_useCuda)
 	{
 		if (initCUDA() != 0) // init CUDA SDK
 		{
-			printf("Error: cannot initialize CUDA! Please check if the %s file exists!\n", CUDART_FILENAME);
+			printf("Error: cannot initialize CUDA! Please check if the <cudart> file exists!\n");
 			return 0;
 		}
 	}
+#endif
+#endif
+
+#ifdef USE_OPENCL_SDK
+	if (checkCmdLineArg(argc, (const char **)argv, "opencl"))
+	{
+		g_useOpenCL = true; // use OpenCL decoder rather than CPU decoder
+	}
+
+	if (g_useCuda && g_useOpenCL)
+	{
+		g_useOpenCL = false;
+		printf("Info: CUDA and OpenCL are not uses at the same time! (parameter <opencl> was ignored)\n");
+	}
+
+#ifdef OPENCL_WRAPPER
+	if (g_useOpenCL)
+	{
+		if (initOpenCL() != 0) // init OpenCL SDK
+		{
+			printf("Error: cannot initialize OpenCL! Please check if the <OpenCL.dll/libOpenCL.so> file exists!\n");
+			return 0;
+		}
+	}
+#endif
 #endif
 
 	size_t gpuDevice = 1;
@@ -462,10 +492,21 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef USE_CUDA_SDK
+#ifdef CUDA_WRAPPER
 	if (g_useCuda)
 	{
 		destroyCUDA(); // destroy CUDA SDK
 	}
+#endif
+#endif
+
+#ifdef USE_OPENCL_SDK
+#ifdef OPENCL_WRAPPER
+	if (g_useOpenCL)
+	{
+		destroyOpenCL(); // destroy OpenCL SDK
+	}
+#endif
 #endif
 
 	return 0;

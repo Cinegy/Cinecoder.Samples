@@ -68,7 +68,11 @@ typedef enum cudaError cudaError_t;
 #define FUNC_CUDA(func) f_##func
 #endif
 
-#define CHECK_FUNC_CUDA(func) if (!FUNC_CUDA(func)) return -1;
+#define CHECK_FUNC_CUDA(func) \
+	if (!FUNC_CUDA(func)) { \
+		fprintf(stderr, "CUDA init error: failed to find required functions (File: %s Line %d)\n", __FILE__, __LINE__); \
+		return -2; \
+	}
 
 typedef cudaError_t(*FTcudaGetLastError)();
 typedef const char*(*FTcudaGetErrorString)(cudaError_t error);
@@ -116,13 +120,32 @@ typedef cudaChannelFormatDesc(*FTcudaCreateChannelDesc)(int x, int y, int z, int
 #include "cuda_dyn_declare.h" // declare list of functuions 
 
 #if defined(_WIN32)
-#define CUDART32_FILENAME "cudart32_80.dll"
-#define CUDART64_FILENAME "cudart64_80.dll"
 #if _WIN64
-#define CUDART_FILENAME CUDART64_FILENAME
+static const std::vector<std::string> cudart_paths = {
+	"cudart64_110.dll",
+	"cudart64_102.dll",
+	"cudart64_101.dll",
+	"cudart64_100.dll",
+	"cudart64_90.dll",
+	"cudart64_80.dll"
+};
 #else
-#define CUDART_FILENAME CUDART32_FILENAME
+static const std::vector<std::string> cudart_paths = {
+	"cudart32_110.dll",
+	"cudart32_102.dll",
+	"cudart32_101.dll",
+	"cudart32_100.dll",
+	"cudart32_90.dll",
+	"cudart32_80.dll"
+};
 #endif
+//#define CUDART32_FILENAME "cudart32_80.dll"
+//#define CUDART64_FILENAME "cudart64_80.dll"
+//#if _WIN64
+//#define CUDART_FILENAME CUDART64_FILENAME
+//#else
+//#define CUDART_FILENAME CUDART32_FILENAME
+//#endif
 #else
 #include <dlfcn.h>
 #define LoadLibraryA(name) dlopen(name, RTLD_LAZY)
@@ -131,17 +154,42 @@ typedef cudaChannelFormatDesc(*FTcudaCreateChannelDesc)(int x, int y, int z, int
 typedef void* FARPROC;
 typedef void* HMODULE;
 //#define CUDART_FILENAME "/usr/local/cuda/lib64/libcudart.so"
-#define CUDART_FILENAME "libcudart.so"
+//#define CUDART_FILENAME "libcudart.so"
+static const std::vector<std::string> cudart_paths = {
+	"libcudart.so",
+	"/usr/local/cuda/lib64/libcudart.so",
+	"/usr/local/cuda-10.0/targets/aarch64-linux/lib/libcudart.so"
+};
 #endif
+static std::string str_cudart_path = "";
 
 static HMODULE hCuda = nullptr;
 
 #define LOAD_CUDA_FUNC(function) \
 	FUNC_CUDA(function) = (FT##function)GetProcAddress(hCuda, #function); CHECK_FUNC_CUDA(function)
 
+static void destroyCUDA()
+{
+	if (hCuda)
+		FreeLibrary(hCuda);
+
+	hCuda = nullptr;
+}
+
 static int initCUDA()
 {
-	hCuda = LoadLibraryA(CUDART_FILENAME);
+	destroyCUDA();
+
+	for (size_t i = 0; i < cudart_paths.size(); i++)
+	{
+		std::string str_cudart_lib_path = cudart_paths[i];
+		hCuda = LoadLibraryA(str_cudart_lib_path.c_str());
+		if (hCuda)
+		{
+			str_cudart_path = str_cudart_lib_path;
+			break;
+		}
+	}
 
 	if (hCuda)
 	{
@@ -192,33 +240,8 @@ static int initCUDA()
 		LOAD_CUDA_FUNC(cudaCreateChannelDesc)
 	}
 	else
-		return fprintf(stderr, "CUDA init error: failed to load %s\n", CUDART_FILENAME), -1;
-
-	if (
-		!FUNC_CUDA(cudaGetLastError) || !FUNC_CUDA(cudaGetErrorString) ||
-		!FUNC_CUDA(cudaMalloc) || !FUNC_CUDA(cudaMemset) || !FUNC_CUDA(cudaMemcpy) || !FUNC_CUDA(cudaFree) ||
-		!FUNC_CUDA(cudaMemcpy2D) ||
-		!FUNC_CUDA(cudaMallocHost) || !FUNC_CUDA(cudaFreeHost) ||
-		!FUNC_CUDA(cudaGetDevice) || !FUNC_CUDA(cudaSetDevice) ||
-		!FUNC_CUDA(cudaStreamCreate) || !FUNC_CUDA(cudaStreamDestroy) || !FUNC_CUDA(cudaStreamSynchronize) ||
-		!FUNC_CUDA(cudaGraphicsGLRegisterImage) || !FUNC_CUDA(cudaGraphicsGLRegisterBuffer) ||
-#if defined(__WIN32__)
-		!FUNC_CUDA(cudaGraphicsD3D11RegisterResource) ||
-#endif
-		!FUNC_CUDA(cudaGraphicsUnregisterResource) ||
-		!FUNC_CUDA(cudaGraphicsMapResources) || !FUNC_CUDA(cudaGraphicsUnmapResources) ||
-		!FUNC_CUDA(cudaGraphicsSubResourceGetMappedArray) || !FUNC_CUDA(cudaGraphicsResourceGetMappedPointer) ||
-		!FUNC_CUDA(cudaGraphicsResourceSetMapFlags) ||
-		!FUNC_CUDA(cudaMemcpy2DToArray) || !FUNC_CUDA(cudaMemcpy2DToArrayAsync) || !FUNC_CUDA(cudaMemcpyArrayToArray) || !FUNC_CUDA(cudaMemcpy2DArrayToArray) ||
-		!FUNC_CUDA(cudaMallocArray) || !FUNC_CUDA(cudaFreeArray) || !FUNC_CUDA(cudaCreateChannelDesc)
-		)
-		return fprintf(stderr, "CUDA init error: failed to find required functions\n"), -2;
+		return fprintf(stderr, "CUDA init error: failed to load!\n"), -1;
 
 	return 0;
 }
 
-static void destroyCUDA()
-{
-	if (hCuda)
-		FreeLibrary(hCuda);
-}

@@ -73,14 +73,30 @@ using namespace cinegy::threading_std;
 	#define USE_CUDA_SDK
 	#define CUDA_WRAPPER
 
-	//#define USE_OPENCL_SDK // for build this code on Windows for example need add "opencl-nug" nuget package (nuget.org)
+	#define USE_OPENCL_SDK
+	#define OPENCL_WRAPPER
 #endif
 
 #ifdef USE_OPENCL_SDK
+
+#ifndef OPENCL_WRAPPER // for build this code on Windows for example need add "opencl-nug" nuget package (nuget.org)
 //#define CL_USE_DEPRECATED_OPENCL_1_1_APIS // for clGetExtensionFunctionAddress
 #include <CL/cl.h>
 #include <CL/cl_gl.h>
+
+#if defined(__WIN32__)
+#pragma comment(lib, "OpenCL.lib")
+#else defined(__LINUX__)
+#pragma comment(lib, "libOpenCL.so")
+#endif // #ifndef OPENCL_WRAPPER
+
+#else
+
+#define OPENCL_DECLARE_EXPORT
+#include "../common/opencl_dyn_load.h"
 #endif
+
+#endif // #ifdef USE_OPENCL_SDK
 
 // for build this code on Windows for example need add "glew.v140" and "freeglut.3.0.0.v140" nuget packages (nuget.org)
 #if !defined(__WIN32__)
@@ -89,6 +105,14 @@ using namespace cinegy::threading_std;
 
 #if defined(__WIN32__)
 #include <GL/glew.h> // GLEW framework
+#endif
+
+#if defined(__WIN32__) // use DirectX 11
+#include <d3d11.h>
+#include <dxgi.h>
+
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
 #endif
 
 #ifdef USE_CUDA_SDK
@@ -106,19 +130,14 @@ using namespace cinegy::threading_std;
 	#pragma comment(lib, "cudart_static.lib")
 #else defined(__LINUX__)
 	#pragma comment(lib, "libcudart_static.a")
-	#endif
-#endif // #ifndef CUDA_WRAPPER
-
-#if defined(__WIN32__) // use DirectX 11
-#include <d3d11.h>
-#include <dxgi.h>
-
-#pragma comment(lib, "d3d11.lib")
-#pragma comment(lib, "dxgi.lib")
 #endif
+
+#else
 
 #define CUDA_DECLARE_EXPORT
 #include "../common/cuda_dyn_load.h"
+
+#endif // #ifndef CUDA_WRAPPER
 
 #if defined(__WIN32__) || defined(__LINUX__) // use CUDA convert library
 #include "CUDAConvertLib.h"
