@@ -9,6 +9,8 @@ platform: x64
 environment:
   license_password:
     secure: LrYA+FL955M3RVUasw/68Q==
+install:  
+- cmd: git submodule update --init --recursive
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "QMWLI6vR7K3QPgfytLxf0Mobi9Y+il91QbfcAvvRFXprTZU+Xqs="
