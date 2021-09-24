@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #if defined(__WIN32__)
 //#include <GL/glew.h> // GLEW framework
@@ -817,6 +817,7 @@ void PBO_to_Texture2D(unsigned char* pData, size_t size)
 int initOpenCLContext()
 {
 	cl_int error = CL_SUCCESS;
+	size_t ret = 0;
 	size_t deviceSize = 0;
 
 	cl_uint numPlatforms = 0;
@@ -879,6 +880,9 @@ int initOpenCLContext()
 
 	imageCL = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, tex_result, &error); __rcl
 	
+	cl_image_format imgFormat;
+	error = clGetImageInfo(imageCL, CL_IMAGE_FORMAT, sizeof(cl_image_format), &imgFormat, &ret); __rcl
+
 	if (error != CL_SUCCESS)
 		return -1;
 
@@ -886,6 +890,24 @@ int initOpenCLContext()
 	error = clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(buffer_str), buffer_str, NULL); __rcl
 
 	printf("OpenCL device: %s\n", buffer_str);
+	
+	if (imgFormat.image_channel_order == CL_RGBA)
+		printf("image_channel_order = CL_RGBA\n");
+	else if (imgFormat.image_channel_order == CL_BGRA)
+		printf("image_channel_order = CL_BGRA\n");
+	else
+		printf("image_channel_order = 0x%x\n", imgFormat.image_channel_order);
+
+	if (imgFormat.image_channel_data_type == CL_UNORM_INT8)
+		printf("image_channel_data_type = CL_UNORM_INT8\n");
+	else if (imgFormat.image_channel_data_type == CL_UNORM_INT16)
+		printf("image_channel_data_type = CL_UNORM_INT16\n");
+	else if (imgFormat.image_channel_data_type == CL_UNSIGNED_INT8)
+		printf("image_channel_data_type = CL_UNSIGNED_INT8\n");
+	else if (imgFormat.image_channel_data_type == CL_UNSIGNED_INT16)
+		printf("image_channel_data_type = CL_UNSIGNED_INT16\n");
+	else
+	printf("image_channel_data_type = 0x%x\n", imgFormat.image_channel_data_type);
 	printf("-------------------------------------\n");
 
 	return 0;
@@ -922,8 +944,8 @@ void gpu_initGLBuffers()
 	g_format = GL_RGBA;
 
 	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || 
-		decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT || 
-		decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
+		decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)// || 
+		//decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
 		g_format = GL_BGRA_EXT;
 
 	// Create texture
@@ -941,7 +963,8 @@ void gpu_initGLBuffers()
 //#if defined(__WIN32__)
 	if (g_useCuda || g_useOpenCL)
 	{
-		if (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)
+		if ((g_useCuda && (decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT)) ||
+			g_useOpenCL) // for OpenCL always needs to change components (need investigate!)
 		{
 			if (program)
 			{
@@ -2232,6 +2255,16 @@ void SeekToFrameImpl(size_t iFrame)
 				if (g_bCopyToTexture)
 				{
 					gpu_generateCUDAImage(pBlock);
+				}
+			}
+			else
+#endif
+#ifdef USE_OPENCL_SDK
+			if (g_useOpenCL)
+			{
+				if (g_bCopyToTexture)
+				{
+					gpu_generateOpenCLImage(pBlock);
 				}
 			}
 			else
