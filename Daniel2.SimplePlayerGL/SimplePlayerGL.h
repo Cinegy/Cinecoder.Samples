@@ -1072,20 +1072,9 @@ bool gpu_initGLBuffers()
 	bytePerPixel = (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) ? 4 : 8; // RGBA8 or RGBA16
 #endif
 
-#ifdef USE_OPENCL_SDK
-	if (g_useOpenCL)
-	{
-		context = NULL;
-		device = NULL;
-		queue = NULL;
-		imageCL = NULL;
-
-		if (g_useOpenCL && initOpenCLContext() != 0)
-			g_useOpenCL = false;
-	}
-#endif
-
 	OGL_CHECK_ERROR_GL();
+
+	return true;
 }
 
 void gpu_UpdateGLSettings()
