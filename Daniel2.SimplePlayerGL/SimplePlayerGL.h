@@ -814,7 +814,7 @@ void PBO_to_Texture2D(unsigned char* pData, size_t size)
 }
 
 #ifdef USE_OPENCL_SDK
-int initOpenCLContext()
+int ocl_InitContextGL()
 {
 	cl_int error = CL_SUCCESS;
 	size_t ret = 0;
@@ -914,7 +914,7 @@ int initOpenCLContext()
 }
 #endif
 
-void gpu_initGLBuffers()
+bool gpu_initGLBuffers()
 {
 	if (decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA8BIT || decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA8BIT) // RGBA 8 bit
 	{
@@ -959,6 +959,22 @@ void gpu_initGLBuffers()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, g_internalFormat, image_width, image_height, 0, g_format, g_type, NULL);
+
+#ifdef USE_OPENCL_SDK
+	if (g_useOpenCL)
+	{
+		context = NULL;
+		device = NULL;
+		queue = NULL;
+		imageCL = NULL;
+
+		if (g_useOpenCL && ocl_InitContextGL() != 0)
+		{
+			g_useOpenCL = false;
+			printf("Error: cannot init OpenCL, <opencl> was disabled!\n");
+		}
+	}
+#endif
 
 //#if defined(__WIN32__)
 	if (g_useCuda || g_useOpenCL)

@@ -370,9 +370,17 @@ int main(int argc, char **argv)
 #if defined(__USE_GLUT_RENDER__)
 	if (g_bGlutWindow)
 	{
-		gpu_initGLUT(&argc, argv); // Init GLUT
+		if (!gpu_initGLUT(&argc, argv)) // Init GLUT
+		{
+			printf("Error: cannot init GLUT!\n");
+			return 0;
+		}
 
-		gpu_initGLBuffers(); // Init GL buffers
+		if (!gpu_initGLBuffers()) // Init GL buffers
+		{
+			printf("Error: cannot init GL buffers!\n");
+			return 0;
+		}
 
 		get_versionGLandGLUT(); // print version of OpenGL and freeGLUT
 	}
