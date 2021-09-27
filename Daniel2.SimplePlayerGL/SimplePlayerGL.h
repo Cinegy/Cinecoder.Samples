@@ -971,7 +971,7 @@ bool gpu_initGLBuffers()
 		if (g_useOpenCL && ocl_InitContextGL() != 0)
 		{
 			g_useOpenCL = false;
-			printf("Error: cannot init OpenCL, <opencl> was disabled!\n");
+			printf("Error: cannot init context OpenCL with GL, <opencl> was disabled!\n");
 		}
 	}
 #endif
