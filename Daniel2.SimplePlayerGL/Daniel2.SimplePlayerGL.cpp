@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 #ifdef CUDA_WRAPPER
 	if (g_useCuda)
 	{
-		if (initCUDA() != 0) // init CUDA SDK
+		if (__InitCUDA() != 0) // init CUDA SDK
 		{
 			printf("Error: cannot initialize CUDA! Please check if the <cudart> file exists!\n");
 			return 0;
@@ -219,7 +219,7 @@ int main(int argc, char **argv)
 #ifdef OPENCL_WRAPPER
 	if (g_useOpenCL)
 	{
-		if (initOpenCL() != 0) // init OpenCL SDK
+		if (__InitOpenCL() != 0) // init OpenCL SDK
 		{
 			printf("Error: cannot initialize OpenCL! Please check if the <OpenCL.dll/libOpenCL.so> file exists!\n");
 			return 0;
@@ -523,7 +523,7 @@ int main(int argc, char **argv)
 #ifdef CUDA_WRAPPER
 	if (g_useCuda)
 	{
-		destroyCUDA(); // destroy CUDA SDK
+		__DestroyCUDA(); // destroy CUDA SDK
 	}
 #endif
 #endif
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
 #ifdef OPENCL_WRAPPER
 	if (g_useOpenCL)
 	{
-		destroyOpenCL(); // destroy OpenCL SDK
+		__DestroyOpenCL(); // destroy OpenCL SDK
 	}
 #endif
 #endif
