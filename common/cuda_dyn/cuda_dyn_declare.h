@@ -42,7 +42,7 @@ DECLARE_FUNC_CUDA(cudaStreamSynchronize)
 
 DECLARE_FUNC_CUDA(cudaGraphicsGLRegisterImage)
 DECLARE_FUNC_CUDA(cudaGraphicsGLRegisterBuffer)
-#if defined(__WIN32__)
+#if defined(_WIN32)
 DECLARE_FUNC_CUDA(cudaGraphicsD3D11RegisterResource)
 #endif
 DECLARE_FUNC_CUDA(cudaGraphicsUnregisterResource)

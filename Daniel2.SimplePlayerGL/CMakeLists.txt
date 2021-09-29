@@ -20,6 +20,9 @@ set(SOURCES
 	ReadFileDN2.cpp
 	Daniel2.SimplePlayerGL.cpp
 
+	../common/cuda_dyn/cuda_dyn_load.cpp
+	../common/opencl_dyn/opencl_dyn_load.cpp
+
 	../external/GLEW/src/glew.c
 )
 

@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-ggdb)
 
 set(SOURCES
-	Daniel2.Benchmark.cpp 
+	Daniel2.Benchmark.cpp
+
+	../common/cuda_dyn/cuda_dyn_load.cpp
 )
 
 #set(HEADERS

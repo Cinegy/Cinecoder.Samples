@@ -193,6 +193,18 @@
     <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\common\opencl_dyn\opencl_dyn_load.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\Daniel2.SimplePlayerGL\AudioSource.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\BaseGPURender.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />

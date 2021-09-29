@@ -1,44 +1,15 @@
 #pragma once
 
+#if defined(_WIN32)
+#include <windows.h> // for HMODULE, LoadLibrary/GetProcAddress
+#endif
+
 #include <vector>
 #include <string>
 
-//#ifdef OPENCL_WRAPPER
+#include "opencl_dyn_load.h"
 
-#define CL_USE_DEPRECATED_OPENCL_1_1_APIS // for clGetExtensionFunctionAddress
-#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
-
-#define CL_TARGET_OPENCL_VERSION 200
-
-//#define CL_VERSION_1_0
-//#define CL_VERSION_1_1
-//#define CL_VERSION_1_2
-//#define CL_VERSION_2_0
-
-#ifdef __APPLE__
-#include <OpenCL/cl_version.h>
-#include <OpenCL/cl_platform.h>
-#else
-#include <CL/cl_version.h>
-#include <CL/cl_platform.h>
-#endif
-
-#include "opencl_def_cl.h"
-#include "opencl_def_cl_gl.h"
-
-#define FUNC_OPENCL(func) func
-//#else
-//#define FUNC_OPENCL(func) f_##func
-//#endif
-
-#define CHECK_FUNC_OPENCL(func) \
-	if (!FUNC_OPENCL(func)) { \
-		fprintf(stderr, "OpenCL init error: failed to find required functions (File: %s Line %d)\n", __FILE__, __LINE__); \
-		return -2; \
-	}
-
-#include "opencl_dyn_declare.h" // declare list of functions 
+#include "opencl_dyn_declare.h"
 
 #if defined(_WIN32)
 //#define OPENCL_FILENAME "OpenCL.dll"
@@ -75,15 +46,9 @@ static HMODULE hOpenCL = nullptr;
 #define LOAD_OPENCL_FUNC(function) \
 	FUNC_OPENCL(function) = (FT##function)GetProcAddress(hOpenCL, #function); CHECK_FUNC_OPENCL(function)
 
-static void destroyOpenCL()
+int DynamicLoadOpenCL::InitOpenCL()
 {
-	if (hOpenCL)
-		FreeLibrary(hOpenCL);
-}
-
-static int initOpenCL()
-{
-	destroyOpenCL();
+	DynamicLoadOpenCL::DestroyOpenCL();
 
 	for (size_t i = 0; i < opencl_paths.size(); i++)
 	{
@@ -334,6 +299,16 @@ static int initOpenCL()
 	}
 	else
 		return fprintf(stderr, "OpenCL init error: failed to load!\n"), -1;
+
+	return 0;
+}
+
+int DynamicLoadOpenCL::DestroyOpenCL()
+{
+	if (hOpenCL)
+		FreeLibrary(hOpenCL);
+
+	hOpenCL = nullptr;
 
 	return 0;
 }

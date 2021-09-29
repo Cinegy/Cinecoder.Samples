@@ -92,9 +92,9 @@ using namespace cinegy::threading_std;
 
 #else
 
-#define OPENCL_DECLARE_EXPORT
-#include "../common/opencl_dyn_load.h"
-#endif
+#include "../common/opencl_dyn/opencl_dyn_load.h"
+
+#endif // #ifndef OPENCL_WRAPPER 
 
 #endif // #ifdef USE_OPENCL_SDK
 
@@ -138,8 +138,7 @@ using namespace cinegy::threading_std;
 
 #else
 
-#define CUDA_DECLARE_EXPORT
-#include "../common/cuda_dyn_load.h"
+#include "../common/cuda_dyn/cuda_dyn_load.h"
 
 #endif // #ifndef CUDA_WRAPPER
 

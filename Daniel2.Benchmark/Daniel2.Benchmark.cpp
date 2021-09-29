@@ -15,9 +15,7 @@ using namespace std::chrono_literals;
 
 #include "cpu_load_meter.h"
 
-#define CUDA_WRAPPER
-#define CUDA_DECLARE_STATIC
-#include "../common/cuda_dyn_load.h"
+#include "../common/cuda_dyn/cuda_dyn_load.h"
 
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
@@ -125,7 +123,7 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
 int main(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
-  g_CudaEnabled = initCUDA() == 0;
+  g_CudaEnabled = __InitCUDA() == 0;
 
   if(argc < 5)
   {

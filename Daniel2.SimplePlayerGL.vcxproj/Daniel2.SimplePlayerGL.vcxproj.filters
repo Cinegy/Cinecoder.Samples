@@ -31,6 +31,12 @@
     <ClCompile Include="..\external\GLEW\src\glew.c">
       <Filter>Render\GLEW</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\opencl_dyn\opencl_dyn_load.cpp">
+      <Filter>Source Files\dynamic_load</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp">
+      <Filter>Source Files\dynamic_load</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Daniel2.SimplePlayerGL\stdafx.h">
@@ -91,6 +97,9 @@
     </Filter>
     <Filter Include="Render\GLEW">
       <UniqueIdentifier>{bb9f304e-7427-4e25-91cb-f319d5517e9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dynamic_load">
+      <UniqueIdentifier>{1ba089b6-8fc7-4fbe-8f35-e1b5fdd4099f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
