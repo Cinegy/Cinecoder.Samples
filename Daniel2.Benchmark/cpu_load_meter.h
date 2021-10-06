@@ -50,6 +50,9 @@ public:
 
         ReadProcStat(&busy, &work);
 
+		if (busy == -1 && work == -1) 
+			return -1;
+
         float usage = work == prev_work ? 0.0 : 100.0 * (busy - prev_busy) / (work - prev_work);
 
         prev_work = work;
@@ -63,11 +66,15 @@ public:
         long long dummy, cpu, nice, sys, idle;
 
         FILE *f = fopen("/proc/stat", "rt");
-        fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle);
-        fclose(f);
+		if (f)
+		{
+			fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle);
+			fclose(f);
 
-        *busy = cpu + nice + sys;
-        *work = *busy + idle;
+			*busy = cpu + nice + sys;
+			*work = *busy + idle;
+		}
+		else *busy = *work = -1;
     }
 };
 
