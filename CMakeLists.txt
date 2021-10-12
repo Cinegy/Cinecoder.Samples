@@ -39,6 +39,8 @@ endif()
 
 add_subdirectory(SimpleVideoDecoder)
 add_subdirectory(SimpleVideoEncoder)
+if(NOT ANDROID)
 add_subdirectory(Daniel2.SimplePlayerGL)
+endif()
 add_subdirectory(Daniel2.DPXEncoder)
 add_subdirectory(Daniel2.Benchmark)
