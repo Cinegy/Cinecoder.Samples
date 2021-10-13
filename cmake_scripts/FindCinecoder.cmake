@@ -51,9 +51,15 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 	elseif(UNIX)
 
 		if (AARCH64 OR ARM)
-			set(Cinecoder_LIBRARY_DIRS
-				"${Cinecoder_ROOT_DIR}/runtimes/linux-arm64/native/release/"
-			)
+			if (ANDROID)
+				set(Cinecoder_LIBRARY_DIRS
+					"${Cinecoder_ROOT_DIR}/runtimes/android-arm64/native/release/"
+				)
+			else()
+				set(Cinecoder_LIBRARY_DIRS
+					"${Cinecoder_ROOT_DIR}/runtimes/linux-arm64/native/release/"
+				)
+			endif()
 		else()	
 			set(Cinecoder_LIBRARY_DIRS
 				"${Cinecoder_ROOT_DIR}/runtimes/linux-x64/native/release/"
