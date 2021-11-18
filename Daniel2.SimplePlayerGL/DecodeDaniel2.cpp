@@ -227,6 +227,11 @@ int DecodeDaniel2::StopDecode()
 
 	m_bProcess = false;
 
+#ifdef USE_SIMPL_QUEUE
+	m_queueFrames.Complete();
+	m_queueFrames_free.Complete();
+#endif
+
 	Close(); // closing thread <ThreadProc>
 
 	return 0;
@@ -235,9 +240,11 @@ int DecodeDaniel2::StopDecode()
 C_Block* DecodeDaniel2::MapFrame()
 {
 	C_Block *pBlock = nullptr;
-
+#ifdef USE_SIMPL_QUEUE
+	m_queueFrames.Get(&pBlock); // receiving a block (C_Block) from a queue of finished decoded frames
+#else
 	m_queueFrames.Get(&pBlock, m_evExit); // receiving a block (C_Block) from a queue of finished decoded frames
-
+#endif
 	return pBlock;
 }
 
@@ -687,9 +694,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	if (m_bProcess)
 	{
 		C_Block *pBlock = nullptr;
-
+	#ifdef USE_SIMPL_QUEUE
+		m_queueFrames_free.Get(&pBlock); // get free pointer to object of C_Block form queue
+	#else
 		m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
-
+	#endif
 		if (pBlock)
 		{
 			pBlock->SetRotate((PictureOrientation == CC_PO_FLIP_VERTICAL || PictureOrientation == CC_PO_ROTATED_180DEG) ? true : false);  // rotate frame
@@ -1116,8 +1125,11 @@ long DecodeDaniel2::ThreadProc()
 			else
 			{
 				C_Block *pBlock = nullptr;
-
+			#ifdef USE_SIMPL_QUEUE
+				m_queueFrames_free.Get(&pBlock); // get free pointer to object of C_Block form queue
+			#else
 				m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
+			#endif
 
 				if (pBlock)
 				{

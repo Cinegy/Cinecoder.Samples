@@ -64,10 +64,13 @@ private:
 	bool m_bPutColorFormat;
 
 	ReadFileDN2 m_file;
-
+#ifdef USE_SIMPL_QUEUE
+	simpl_queue<C_Block> m_queueFrames;
+	simpl_queue<C_Block> m_queueFrames_free;
+#else
 	C_QueueT<C_Block> m_queueFrames;
 	C_QueueT<C_Block> m_queueFrames_free;
-
+#endif
 	C_Event	m_eventInitDecoder;
 
 	std::list<C_Block> m_listBlocks;

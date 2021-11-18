@@ -24,6 +24,10 @@
 #include "utils/HMTSTDUtil.h"
 using namespace cinegy::threading_std;
 
+#include "utils/simpl_queue.h"
+using namespace cinegy::simpl;
+#define USE_SIMPL_QUEUE
+
 #include "../common/com_ptr.h"
 #include "../common/timer.h"
 

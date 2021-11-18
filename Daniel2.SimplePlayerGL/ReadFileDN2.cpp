@@ -141,6 +141,11 @@ int ReadFileDN2::StopPipe()
 	m_bProcess = false;
 	m_bReadFile = false;
 
+#ifdef USE_SIMPL_QUEUE
+	m_queueFrames.Complete();
+	m_queueFrames_free.Complete();
+#endif
+
 	Close();
 
 	return 0;
@@ -221,8 +226,11 @@ CodedFrame* ReadFileDN2::MapFrame()
 
 	CodedFrame *pFrame = nullptr;
 
+#ifdef USE_SIMPL_QUEUE
+	m_queueFrames.Get(&pFrame);
+#else
 	m_queueFrames.Get(&pFrame, m_evExit);
-
+#endif
 	return pFrame;
 }
 
@@ -252,9 +260,11 @@ long ReadFileDN2::ThreadProc()
 	while (m_bProcess)
 	{
 		CodedFrame* frame = nullptr;
-
+	#ifdef USE_SIMPL_QUEUE
+		m_queueFrames_free.Get(&frame);
+	#else
 		m_queueFrames_free.Get(&frame, m_evExit);
-
+	#endif
 		if (frame)
 		{
 			res = 0;
@@ -294,7 +304,11 @@ long ReadFileDN2::ThreadProc()
 				for (size_t i = 0; i < m_queueFrames.GetCount(); ++i)
 				{
 					CodedFrame *pFrame = nullptr;
+				#ifdef USE_SIMPL_QUEUE
+					m_queueFrames.Get(&pFrame);
+				#else
 					m_queueFrames.Get(&pFrame, m_evExit);
+				#endif
 					if (pFrame)
 						m_queueFrames_free.Queue(pFrame);
 				}

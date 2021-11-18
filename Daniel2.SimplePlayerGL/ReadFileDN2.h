@@ -128,10 +128,13 @@ private:
 
 	C_CritSec m_critical_read;
 	C_CritSec m_critical_queue;
-
+#ifdef USE_SIMPL_QUEUE
+	simpl_queue<CodedFrame> m_queueFrames;
+	simpl_queue<CodedFrame> m_queueFrames_free;
+#else
 	C_QueueT<CodedFrame> m_queueFrames;
 	C_QueueT<CodedFrame> m_queueFrames_free;
-	
+#endif	
 	bool m_bSeek;
 	size_t m_iSeekFrame;
 	int m_iSpeed;
