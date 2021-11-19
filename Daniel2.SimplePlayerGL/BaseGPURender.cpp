@@ -142,6 +142,8 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	window_width = static_cast<unsigned int>((float)(image_width) / fKoeffDiv);
 	window_height = static_cast<unsigned int>((float)(image_height) / fKoeffDiv);
 
+	//window_width = 1920; window_height = 1080;
+
 	iAllFrames = m_decodeD2->GetCountFrames(); // Get count of frames
 
 	ValueFPS = m_decodeD2->GetFrameRate(); // get frame rate
