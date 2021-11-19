@@ -976,9 +976,9 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 			else if (m_fmt == CCF_B8G8R8A8)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA8BIT;
-			else if (m_fmt == CCF_R16G16B16A16 || m_fmt == CCF_RGB64)
+			else if (m_fmt == CCF_R16G16B16A16)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
-			else if (m_fmt == CCF_B16G16R16A16 || m_fmt == CCF_BGR64)
+			else if (m_fmt == CCF_B16G16R16A16)
 				m_outputImageFormat = IMAGE_FORMAT_BGRA16BIT;
 			else if (m_fmt == CCF_RGB30)
 				m_outputImageFormat = IMAGE_FORMAT_RGB30;
