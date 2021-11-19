@@ -12,6 +12,7 @@ bool g_useQuickSync = false;
 bool g_useOpenCL = false;
 bool g_useDirectX11 = false;
 bool g_useModernOGL = false;
+bool g_useCinecoderD3D11 = false;
 
 bool g_bMaxFPS = false;
 bool g_bVSyncHand = true;
@@ -109,6 +110,7 @@ void printHelp(void)
 	printf("    any:            Any Graphics Adapter (without cuda)\n");
 	printf("    intel:          IntelHD Graphics Adapter (without cuda)\n");
 	printf("    nvidia:         NVIDIA Adapter (set by default)\n");
+	printf("-cinecoderD3D11    enable Cinecode+DirectX11 pipeline\n");
 #endif
 #if !defined(__WIN32__)
 	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
@@ -261,6 +263,11 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+
+	if (checkCmdLineArg(argc, (const char **)argv, "cinecoderD3D11"))
+	{
+		g_useCinecoderD3D11 = true;
+	}
 #endif	
 
 #if !defined(__WIN32__)
@@ -309,6 +316,7 @@ int main(int argc, char **argv)
 	dec_params.scale_factor = (CC_VDEC_SCALE_FACTOR)iScale;
 	dec_params.outputFormat = outputFormat;
 	dec_params.type = VD_TYPE_CPU;
+	dec_params.use_cinecoder_d3d11 = g_useCinecoderD3D11;
 
 	if (g_useCuda)
 		dec_params.type = VD_TYPE_CUDA;

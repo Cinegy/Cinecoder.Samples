@@ -22,6 +22,7 @@ struct ST_VIDEO_DECODER_PARAMS
 	VIDEO_DECODER_TYPE type;
 	CC_VDEC_SCALE_FACTOR scale_factor;
 	IMAGE_FORMAT outputFormat;
+	bool use_cinecoder_d3d11;
 
 	ST_VIDEO_DECODER_PARAMS()
 	{
@@ -29,6 +30,7 @@ struct ST_VIDEO_DECODER_PARAMS
 		scale_factor = CC_VDEC_NO_SCALE;
 		outputFormat = IMAGE_FORMAT_UNKNOWN;
 		type = VD_TYPE_CPU;
+		use_cinecoder_d3d11 = false;
 	}
 };
 

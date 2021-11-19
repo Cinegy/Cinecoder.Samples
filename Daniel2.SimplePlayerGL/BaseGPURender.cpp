@@ -113,8 +113,11 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 			}
 		}
 
-		m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
-		m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
+		if (dec_params.use_cinecoder_d3d11)
+		{
+			m_decodeD2->InitD3DX11Render((GPURenderDX*)this);
+			m_decodeD2->InitD3DXAdapter(m_pCapableAdapter);
+		}
 	}
 
 	int res = m_decodeD2->OpenFile(filename.c_str(), dec_params);
