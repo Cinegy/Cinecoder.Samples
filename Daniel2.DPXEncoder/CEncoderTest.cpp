@@ -185,19 +185,19 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 	{
 	case CCF_UYVY:
 	case CCF_YUY2:
-		m_FrameSizeInBytes = par.Height * par.Width * 2;
+		m_FrameSizeInBytes = size_t(par.Height) * par.Width * 2;
 		break;
 	
 	case CCF_V210:
-		m_FrameSizeInBytes = par.Height * ((par.Width + 47) / 48) * 128;
+		m_FrameSizeInBytes = size_t(par.Height) * ((par.Width + 47) / 48) * 128;
 		break;
 
 	case CCF_RGB30:
-		m_FrameSizeInBytes = par.Height * par.Width * 4;
+		m_FrameSizeInBytes = size_t(par.Height) * par.Width * 4;
 		break;
 
 	case CCF_RGB48:
-		m_FrameSizeInBytes = par.Height * par.Width * 6;
+		m_FrameSizeInBytes = size_t(par.Height) * par.Width * 6;
 		break;
 
 	default:
@@ -210,7 +210,7 @@ int	CEncoderTest::AssignParameters(const TEST_PARAMS &par)
 		
 		extern void *cuda_alloc_pinned(size_t size);
 
-		int page_aligned_size = (m_FrameSizeInBytes + 4095) & ~4095;
+		size_t page_aligned_size = (m_FrameSizeInBytes + 4095) & ~4095;
 
 		if(par.DeviceId >= 0)
 			descr.pBuffer = (LPBYTE)cuda_alloc_pinned(page_aligned_size);
