@@ -84,7 +84,7 @@ private:
 	com_ptr<ICC_ClassFactory> m_pFactory;
 	com_ptr<ICC_Multiplexer> m_pMuxer;
 	
-	DWORD m_FrameSizeInBytes{};
+	size_t m_FrameSizeInBytes{};
 
 	BOOL m_bRunning;
 	HRESULT	m_hrResult{};
