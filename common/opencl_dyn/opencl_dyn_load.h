@@ -13,13 +13,13 @@
 //#define CL_VERSION_1_2
 //#define CL_VERSION_2_0
 
-#ifdef __APPLE__
-#include <OpenCL/cl_version.h>
-#include <OpenCL/cl_platform.h>
-#else
+//#ifdef __APPLE__
+//#include <OpenCL/cl_version.h>
+//#include <OpenCL/cl_platform.h>
+//#else
 #include <CL/cl_version.h>
 #include <CL/cl_platform.h>
-#endif
+//#endif
 
 #include "opencl_def_cl.h"
 #include "opencl_def_cl_gl.h"
