@@ -303,10 +303,14 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 	}
 	else return E_FAIL;
 
-	LARGE_INTEGER lgVersion;
-	std::wstring wstr(strPluginDLL.begin(), strPluginDLL.end());
-	GetFileVersion(wstr.c_str(), lgVersion);
-	printf("%s # File Version: %d.%d.%d.%d\n", pluginDLL, HIWORD(lgVersion.HighPart), LOWORD(lgVersion.HighPart), HIWORD(lgVersion.LowPart), LOWORD(lgVersion.LowPart));
+	if (std::ifstream(strPluginDLL.c_str()).good())
+	{
+		LARGE_INTEGER lgVersion = { 0 };
+		std::wstring wstr(strPluginDLL.begin(), strPluginDLL.end());
+		GetFileVersion(wstr.c_str(), lgVersion);
+		printf("%s # File Version: %d.%d.%d.%d\n", pluginDLL, HIWORD(lgVersion.HighPart), LOWORD(lgVersion.HighPart), HIWORD(lgVersion.LowPart), LOWORD(lgVersion.LowPart));
+	}
+	else return E_FAIL;
 
 	//std::wstring strWPluginDLL(strPluginDLL.begin(), strPluginDLL.end());
 	//LPCTSTR szVersionFile = strWPluginDLL.c_str();
