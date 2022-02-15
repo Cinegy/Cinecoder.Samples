@@ -62,15 +62,15 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 	                                                     PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
 	)
 
-	if(WIN32)
-		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkitPortable
-	                                                                            PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
-		)
-	else()
-		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkit_portable
-																				PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
-		)
-	endif()
+#	if(WIN32)
+#		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkitPortable
+#	                                                                            PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
+#		)
+#	else()
+#		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkit_portable
+#																				PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
+#		)
+#	endif()
 endif()
 
 unset(NPACKAGE_VERSION)
@@ -80,7 +80,7 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Cinecoder.Plugin.Multiplexers REQUIRED_VARS   Cinecoder.Plugin.Multiplexers_INCLUDE_DIRS
                                                                                 Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS
                                                                                 Cinecoder.Plugin.Multiplexers_LIBRARIES
-                                                                                Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES
+                                                                                #Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES
                                                                 VERSION_VAR     Cinecoder.Plugin.Multiplexers_VERSION_STRING
                                                                 FAIL_MESSAGE    "Cinecoder.Plugin.Multiplexers package was not found!"
                                   )
