@@ -55,6 +55,8 @@
 			<Add directory="../packages/Cinecoder.3.33.62.52415/sources" />
 			<Add directory="../packages/Cinecoder.3.33.62.52415/sources/winclude" />
 			<Add directory="../packages/CUDAConvertLib.1.0.0.14/sources" />
+			<Add directory="../external/OpenCL" />
+			<Add directory="../external/GLEW/include" />
 		</Compiler>
 		<Linker>
 		<!--<Add option="-m64" />-->
@@ -62,7 +64,6 @@
 			<Add library="GL" />
 			<Add library="GLU" />
 			<Add library="glut" />
-			<Add library="GLEW" />
 			<Add library="openal" />
 			<Add library="pthread" />
 			<Add library="Cinecoder" />
@@ -91,9 +92,11 @@
 		<Unit filename="../Daniel2.SimplePlayerGL/stdafx.h" />
 		<Unit filename="../Daniel2.SimplePlayerGL/utils/HMTSTDUtil.h" />
 		<Unit filename="../Daniel2.SimplePlayerGL/utils/comptr.h" />
-		<Extensions>
-			<code_completion />
-			<debugger />
-		</Extensions>
+		<Unit filename="../common/cuda_dyn/cuda_dyn_load.cpp" />
+		<Unit filename="../common/opencl_dyn/opencl_dyn_load.cpp" />
+		<Unit filename="../external/GLEW/src/glew.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

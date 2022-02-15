@@ -11,14 +11,14 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.14/sources
+INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.14/sources -I../external/OpenCL -I../external/GLEW/include
 CFLAGS = -Wall -std=c++14 -fexceptions
 RESINC = 
-LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-arm64/native/release
-LIB = -lGL -lGLU -lglut -lGLEW -lopenal -lpthread -lCinecoder -lcudaconvertlib -lX11 -ldl
+LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release
+LIB = -lGL -lGLU -lglut -lopenal -lpthread -lCinecoder -lcudaconvertlib -lX11 -ldl
 LDFLAGS = -Wl,-rpath='.'
 
-INC_DEBUG = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.14/sources
+INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -Wall -std=c++14 -g -D_DEBUG
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
@@ -29,7 +29,7 @@ OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/Daniel2.SimplePlayerGL
 
-INC_RELEASE = $(INC) -I/usr/include/AL -I/usr/include/GL -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.14/sources
+INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2 -Wall -std=c++14
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/Daniel2.SimplePlayerGL
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/external/GLEW/src/glew.o $(OBJDIR_DEBUG)/__/common/opencl_dyn/opencl_dyn_load.o $(OBJDIR_DEBUG)/__/common/cuda_dyn/cuda_dyn_load.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/external/GLEW/src/glew.o $(OBJDIR_RELEASE)/__/common/opencl_dyn/opencl_dyn_load.o $(OBJDIR_RELEASE)/__/common/cuda_dyn/cuda_dyn_load.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o
 
 all: debug release
 
@@ -50,74 +50,104 @@ clean: clean_debug clean_release
 
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
+	test -d $(OBJDIR_DEBUG)/__/external/GLEW/src || mkdir -p $(OBJDIR_DEBUG)/__/external/GLEW/src
+	test -d $(OBJDIR_DEBUG)/__/common/opencl_dyn || mkdir -p $(OBJDIR_DEBUG)/__/common/opencl_dyn
+	test -d $(OBJDIR_DEBUG)/__/common/cuda_dyn || mkdir -p $(OBJDIR_DEBUG)/__/common/cuda_dyn
 	test -d $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL
 
 after_debug: 
 	cp ../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release/*.so bin/Debug
-	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-arm64/native/release/*.so bin/Debug
+	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release/*.so bin/Debug
 
 debug: before_debug out_debug after_debug
 
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o: ../Daniel2.SimplePlayerGL/AudioSource.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/AudioSource.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o
+$(OBJDIR_DEBUG)/__/external/GLEW/src/glew.o: ../external/GLEW/src/glew.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../external/GLEW/src/glew.c -o $(OBJDIR_DEBUG)/__/external/GLEW/src/glew.o
 
-$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o: ../Daniel2.SimplePlayerGL/Block.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/Block.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o
+$(OBJDIR_DEBUG)/__/common/opencl_dyn/opencl_dyn_load.o: ../common/opencl_dyn/opencl_dyn_load.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../common/opencl_dyn/opencl_dyn_load.cpp -o $(OBJDIR_DEBUG)/__/common/opencl_dyn/opencl_dyn_load.o
 
-$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o: ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o
-
-$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o
-
-$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+$(OBJDIR_DEBUG)/__/common/cuda_dyn/cuda_dyn_load.o: ../common/cuda_dyn/cuda_dyn_load.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../common/cuda_dyn/cuda_dyn_load.cpp -o $(OBJDIR_DEBUG)/__/common/cuda_dyn/cuda_dyn_load.o
 
 $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o: ../Daniel2.SimplePlayerGL/stdafx.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/stdafx.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/stdafx.o
 
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o: ../Daniel2.SimplePlayerGL/AudioSource.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/AudioSource.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/AudioSource.o
+
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o
+
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o: ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o
+
+$(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o: ../Daniel2.SimplePlayerGL/Block.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../Daniel2.SimplePlayerGL/Block.cpp -o $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL/Block.o
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf bin/Debug
+	rm -rf $(OBJDIR_DEBUG)/__/external/GLEW/src
+	rm -rf $(OBJDIR_DEBUG)/__/common/opencl_dyn
+	rm -rf $(OBJDIR_DEBUG)/__/common/cuda_dyn
 	rm -rf $(OBJDIR_DEBUG)/__/Daniel2.SimplePlayerGL
 
 before_release: 
 	test -d bin/Release || mkdir -p bin/Release
+	test -d $(OBJDIR_RELEASE)/__/external/GLEW/src || mkdir -p $(OBJDIR_RELEASE)/__/external/GLEW/src
+	test -d $(OBJDIR_RELEASE)/__/common/opencl_dyn || mkdir -p $(OBJDIR_RELEASE)/__/common/opencl_dyn
+	test -d $(OBJDIR_RELEASE)/__/common/cuda_dyn || mkdir -p $(OBJDIR_RELEASE)/__/common/cuda_dyn
 	test -d $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL || mkdir -p $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL
 
 after_release: 
 	cp ../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release/*.so bin/Release
-	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-arm64/native/release/*.so bin/Release
+	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release/*.so bin/Release
 
 release: before_release out_release after_release
 
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o: ../Daniel2.SimplePlayerGL/AudioSource.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/AudioSource.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o
+$(OBJDIR_RELEASE)/__/external/GLEW/src/glew.o: ../external/GLEW/src/glew.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../external/GLEW/src/glew.c -o $(OBJDIR_RELEASE)/__/external/GLEW/src/glew.o
 
-$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o: ../Daniel2.SimplePlayerGL/Block.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/Block.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o
+$(OBJDIR_RELEASE)/__/common/opencl_dyn/opencl_dyn_load.o: ../common/opencl_dyn/opencl_dyn_load.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../common/opencl_dyn/opencl_dyn_load.cpp -o $(OBJDIR_RELEASE)/__/common/opencl_dyn/opencl_dyn_load.o
 
-$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o: ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o
-
-$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o
-
-$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+$(OBJDIR_RELEASE)/__/common/cuda_dyn/cuda_dyn_load.o: ../common/cuda_dyn/cuda_dyn_load.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../common/cuda_dyn/cuda_dyn_load.cpp -o $(OBJDIR_RELEASE)/__/common/cuda_dyn/cuda_dyn_load.o
 
 $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o: ../Daniel2.SimplePlayerGL/stdafx.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/stdafx.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/stdafx.o
 
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o: ../Daniel2.SimplePlayerGL/AudioSource.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/AudioSource.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/AudioSource.o
+
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o: ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/ReadFileDN2.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/ReadFileDN2.o
+
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o: ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/DecodeDaniel2.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/DecodeDaniel2.o
+
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o: ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Daniel2.SimplePlayerGL.o
+
+$(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o: ../Daniel2.SimplePlayerGL/Block.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../Daniel2.SimplePlayerGL/Block.cpp -o $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL/Block.o
+
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf bin/Release
+	rm -rf $(OBJDIR_RELEASE)/__/external/GLEW/src
+	rm -rf $(OBJDIR_RELEASE)/__/common/opencl_dyn
+	rm -rf $(OBJDIR_RELEASE)/__/common/cuda_dyn
 	rm -rf $(OBJDIR_RELEASE)/__/Daniel2.SimplePlayerGL
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
