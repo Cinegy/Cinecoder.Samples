@@ -62,15 +62,15 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 	                                                     PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
 	)
 
-	if(WIN32)
+#	if(WIN32)
 #		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkitPortable
-	                                                                            PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
-		)
-	else()
+#	                                                                            PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
+#		)
+#	else()
 #		find_library(Cinecoder.Plugin.Multiplexers_MXFToolkitPortable_LIBRARIES NAME  MXFToolkit_portable
-																				PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
-		)
-	endif()
+#																				PATHS ${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}
+#		)
+#	endif()
 endif()
 
 unset(NPACKAGE_VERSION)
