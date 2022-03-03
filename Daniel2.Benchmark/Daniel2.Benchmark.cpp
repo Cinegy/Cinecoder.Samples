@@ -13,10 +13,6 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-#include "cpu_load_meter.h"
-
-#include "../common/cuda_dyn/cuda_dyn_load.h"
-
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
 
@@ -33,6 +29,8 @@ using namespace std::chrono_literals;
 #include "../common/com_ptr.h"
 #include "../common/c_unknown.h"
 #include "../common/conio.h"
+#include "../common/cpu_load_meter.h"
+#include "../common/cuda_dyn/cuda_dyn_load.h"
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
