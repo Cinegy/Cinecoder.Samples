@@ -137,6 +137,7 @@ int main(int argc, char* argv[])
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
 #endif
+    puts("\t'MPEG'         -- MPEG s/w encoder");
 #ifdef _WIN32
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
@@ -144,7 +145,6 @@ int main(int argc, char* argv[])
     puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
-    puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'H264'         -- H264 s/w encoder");
 #endif
     puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
@@ -195,6 +195,12 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA (GPU-GPU mode)";
     g_mem_type = MEM_GPU;
+  }
+  if(0 == strcmp(argv[1], "MPEG"))
+  { 
+    clsidEnc = CLSID_CC_MpegVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "MPEG"; 
   }
 
 #ifdef _WIN32
@@ -261,12 +267,6 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_H264VideoEncoder; 
     clsidDec = CLSID_CC_H264VideoDecoder; 
     strEncName = "H264"; 
-  }
-  if(0 == strcmp(argv[1], "MPEG"))
-  { 
-    clsidEnc = CLSID_CC_MpegVideoEncoder; 
-    clsidDec = CLSID_CC_MpegVideoDecoder; 
-    strEncName = "MPEG"; 
   }
 #endif
 
