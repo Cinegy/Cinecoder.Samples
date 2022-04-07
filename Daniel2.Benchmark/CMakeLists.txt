@@ -24,7 +24,7 @@ link_directories("/usr/local/cuda/lib64")
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 
 if(UNIX AND NOT APPLE)
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,-rpath='$ORIGIN'")
+set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,-rpath='$ORIGIN',-Wunused-result")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
