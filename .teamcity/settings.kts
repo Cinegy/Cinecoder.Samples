@@ -113,7 +113,7 @@ object Version : BuildType({
         text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
-        password("LICENSE_KEY", "credentialsJSON:3232fa18-602e-4414-80d5-9901a79cfc16", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+        password("LICENSE_KEY", "credentialsJSON:2808c77b-9bd2-48a8-808f-eea5179c9bb2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 
     steps {
