@@ -65,10 +65,6 @@ else()
 endif()
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
-if(UNIX AND NOT APPLE)
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wunused-result")
-endif()
-
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl)
 
