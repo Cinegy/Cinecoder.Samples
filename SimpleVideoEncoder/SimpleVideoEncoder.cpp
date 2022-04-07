@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
   fseek(xmlf, 0, SEEK_SET);
 
   char *profile = (char*)calloc(xml_length+1, 1);
-  fread(profile, 1, xml_length, xmlf);
+  size_t nread = fread(profile, 1, xml_length, xmlf);
   fclose(xmlf);
 
   // Simple XML parsing

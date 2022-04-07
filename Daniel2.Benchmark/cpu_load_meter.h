@@ -67,7 +67,7 @@ public:
 		{
 	        long long dummy, cpu, nice, sys, idle;
 
-			fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle);
+			[&]() { return fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle); }; // lambda for fix "warning: ignoring return value of ‘int fscanf(.."
 			fclose(f);
 
 			*busy = cpu + nice + sys;
