@@ -350,7 +350,11 @@ int AudioSource::OpenFile(const char* const filename)
 			audioChunk.resize(sample_bytes);
 		}
 	}
+
 	printf("-------------------------------------\n");
+
+	hr = m_pMediaReader->put_CurrentAudioTrackNumber(iCurrentAudioTrackNumber);
+	if (FAILED(hr)) return hr;
 
 	if (m_iBitsPerSample != 16)
 	{
