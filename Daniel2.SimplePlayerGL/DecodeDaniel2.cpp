@@ -544,8 +544,11 @@ int DecodeDaniel2::CreateDecoder()
 	{
 		CC_FRAME_RATE frame_rate;
 		if (SUCCEEDED(hr)) hr = m_file.GetFrameRate(frame_rate);
-		if (SUCCEEDED(hr)) hr = pFrameRateProp->put_FrameRate(frame_rate);
-		if (SUCCEEDED(hr)) m_FrameRate = frame_rate;
+		if (frame_rate.num != 0)
+		{
+			if (SUCCEEDED(hr)) hr = pFrameRateProp->put_FrameRate(frame_rate);
+			if (SUCCEEDED(hr)) m_FrameRate = frame_rate;
+		}
 	}
 
 	return 0;
