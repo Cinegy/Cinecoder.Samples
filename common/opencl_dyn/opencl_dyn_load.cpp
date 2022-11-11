@@ -156,8 +156,8 @@ int DynamicLoadOpenCL::InitOpenCL()
 		LOAD_OPENCL_FUNC(clLinkProgram)
 #endif
 #ifdef CL_VERSION_2_2
-		LOAD_OPENCL_FUNC(FTclSetProgramReleaseCallback)
-		LOAD_OPENCL_FUNC(FTclSetProgramSpecializationConstant)
+		LOAD_OPENCL_FUNC(clSetProgramReleaseCallback)
+		LOAD_OPENCL_FUNC(clSetProgramSpecializationConstant)
 #endif
 #ifdef CL_VERSION_1_2
 		LOAD_OPENCL_FUNC(clUnloadPlatformCompiler)
