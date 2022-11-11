@@ -116,8 +116,8 @@ DECLARE_FUNC_OPENCL(clCompileProgram)
 DECLARE_FUNC_OPENCL(clLinkProgram)
 #endif
 #ifdef CL_VERSION_2_2
-DECLARE_FUNC_OPENCL(FTclSetProgramReleaseCallback)
-DECLARE_FUNC_OPENCL(FTclSetProgramSpecializationConstant)
+DECLARE_FUNC_OPENCL(clSetProgramReleaseCallback)
+DECLARE_FUNC_OPENCL(clSetProgramSpecializationConstant)
 #endif
 #ifdef CL_VERSION_1_2
 DECLARE_FUNC_OPENCL(clUnloadPlatformCompiler)
