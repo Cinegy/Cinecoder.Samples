@@ -31,10 +31,10 @@
     <ClCompile Include="..\external\GLEW\src\glew.c">
       <Filter>Render\GLEW</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\opencl_dyn\opencl_dyn_load.cpp">
+    <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp">
       <Filter>Source Files\dynamic_load</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp">
+    <ClCompile Include="..\external\opencl_dyn_load\src\opencl_dyn_load.cpp">
       <Filter>Source Files\dynamic_load</Filter>
     </ClCompile>
   </ItemGroup>
