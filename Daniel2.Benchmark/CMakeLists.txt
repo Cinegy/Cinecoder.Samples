@@ -8,7 +8,8 @@ add_compile_options(-ggdb)
 set(SOURCES
 	Daniel2.Benchmark.cpp
 
-	../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.cpp
+	../common/cuda_dyn/cuda_dyn_load.cpp
+#	../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.cpp
 )
 
 #set(HEADERS
