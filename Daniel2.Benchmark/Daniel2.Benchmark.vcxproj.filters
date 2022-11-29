@@ -18,7 +18,7 @@
     <ClCompile Include="Daniel2.Benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp">
+    <ClCompile Include="..\external\cuda_drvapi_dyn_load\src\cuda_drvapi_dyn_load.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
