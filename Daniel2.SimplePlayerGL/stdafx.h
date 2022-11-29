@@ -96,7 +96,7 @@ using namespace cinegy::simpl;
 
 #else
 
-#include "../common/opencl_dyn/opencl_dyn_load.h"
+#include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
 #endif // #ifndef OPENCL_WRAPPER 
 
