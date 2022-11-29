@@ -4,3 +4,9 @@
 [submodule "external/GLEW"]
 	path = external/GLEW
 	url = https://github.com/edoren/glew.git
+[submodule "external/opencl_dyn_load"]
+	path = external/opencl_dyn_load
+	url = https://github.com/Cinegy/opencl_dyn_load
+[submodule "external/cuda_drvapi_dyn_load"]
+	path = external/cuda_drvapi_dyn_load
+	url = https://github.com/Cinegy/cuda_drvapi_dyn_load
