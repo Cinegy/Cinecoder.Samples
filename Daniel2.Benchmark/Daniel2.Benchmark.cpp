@@ -13,15 +13,13 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-#include "cpu_load_meter.h"
-
 #include "../common/cuda_dyn/cuda_dyn_load.h"
 //#include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
 
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
 
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
 #include "Cinecoder.Plugin.GpuCodecs.h"
 #include "Cinecoder.Plugin.GpuCodecs_i.c"
 #endif
@@ -34,6 +32,8 @@ using namespace std::chrono_literals;
 #include "../common/com_ptr.h"
 #include "../common/c_unknown.h"
 #include "../common/conio.h"
+#include "../common/cpu_load_meter.h"
+#include "../common/cuda_dyn/cuda_dyn_load.h"
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
@@ -115,6 +115,34 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   return nullptr;
 }
 
+void mem_release(MemType type, void* ptr)
+{
+  if(type == MEM_SYSTEM)
+  {
+#ifdef _WIN32
+	VirtualFree(ptr, 0, MEM_RELEASE);
+#else
+	free(ptr);
+#endif		
+  }
+
+  if (!g_CudaEnabled)
+  {
+	fprintf(stderr, "CUDA is disabled\n");
+	return;
+  }
+
+  if(type == MEM_PINNED)
+  {
+    cudaFreeHost(ptr);
+  }
+
+  if(type == MEM_GPU)
+  {
+  	cudaFree(ptr);
+  }
+}
+
 #include "file_writer.h"
 #include "dummy_consumer.h"
 
@@ -164,16 +192,19 @@ int main(int argc, char* argv[])
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
 #endif
-#ifdef _WIN32
+    puts("\t'MPEG'         -- MPEG s/w encoder");
+    puts("\t'XDCAM'        -- XDCAM s/w encoder");
+//#ifdef _WIN32
+    puts("\t'H264'         -- H264 s/w encoder");
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
+    puts("\t'H264_AMF'     -- H264 AMD GPU codec test (requires GPU codec plugin)");
+    puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK'    -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
-    puts("\t'MPEG'         -- MPEG s/w encoder");
-    puts("\t'H264'         -- H264 s/w encoder");
-#endif
+//#endif
     puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
     return 1;
   }
@@ -184,7 +215,6 @@ int main(int argc, char* argv[])
   Cinecoder_SetErrorHandler(new C_CinecoderErrorHandler());
 
   CLSID clsidEnc = {}, clsidDec = {}; const char *strEncName = 0;
-  bool bForceGetFrameOnDecode = false;
   bool bLoadGpuCodecsPlugin = false;
   if(0 == strcmp(argv[1], "AVCI"))
   { 
@@ -197,7 +227,6 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_DanielVideoEncoder;
     clsidDec = CLSID_CC_DanielVideoDecoder; 
     strEncName = "Daniel2"; 
-    bForceGetFrameOnDecode = true;
   }
 
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDA"))
@@ -206,7 +235,6 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA";
     g_mem_type = MEM_PINNED;
-    bForceGetFrameOnDecode = true;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDANP"))
   {
@@ -214,7 +242,6 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA (NOT PINNED MEMORY!!)";
     //g_mem_type = MEM_PINNED;
-    bForceGetFrameOnDecode = true;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAGPU"))
   {
@@ -223,8 +250,20 @@ int main(int argc, char* argv[])
     strEncName = "Daniel2_CUDA (GPU-GPU mode)";
     g_mem_type = MEM_GPU;
   }
+  if(0 == strcmp(argv[1], "MPEG"))
+  { 
+    clsidEnc = CLSID_CC_MpegVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "MPEG"; 
+  }
+  if(0 == strcmp(argv[1], "XDCAM"))
+  { 
+    clsidEnc = CLSID_CC_XDCAMVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "XDCAM"; 
+  }
 
-#ifdef _WIN32
+//#ifdef _WIN32
   if(0 == strcmp(argv[1], "H264_NV"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_NV; 
@@ -253,6 +292,20 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_HEVCVideoDecoder_NV; 
     strEncName = "NVidia HEVC"; 
     g_mem_type = MEM_GPU;
+    bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "H264_AMF"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder_AMF; 
+    clsidDec = CLSID_CC_H264VideoDecoder_AMF; 
+    strEncName = "AMD H264"; 
+    bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "HEVC_AMF"))
+  { 
+    clsidEnc = CLSID_CC_HEVCVideoEncoder_AMF; 
+    clsidDec = CLSID_CC_HEVCVideoDecoder_AMF; 
+    strEncName = "AMD HEVC"; 
     bLoadGpuCodecsPlugin = true;
   }
   if(0 == strcmp(argv[1], "H264_IMDK"))
@@ -289,13 +342,13 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_H264VideoDecoder; 
     strEncName = "H264"; 
   }
-  if(0 == strcmp(argv[1], "MPEG"))
-  { 
-    clsidEnc = CLSID_CC_MpegVideoEncoder; 
-    clsidDec = CLSID_CC_MpegVideoDecoder; 
-    strEncName = "MPEG"; 
+//#endif
+
+  if(bLoadGpuCodecsPlugin && version.VersionHi >= 4)
+  {
+    printf("! Using Cinecoder's built-in GPU codecs\n");
+    bLoadGpuCodecsPlugin = false;
   }
-#endif
 
   if(!strEncName)
     return fprintf(stderr, "Unknown encoder type '%s'\n", argv[1]), -1;
@@ -642,7 +695,7 @@ int main(int argc, char* argv[])
 
     com_ptr<ICC_ThreadsCountProp> pTCP;
 
-    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
       fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
 
     else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
@@ -683,9 +736,6 @@ int main(int argc, char* argv[])
     printf("Decoder concurrency level = %d\n", concur_level);
   }
 
-  if(!bForceGetFrameOnDecode)
-  	cFormat = CCF_UNKNOWN;
-
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
   BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
@@ -695,15 +745,11 @@ int main(int argc, char* argv[])
     printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", dec_buf, strOutputFormat, uncompressed_frame_size);
 
   com_ptr<ICC_VideoQualityMeter> pPsnrCalc;
-  if(cOutputFormat == cFormat && g_mem_type != MEM_GPU)
-  {
-    if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
-      fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
-  }
-  else
-  {
-    fprintf(stdout, "PSNR calculation is disabled due to %s\n", cOutputFormat != cFormat ? "color format mismatch" : "GPU memory");
-  }
+  if(cOutputFormat != cFormat)
+    fprintf(stdout, "PSNR calculation is disabled due to color format mismatch (in=%08x out=%08x)\n", cFormat, cOutputFormat);
+
+  else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
+    fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
 
   hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, pPsnrCalc, source_frames[0]));
   if(FAILED(hr)) return hr;
