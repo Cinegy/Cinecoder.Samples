@@ -665,7 +665,7 @@ int main(int argc, char* argv[])
 
     com_ptr<ICC_ThreadsCountProp> pTCP;
 
-    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsCountProp, (void**)&pTCP)))
       fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
 
     else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
