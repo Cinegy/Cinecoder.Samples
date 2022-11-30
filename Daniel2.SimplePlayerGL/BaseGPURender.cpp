@@ -568,7 +568,7 @@ int BaseGPURender::UpdateWindow()
 int BaseGPURender::CreateWnd()
 {
 	const wchar_t * const strWindowName = m_windowCaption.c_str();
-	wchar_t * MyClassApp = L"Cinegy TestApp window class";
+	const wchar_t * MyClassApp = L"Cinegy TestApp window class";
 
 	HINSTANCE hInstance = GetModuleHandle(0);
 
@@ -857,8 +857,8 @@ void BaseGPURender::SeekToFrame(size_t iFrame)
 
 void BaseGPURender::SeekToFrame(int x, int y)
 {
-	GLint w = window_width; // Width in pixels of the current window
-	GLint h = window_height; // Height in pixels of the current window
+	int w = window_width; // Width in pixels of the current window
+	int h = window_height; // Height in pixels of the current window
 
 	sizeSquare2 = (float)w / 100;
 	edgeLineY = sizeSquare2 * 4;

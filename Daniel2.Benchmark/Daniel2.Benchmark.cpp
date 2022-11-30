@@ -13,6 +13,9 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
+#include "../common/cuda_dyn/cuda_dyn_load.h"
+//#include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
+
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
 
@@ -71,6 +74,7 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   {
     void *ptr = nullptr;
     auto err = cudaMallocHost(&ptr, size);
+	//auto err = cuMemAllocHost(&ptr, size);
     if(err) fprintf(stderr, "CUDA error %d\n", err);
     return ptr;
   }
@@ -84,15 +88,26 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
     if(err)
       return fprintf(stderr, "cudaGetDevice() error %d\n", err), nullptr;
 
+	//CUdevice cuDevice;
+	//CUcontext cuContext = nullptr;
+
+	//auto err = cuDeviceGet(&cuDevice, 0);
+	//if (err) return fprintf(stderr, "cuDeviceGet() error %d\n", err), nullptr;
+
+	//err = cuDevicePrimaryCtxRetain(&cuContext, cuDevice);
+	//if (err) return fprintf(stderr, "cuDevicePrimaryCtxRetain() error %d\n", err), nullptr;
+
+	//err = cuCtxSetCurrent(cuContext);
+	//if (err) return fprintf(stderr, "cuCtxSetCurrent() error %d\n", err), nullptr;
+
     if(device != old_device && (err = cudaSetDevice(device)) != 0)
       return fprintf(stderr, "cudaSetDevice(%d) error %d\n", device, err), nullptr;
 
     void *ptr = nullptr;
   	err = cudaMalloc(&ptr, size);
+	//err = cuMemAlloc((CUdeviceptr*)&ptr, size);
     if(err)
       return fprintf(stderr, "CUDA error %d\n", err), nullptr;
-
-    cudaSetDevice(old_device);
 
     return ptr;
   }
@@ -150,6 +165,18 @@ int main(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
   g_CudaEnabled = __InitCUDA() == 0;
+
+  //g_CudaEnabled = LoadCudaDrvApiLib() == 0;
+
+  //if (g_CudaEnabled)
+  //{
+	 // auto err = cuInit(0);
+	 // if (err)
+	 // {
+		//  fprintf(stderr, "cuInit() error %d\n", err);
+		//  g_CudaEnabled = false;
+	 // }
+  //}
 
   if(argc < 5)
   {
@@ -540,8 +567,11 @@ int main(int argc, char* argv[])
     else
       printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", buf, strInputFormat, uncompressed_frame_size);
 
-    if(g_mem_type == MEM_GPU)
-  	  cudaMemcpy(buf, read_buffer, uncompressed_frame_size, cudaMemcpyHostToDevice);
+	if (g_mem_type == MEM_GPU)
+	{
+		cudaMemcpy(buf, read_buffer, uncompressed_frame_size, cudaMemcpyHostToDevice);
+		//cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
+	}
   	else
   	  memcpy(buf, read_buffer, uncompressed_frame_size);
 
