@@ -82,12 +82,48 @@ public:
 
       if(m_FrameNo == 0 && m_pPsnrCalc)
       {
-        CC_VIDEO_QUALITY_MEASUREMENT psnr;
+        BYTE *pBuffer    = m_pBuffer;
+        BYTE *pRefBuffer = m_pRefBuffer;
 
-        hr = m_pPsnrCalc->Measure(CC_VQM_PSNR, m_szFrame, m_Format, 
-								  m_pBuffer, m_cbFrameBytes, 0,
-								  m_pRefBuffer, m_cbFrameBytes, 0,
-								  &psnr);
+		if(g_mem_type == MEM_GPU)
+		{
+		  pBuffer    = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
+		  pRefBuffer = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
+
+		  if(!pBuffer || !pRefBuffer)
+		  {
+		    hr = E_OUTOFMEMORY;
+		  }
+		  else
+		  {
+		    auto err = cudaMemcpy(pBuffer   , m_pBuffer   , m_cbFrameBytes, cudaMemcpyDeviceToHost);
+		    if(!err) 
+		    	err = cudaMemcpy(pRefBuffer, m_pRefBuffer, m_cbFrameBytes, cudaMemcpyDeviceToHost);
+
+		    if(err)
+		    {
+      			fprintf(stderr, "cudaMemcpy(cudaMemcpyDeviceToHost) error %d\n", err);
+      			hr = E_UNEXPECTED;
+			}
+		  }
+		}
+
+        CC_VIDEO_QUALITY_MEASUREMENT psnr = {};
+
+        if(SUCCEEDED(hr))
+        {
+          hr = m_pPsnrCalc->Measure(CC_VQM_PSNR, m_szFrame, m_Format, 
+								    pBuffer   , m_cbFrameBytes, 0,
+								    pRefBuffer, m_cbFrameBytes, 0,
+								    &psnr);
+		}
+
+		if(g_mem_type == MEM_GPU)
+		{
+		  mem_release(MEM_SYSTEM, pBuffer);
+		  mem_release(MEM_SYSTEM, pRefBuffer);
+		}
+
 		if(FAILED(hr))
 		  fprintf(stderr, "PSNR calculation failed, error code %xh\n", hr);
 

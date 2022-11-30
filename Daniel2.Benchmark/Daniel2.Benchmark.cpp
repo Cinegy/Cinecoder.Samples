@@ -100,6 +100,34 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   return nullptr;
 }
 
+void mem_release(MemType type, void* ptr)
+{
+  if(type == MEM_SYSTEM)
+  {
+#ifdef _WIN32
+	VirtualFree(ptr, 0, MEM_RELEASE);
+#else
+	free(ptr);
+#endif		
+  }
+
+  if (!g_CudaEnabled)
+  {
+	fprintf(stderr, "CUDA is disabled\n");
+	return;
+  }
+
+  if(type == MEM_PINNED)
+  {
+    cudaFreeHost(ptr);
+  }
+
+  if(type == MEM_GPU)
+  {
+  	cudaFree(ptr);
+  }
+}
+
 #include "file_writer.h"
 #include "dummy_consumer.h"
 
@@ -160,7 +188,6 @@ int main(int argc, char* argv[])
   Cinecoder_SetErrorHandler(new C_CinecoderErrorHandler());
 
   CLSID clsidEnc = {}, clsidDec = {}; const char *strEncName = 0;
-  bool bForceGetFrameOnDecode = false;
   bool bLoadGpuCodecsPlugin = false;
   if(0 == strcmp(argv[1], "AVCI"))
   { 
@@ -173,7 +200,6 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_DanielVideoEncoder;
     clsidDec = CLSID_CC_DanielVideoDecoder; 
     strEncName = "Daniel2"; 
-    bForceGetFrameOnDecode = true;
   }
 
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDA"))
@@ -182,7 +208,6 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA";
     g_mem_type = MEM_PINNED;
-    bForceGetFrameOnDecode = true;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDANP"))
   {
@@ -190,7 +215,6 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA (NOT PINNED MEMORY!!)";
     //g_mem_type = MEM_PINNED;
-    bForceGetFrameOnDecode = true;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAGPU"))
   {
@@ -682,9 +706,6 @@ int main(int argc, char* argv[])
     printf("Decoder concurrency level = %d\n", concur_level);
   }
 
-  if(!bForceGetFrameOnDecode)
-  	cFormat = CCF_UNKNOWN;
-
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
   BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
@@ -694,15 +715,11 @@ int main(int argc, char* argv[])
     printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", dec_buf, strOutputFormat, uncompressed_frame_size);
 
   com_ptr<ICC_VideoQualityMeter> pPsnrCalc;
-  if(cOutputFormat == cFormat && g_mem_type != MEM_GPU)
-  {
-    if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
-      fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
-  }
-  else
-  {
-    fprintf(stdout, "PSNR calculation is disabled due to %s\n", cOutputFormat != cFormat ? "color format mismatch" : "GPU memory");
-  }
+  if(cOutputFormat != cFormat)
+    fprintf(stdout, "PSNR calculation is disabled due to color format mismatch\n");
+
+  else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
+    fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
 
   hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, pPsnrCalc, source_frames[0]));
   if(FAILED(hr)) return hr;
