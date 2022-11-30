@@ -16,7 +16,7 @@ using namespace std::chrono_literals;
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
 
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
 #include "Cinecoder.Plugin.GpuCodecs.h"
 #include "Cinecoder.Plugin.GpuCodecs_i.c"
 #endif
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 #endif
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
-#ifdef _WIN32
+//#ifdef _WIN32
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK'    -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264'         -- H264 s/w encoder");
-#endif
+//#endif
     puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
     return 1;
   }
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
     strEncName = "XDCAM"; 
   }
 
-#ifdef _WIN32
+//#ifdef _WIN32
   if(0 == strcmp(argv[1], "H264_NV"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_NV; 
@@ -275,7 +275,13 @@ int main(int argc, char* argv[])
     clsidDec = CLSID_CC_H264VideoDecoder; 
     strEncName = "H264"; 
   }
-#endif
+//#endif
+
+  if(bLoadGpuCodecsPlugin && version.VersionHi >= 4)
+  {
+    printf("! Using Cinecoder's built-in GPU codecs\n");
+    bLoadGpuCodecsPlugin = false;
+  }
 
   if(!strEncName)
     return fprintf(stderr, "Unknown encoder type '%s'\n", argv[1]), -1;
