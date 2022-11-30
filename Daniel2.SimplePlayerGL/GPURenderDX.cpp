@@ -508,8 +508,8 @@ HRESULT GPURenderDX::CreateD3D11()
 	com_ptr<IDXGIDevice> dxgiDevice = nullptr;
 	com_ptr<IDXGIAdapter> adapter = nullptr;
 
-	hr = m_pd3dDevice->QueryInterface(&dxgiDevice);
-	if (SUCCEEDED(hr) && dxgiDevice) hr = dxgiDevice->GetAdapter(&adapter);
+	hr = m_pd3dDevice->QueryInterface((IDXGIDevice**)&dxgiDevice);
+	if (SUCCEEDED(hr) && dxgiDevice) hr = dxgiDevice->GetAdapter((IDXGIAdapter**)&adapter);
 
 	DXGI_ADAPTER_DESC desc;
 	if (SUCCEEDED(hr) && adapter) hr = adapter->GetDesc(&desc);

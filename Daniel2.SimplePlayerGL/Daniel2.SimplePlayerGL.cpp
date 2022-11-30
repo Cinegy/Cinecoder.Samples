@@ -221,7 +221,7 @@ int main(int argc, char **argv)
 #ifdef OPENCL_WRAPPER
 	if (g_useOpenCL)
 	{
-		if (__InitOpenCL() != 0) // init OpenCL SDK
+		if (LoadOpenClLib() != 0) // init OpenCL SDK
 		{
 			printf("Error: cannot initialize OpenCL! Please check if the <OpenCL.dll/libOpenCL.so> file exists!\n");
 			return 0;
@@ -540,7 +540,7 @@ int main(int argc, char **argv)
 #ifdef OPENCL_WRAPPER
 	if (g_useOpenCL)
 	{
-		__DestroyOpenCL(); // destroy OpenCL SDK
+		UnLoadOpenClLib(); // destroy OpenCL SDK
 	}
 #endif
 #endif

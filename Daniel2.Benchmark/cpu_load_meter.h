@@ -63,18 +63,64 @@ public:
 
     static void ReadProcStat(long long *busy, long long *work)
     {
-        long long dummy, cpu, nice, sys, idle;
-
-        FILE *f = fopen("/proc/stat", "rt");
-		if (f)
+		if (FILE *f = fopen("/proc/stat", "rt"))
 		{
-			fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle);
+	        long long dummy, cpu, nice, sys, idle;
+
+			[&]() { return fscanf(f, "cpu %lld %lld %lld %lld", &cpu, &nice, &sys, &idle); }; // lambda for fix "warning: ignoring return value of ‘int fscanf(.."
 			fclose(f);
 
 			*busy = cpu + nice + sys;
 			*work = *busy + idle;
 		}
-		else *busy = *work = -1;
+		else
+		{
+			*busy = *work = -1;
+		}
+    }
+};
+
+#elif defined(__APPLE__)
+
+#include <mach/mach_init.h>
+#include <mach/mach_error.h>
+#include <mach/mach_host.h>
+
+class CpuLoadMeter
+{
+	unsigned long long prev_total_ticks = 0;
+	unsigned long long prev_idle_ticks = 0;
+	float              prev_load = 0;
+
+public:
+    float GetLoad()
+    {
+	    host_cpu_load_info_data_t cpuinfo;
+
+	    mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
+
+	    if (KERN_SUCCESS != host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&cpuinfo, &count))
+	    	return -1;
+
+	    unsigned long long curr_idle_ticks  = cpuinfo.cpu_ticks[CPU_STATE_IDLE];
+	    unsigned long long curr_total_ticks = 0;
+	        
+	    for(int i = 0; i < CPU_STATE_MAX; i++)
+	        curr_total_ticks += cpuinfo.cpu_ticks[i];
+
+	    unsigned long long total_ticks = curr_total_ticks - prev_total_ticks;
+	    unsigned long long idle_ticks  = curr_idle_ticks  - prev_idle_ticks;
+
+	    if(total_ticks == 0)
+	    	return prev_load;
+
+	    float curr_load = (1 - float(idle_ticks) / total_ticks) * 100;
+
+	    prev_total_ticks = curr_total_ticks;
+	    prev_idle_ticks  = curr_idle_ticks;
+	    prev_load        = curr_load;
+
+	    return curr_load;
     }
 };
 

@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props')" />
-  <Import Project="..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.props')" />
+  <Import Project="..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.props')" />
   <Import Project="..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props" Condition="Exists('..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props')" />
   <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
-  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.props')" />
+  <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props" Condition="Exists('..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -98,7 +98,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -119,7 +119,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>GLEW_STATIC;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -140,7 +140,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -165,7 +165,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -211,12 +211,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\common\opencl_dyn\opencl_dyn_load.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\Daniel2.SimplePlayerGL\AudioSource.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\BaseGPURender.cpp" />
     <ClCompile Include="..\Daniel2.SimplePlayerGL\Block.cpp" />
@@ -237,6 +231,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\external\opencl_dyn_load\src\opencl_dyn_load.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -245,9 +240,9 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.targets')" />
-    <Import Project="..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.targets')" />
-    <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets')" />
+    <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" />
+    <Import Project="..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.targets')" />
   </ImportGroup>
   <!-- <Target Name="Copy FreeGlut binary x86" AfterTargets="AfterBuild" Condition="'$(Platform)'=='Win32'"> -->
   <!-- <ItemGroup> -->
@@ -278,13 +273,13 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\OpenAL.Soft.1.19.1\build\openal.soft.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.7.20044\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
     <Error Condition="!Exists('..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CUDAConvertLib.1.0.0.14\build\CUDAConvertLib.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.55.49272\build\Cinecoder.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.1.2.9\build\Cinecoder.Plugin.Multiplexers.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.3.33.62.52415\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.2.0.10\build\Cinecoder.Plugin.Multiplexers.targets'))" />
   </Target>
 </Project>
