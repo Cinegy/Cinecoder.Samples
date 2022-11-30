@@ -138,6 +138,7 @@ int main(int argc, char* argv[])
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
 #endif
     puts("\t'MPEG'         -- MPEG s/w encoder");
+    puts("\t'XDCAM'        -- XDCAM s/w encoder");
 #ifdef _WIN32
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
@@ -201,6 +202,12 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_MpegVideoEncoder; 
     clsidDec = CLSID_CC_MpegVideoDecoder; 
     strEncName = "MPEG"; 
+  }
+  if(0 == strcmp(argv[1], "XDCAM"))
+  { 
+    clsidEnc = CLSID_CC_XDCAMVideoEncoder; 
+    clsidDec = CLSID_CC_MpegVideoDecoder; 
+    strEncName = "XDCAM"; 
   }
 
 #ifdef _WIN32
