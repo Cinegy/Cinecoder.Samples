@@ -15,7 +15,7 @@
 #include "Cinecoder_h.h"	
 #include "Cinecoder_i.c"
 
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
 #include "Cinecoder.Plugin.GpuCodecs.h"
 #include "Cinecoder.Plugin.GpuCodecs_i.c"
 #endif
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 	{
       puts("Usage: video_decoder.exe <input_file> <codec_name>");
       puts("Where the codec_name is: MPEG, H264, DN2, DN2_CUDA"
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
            ", H264_NV, HEVC_NV"
 #endif
 	  );
@@ -73,7 +73,7 @@ int main(int argc, char* argv[])
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder;
     else if(0 == stricmp(argv[2], "DN2_CUDA"))
       CODEC_CLSID = CLSID_CC_DanielVideoDecoder_CUDA;
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
     else if(0 == stricmp(argv[2], "H264_NV"))
     { CODEC_CLSID = CLSID_CC_H264VideoDecoder_NV; bGpuPluginIsRequired = true; }
     else if(0 == stricmp(argv[2], "HEVC_NV"))
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
     spFactory->AssignLicense(COMPANYNAME, LICENSEKEY);
 
-#ifdef _WIN32
+#if defined(_WIN32) && (CINECODER_VERSION < 40000)
     if(bGpuPluginIsRequired && FAILED(hr = spFactory->LoadPlugin(_T("Cinecoder.Plugin.GpuCodecs.dll"))))
       return hr;
 #endif

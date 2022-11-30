@@ -304,7 +304,7 @@ int AudioSource::OpenFile(const char* const filename)
 		case CC_ES_TYPE_AUDIO_AC3: printf("AC3 / "); break;
 		case CC_ES_TYPE_AUDIO_AC3_DVB: printf("AC3_DVB / "); break;
 		case CC_ES_TYPE_AUDIO_AES3: printf("AES3 / "); break;
-		case CC_ES_TYPE_AUDIO_DOLBY_E: printf("DOLBY E / "); break;
+		case CC_ES_TYPE_AUDIO_D_E: printf("DOLBY E / "); break;
 		case CC_ES_TYPE_AUDIO_DTS: printf("DTS / "); break;
 		case CC_ES_TYPE_AUDIO_LATM: printf("LATM / "); break;
 		case CC_ES_TYPE_AUDIO_LPCM: printf("LPCM / "); break;
