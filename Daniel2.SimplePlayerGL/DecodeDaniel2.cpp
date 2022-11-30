@@ -4,7 +4,9 @@
 // Cinecoder
 #include <Cinecoder_i.c>
 #if defined(__WIN32__)
+#if (CINECODER_VERSION < 40000)
 #include <Cinecoder.Plugin.GpuCodecs_i.c>
+#endif
 #pragma comment(lib, "windowscodecs.lib") // for IID_IDXGIFactory
 #endif
 #include "CinecoderErrorHandler.h"
@@ -388,7 +390,7 @@ int DecodeDaniel2::CreateDecoder()
 
 	printf("%s\n", strCinecoderVersion.c_str()); // print version of Cinecoder
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) && (CINECODER_VERSION < 40000)
 	LoadPlugin("Cinecoder.Plugin.GpuCodecs.dll");
 #endif
 
