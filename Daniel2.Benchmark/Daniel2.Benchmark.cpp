@@ -716,7 +716,7 @@ int main(int argc, char* argv[])
 
   com_ptr<ICC_VideoQualityMeter> pPsnrCalc;
   if(cOutputFormat != cFormat)
-    fprintf(stdout, "PSNR calculation is disabled due to color format mismatch\n");
+    fprintf(stdout, "PSNR calculation is disabled due to color format mismatch (in=%08x out=%08x)\n", cFormat, cOutputFormat);
 
   else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
     fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
