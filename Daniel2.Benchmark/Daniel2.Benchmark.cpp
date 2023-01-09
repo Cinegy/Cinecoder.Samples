@@ -634,6 +634,9 @@ int main(int argc, char* argv[])
   	source_frames.push_back(buf);
   }
 
+  if(source_frames.empty())
+    return fprintf(stderr, "the footage is too small, no source frame(s) are loaded"), E_OUTOFMEMORY;
+
   C_FileWriter *pFileWriter = new C_FileWriter(outf, true, source_frames.size());
   hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
   if(FAILED(hr)) return hr;
