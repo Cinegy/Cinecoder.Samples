@@ -175,6 +175,9 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
+  if(0 == strcmp(s, "P016")) return CCF_P016;
+  if(0 == strcmp(s, "YUV444")) return CCF_YUV444;
+  if(0 == strcmp(s, "YUV444_16")) return CCF_YUV444_16BIT;
   if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
   return (CC_COLOR_FMT)-1;
 }
@@ -205,8 +208,9 @@ int main(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#]");
+    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#]");
     puts("Where the <codec> is one of the following:");
+    puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
 	if(g_CudaEnabled)
 	{
@@ -230,7 +234,7 @@ int main(int argc, char* argv[])
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
 //#endif
-    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
+    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
     return 1;
   }
 
@@ -252,6 +256,12 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_DanielVideoEncoder;
     clsidDec = CLSID_CC_DanielVideoDecoder; 
     strEncName = "Daniel2"; 
+  }
+  if(0 == strcmp(argv[1], "DMMY"))
+  { 
+    clsidEnc = CLSID_CC_DmmyVideoEncoder;
+    clsidDec = CLSID_CC_DmmyVideoDecoder; 
+    strEncName = "Dmmy"; 
   }
 
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDA"))
@@ -397,6 +407,8 @@ int main(int argc, char* argv[])
   double TargetFps = 0;
   int EncDeviceID = -2, DecDeviceID = -2;
   int NumThreads = 0;
+  size_t ThreadsAffinityMask = 0;
+  int ThreadsPriority = 0;
 
   for(int i = 5; i < argc; i++)
   {
@@ -439,6 +451,14 @@ int main(int argc, char* argv[])
     else if(0 == strncmp(argv[i], "/numthreads=", 12))
     {
  	  NumThreads = atoi(argv[i] + 12);
+    }
+    else if(0 == strncmp(argv[i], "/affinity=", 10))
+    {
+ 	  ThreadsAffinityMask = atoi(argv[i] + 10);
+    }
+    else if(0 == strncmp(argv[i], "/priority=", 10))
+    {
+ 	  ThreadsPriority = atoi(argv[i] + 10);
     }
 
     else
@@ -498,6 +518,36 @@ int main(int argc, char* argv[])
       fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
 
     else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsAffinityMask != 0)
+  {
+    fprintf(stderr, "Setting up specified threads affinity mask = %zx for the encoder: ", ThreadsAffinityMask);
+
+    com_ptr<ICC_ThreadsAffinityProp> pTAP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsAffinityProp, (void**)&pTAP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsAffinityProp interface found\n");
+
+    else if(FAILED(hr = pTAP->put_ThreadsAffinity(ThreadsAffinityMask)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsPriority != 0)
+  {
+    fprintf(stderr, "Setting up specified threads priority = %x for the encoder: ", ThreadsPriority);
+
+    com_ptr<ICC_ThreadsPriorityProp> pTPP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsPriorityProp, (void**)&pTPP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsPriorityProp interface found\n");
+
+    else if(FAILED(hr = pTPP->put_ThreadsPriority((CC_PRIORITY)ThreadsPriority)))
       return fprintf(stderr, "FAILED\n"), hr;
 
     fprintf(stderr, "OK\n");
@@ -576,6 +626,12 @@ int main(int argc, char* argv[])
 
   //__declspec(align(32)) static BYTE buffer[];
   size_t uncompressed_frame_size = size_t(frame_pitch) * frame_size.cy;
+
+  if(cFormat == CCF_NV12 || cFormat == CCF_P016)
+    uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cFormat == CCF_YUV444 || cFormat == CCF_YUV444_16BIT)
+    uncompressed_frame_size = uncompressed_frame_size * 3;
+  
   printf("Frame size: %dx%d, pitch=%d, bytes=%zd\n", frame_size.cx, frame_size.cy, frame_pitch, uncompressed_frame_size);
 
   BYTE *read_buffer = (BYTE*)mem_alloc(MEM_SYSTEM, uncompressed_frame_size);
@@ -613,6 +669,9 @@ int main(int argc, char* argv[])
 
   	source_frames.push_back(buf);
   }
+
+  if(source_frames.empty())
+    return fprintf(stderr, "the footage is too small, no source frame(s) are loaded"), E_OUTOFMEMORY;
 
   C_FileWriter *pFileWriter = new C_FileWriter(outf, true, source_frames.size());
   hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
@@ -748,6 +807,36 @@ int main(int argc, char* argv[])
     fprintf(stderr, "OK\n");
   }
 
+  if(ThreadsAffinityMask != 0)
+  {
+    fprintf(stderr, "Setting up specified threads affinity mask = %zx for the decoder: ", ThreadsAffinityMask);
+
+    com_ptr<ICC_ThreadsAffinityProp> pTAP;
+
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsAffinityProp, (void**)&pTAP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsAffinityProp interface found\n");
+
+    else if(FAILED(hr = pTAP->put_ThreadsAffinity(ThreadsAffinityMask)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsPriority != 0)
+  {
+    fprintf(stderr, "Setting up specified threads priority = %x for the decoder: ", ThreadsPriority);
+
+    com_ptr<ICC_ThreadsPriorityProp> pTPP;
+
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsPriorityProp, (void**)&pTPP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsPriorityProp interface found\n");
+
+    else if(FAILED(hr = pTPP->put_ThreadsPriority((CC_PRIORITY)ThreadsPriority)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
   if(DecDeviceID < -1 && EncDeviceID >= -1)
     DecDeviceID = EncDeviceID;
 
@@ -782,6 +871,11 @@ int main(int argc, char* argv[])
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
+  if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
+    uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
+    uncompressed_frame_size = uncompressed_frame_size * 3;
+  
   BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
@@ -795,12 +889,16 @@ int main(int argc, char* argv[])
   else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
     fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
 
-  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, pPsnrCalc, source_frames[0]));
+  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, dec_frame_pitch, pPsnrCalc, source_frames[0]));
   if(FAILED(hr)) return hr;
 
   com_ptr<ICC_ProcessDataPolicyProp> pPDP;
   if(SUCCEEDED(pDecoder->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPDP)))
-    pPDP->put_ProcessDataPolicy(CC_PDP_PARSED_DATA);
+  {
+    printf("Decoder has ICC_ProcessDataPolicyProp interface, using PARSED_DATA policy.\n");
+    if(FAILED(hr = pPDP->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
+      return fprintf(stderr, "Failed to set up PARSED_DATA policy"), hr;
+  }
 
   com_ptr<ICC_DanielVideoDecoder_CUDA> pCudaDec;
   if(SUCCEEDED(pDecoder->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCudaDec)))

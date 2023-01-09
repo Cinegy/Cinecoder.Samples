@@ -9,16 +9,18 @@ class C_DummyWriter : public ICC_DataReadyCallback
   CC_SIZE       m_szFrame;
   DWORD         m_cbFrameBytes;
   CC_COLOR_FMT  m_Format;
-  int		m_FrameNo;
+  int           m_pitch;
+  int		    m_FrameNo;
 
   com_ptr<ICC_VideoQualityMeter> m_pPsnrCalc;
   BYTE         *m_pRefBuffer;
 
 public:
-  C_DummyWriter(CC_COLOR_FMT fmt, BYTE *buffer, int bufsize, ICC_VideoQualityMeter *pPsnrCalc, BYTE *pRefBuffer) 
+  C_DummyWriter(CC_COLOR_FMT fmt, BYTE *buffer, int bufsize, int pitch, ICC_VideoQualityMeter *pPsnrCalc, BYTE *pRefBuffer)
   : m_Format(fmt)
   , m_pBuffer(buffer)
   , m_cbFrameBytes(bufsize)
+  , m_pitch(pitch)
   , m_FrameNo(0)
   , m_pPsnrCalc(pPsnrCalc)
   , m_pRefBuffer(pRefBuffer)
@@ -78,7 +80,7 @@ public:
     if(m_Format != CCF_UNKNOWN)
     {
       DWORD dwBytesWrote = 0;
-      if(FAILED(hr = spProducer->GetFrame(m_Format, m_pBuffer, m_cbFrameBytes, 0, &dwBytesWrote)))
+      if(FAILED(hr = spProducer->GetFrame(m_Format, m_pBuffer, m_cbFrameBytes, m_pitch, &dwBytesWrote)))
         return hr;
 #if 0
       if(m_FrameNo == 0)
@@ -135,8 +137,8 @@ public:
         if(SUCCEEDED(hr))
         {
           hr = m_pPsnrCalc->Measure(CC_VQM_PSNR, m_szFrame, m_Format, 
-								    pBuffer   , m_cbFrameBytes, 0,
-								    pRefBuffer, m_cbFrameBytes, 0,
+								    pBuffer   , m_cbFrameBytes, m_pitch,
+								    pRefBuffer, m_cbFrameBytes, m_pitch,
 								    &psnr);
 		}
 

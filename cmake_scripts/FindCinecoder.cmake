@@ -44,33 +44,37 @@ if(NREPOSITORY_PATH AND NPACKAGE_VERSION)
 	)
 
 	if(APPLE)
-		set(Cinecoder_LIBRARY_DIRS
-			"${Cinecoder_ROOT_DIR}/runtimes/osx-x64/native/release/"
-		)
 	
+		if (AARCH64 OR ARM)
+		    set(Cinecoder_LIBRARY_DIRS "${Cinecoder_ROOT_DIR}/runtimes/osx-arm64/native/release/")
+		else()
+		    set(Cinecoder_LIBRARY_DIRS "${Cinecoder_ROOT_DIR}/runtimes/osx-x64/native/release/" )
+		endif()
+
+		set(Cinecoder_LIBRARIES "${Cinecoder_LIBRARY_DIRS}libCinecoder.dylib")
+		
 	elseif(UNIX)
 
 		if (AARCH64 OR ARM)
 			if (ANDROID)
-				set(Cinecoder_LIBRARY_DIRS
-					"${Cinecoder_ROOT_DIR}/runtimes/android-arm64/native/release/"
-				)
+				set(Cinecoder_LIBRARY_DIRS "${Cinecoder_ROOT_DIR}/runtimes/android-arm64/native/release/" )
 			else()
-				set(Cinecoder_LIBRARY_DIRS
-					"${Cinecoder_ROOT_DIR}/runtimes/linux-arm64/native/release/"
-				)
+				set(Cinecoder_LIBRARY_DIRS "${Cinecoder_ROOT_DIR}/runtimes/linux-arm64/native/release/" )
 			endif()
 		else()	
-			set(Cinecoder_LIBRARY_DIRS
-				"${Cinecoder_ROOT_DIR}/runtimes/linux-x64/native/release/"
-			)
+			set(Cinecoder_LIBRARY_DIRS "${Cinecoder_ROOT_DIR}/runtimes/linux-x64/native/release/" )
 		endif()
+
+		set(Cinecoder_LIBRARIES "${Cinecoder_LIBRARY_DIRS}libCinecoder.so")
 
 	endif()
 
-	find_library(Cinecoder_LIBRARIES NAME  Cinecoder
-	                                 PATHS ${Cinecoder_LIBRARY_DIRS}
-	)
+#	find_library(Cinecoder_LIBRARIES NAME  Cinecoder
+#	                                 PATHS ${Cinecoder_LIBRARY_DIRS}
+#	)
+
+	message("LIBDIR: ${Cinecoder_LIBRARY_DIRS}")
+	message("FOUND: ${Cinecoder_LIBRARIES}")
 
 	find_library(Cinecoder_D2cudalib_LIBRARY NAME  d2cudalib
 	                                         PATHS ${Cinecoder_LIBRARY_DIRS}
