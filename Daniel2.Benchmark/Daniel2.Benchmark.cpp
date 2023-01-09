@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#]");
+    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#]");
     puts("Where the <codec> is one of the following:");
     puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
@@ -379,6 +379,8 @@ int main(int argc, char* argv[])
   double TargetFps = 0;
   int EncDeviceID = -2, DecDeviceID = -2;
   int NumThreads = 0;
+  size_t ThreadsAffinityMask = 0;
+  int ThreadsPriority = 0;
 
   for(int i = 5; i < argc; i++)
   {
@@ -421,6 +423,14 @@ int main(int argc, char* argv[])
     else if(0 == strncmp(argv[i], "/numthreads=", 12))
     {
  	  NumThreads = atoi(argv[i] + 12);
+    }
+    else if(0 == strncmp(argv[i], "/affinity=", 10))
+    {
+ 	  ThreadsAffinityMask = atoi(argv[i] + 10);
+    }
+    else if(0 == strncmp(argv[i], "/priority=", 10))
+    {
+ 	  ThreadsPriority = atoi(argv[i] + 10);
     }
 
     else
@@ -472,6 +482,36 @@ int main(int argc, char* argv[])
       fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
 
     else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsAffinityMask != 0)
+  {
+    fprintf(stderr, "Setting up specified threads affinity mask = %zx for the encoder: ", ThreadsAffinityMask);
+
+    com_ptr<ICC_ThreadsAffinityProp> pTAP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsAffinityProp, (void**)&pTAP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsAffinityProp interface found\n");
+
+    else if(FAILED(hr = pTAP->put_ThreadsAffinity(ThreadsAffinityMask)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsPriority != 0)
+  {
+    fprintf(stderr, "Setting up specified threads priority = %x for the encoder: ", ThreadsPriority);
+
+    com_ptr<ICC_ThreadsPriorityProp> pTPP;
+
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_ThreadsPriorityProp, (void**)&pTPP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsPriorityProp interface found\n");
+
+    else if(FAILED(hr = pTPP->put_ThreadsPriority((CC_PRIORITY)ThreadsPriority)))
       return fprintf(stderr, "FAILED\n"), hr;
 
     fprintf(stderr, "OK\n");
@@ -706,6 +746,36 @@ int main(int argc, char* argv[])
       fprintf(stderr, "NAK. No ICC_ThreadsCountProp interface found\n");
 
     else if(FAILED(hr = pTCP->put_ThreadsCount(NumThreads)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsAffinityMask != 0)
+  {
+    fprintf(stderr, "Setting up specified threads affinity mask = %zx for the decoder: ", ThreadsAffinityMask);
+
+    com_ptr<ICC_ThreadsAffinityProp> pTAP;
+
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsAffinityProp, (void**)&pTAP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsAffinityProp interface found\n");
+
+    else if(FAILED(hr = pTAP->put_ThreadsAffinity(ThreadsAffinityMask)))
+      return fprintf(stderr, "FAILED\n"), hr;
+
+    fprintf(stderr, "OK\n");
+  }
+
+  if(ThreadsPriority != 0)
+  {
+    fprintf(stderr, "Setting up specified threads priority = %x for the decoder: ", ThreadsPriority);
+
+    com_ptr<ICC_ThreadsPriorityProp> pTPP;
+
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_ThreadsPriorityProp, (void**)&pTPP)))
+      fprintf(stderr, "NAK. No ICC_ThreadsPriorityProp interface found\n");
+
+    else if(FAILED(hr = pTPP->put_ThreadsPriority((CC_PRIORITY)ThreadsPriority)))
       return fprintf(stderr, "FAILED\n"), hr;
 
     fprintf(stderr, "OK\n");
