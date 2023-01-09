@@ -850,7 +850,11 @@ int main(int argc, char* argv[])
 
   com_ptr<ICC_ProcessDataPolicyProp> pPDP;
   if(SUCCEEDED(pDecoder->QueryInterface(IID_ICC_ProcessDataPolicyProp, (void**)&pPDP)))
-    pPDP->put_ProcessDataPolicy(CC_PDP_PARSED_DATA);
+  {
+    printf("Decoder has ICC_ProcessDataPolicyProp interface, using PARSED_DATA policy.\n");
+    if(FAILED(hr = pPDP->put_ProcessDataPolicy(CC_PDP_PARSED_DATA)))
+      return fprintf(stderr, "Failed to set up PARSED_DATA policy"), hr;
+  }
 
   com_ptr<ICC_DanielVideoDecoder_CUDA> pCudaDec;
   if(SUCCEEDED(pDecoder->QueryInterface(IID_ICC_DanielVideoDecoder_CUDA, (void**)&pCudaDec)))
