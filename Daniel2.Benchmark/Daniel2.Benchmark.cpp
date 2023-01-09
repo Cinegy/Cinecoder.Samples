@@ -182,6 +182,7 @@ int main(int argc, char* argv[])
   {
     puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#]");
     puts("Where the <codec> is one of the following:");
+    puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
 	if(g_CudaEnabled)
 	{
@@ -227,6 +228,12 @@ int main(int argc, char* argv[])
     clsidEnc = CLSID_CC_DanielVideoEncoder;
     clsidDec = CLSID_CC_DanielVideoDecoder; 
     strEncName = "Daniel2"; 
+  }
+  if(0 == strcmp(argv[1], "DMMY"))
+  { 
+    clsidEnc = CLSID_CC_DmmyVideoEncoder;
+    clsidDec = CLSID_CC_DmmyVideoDecoder; 
+    strEncName = "Dmmy"; 
   }
 
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDA"))
