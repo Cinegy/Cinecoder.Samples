@@ -51,7 +51,19 @@ public:
     com_ptr<ICC_VideoProducer> spProducer;
     if(FAILED(hr = pUnk->QueryInterface(IID_ICC_VideoProducer, (void**)&spProducer)))
       return hr;
-
+#ifdef	USE_CUDA_DRV_API
+	com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+	hr = spProducer->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
+	if (SUCCEEDED(hr))
+	{
+		CUcontext cuContext = nullptr;
+		hr = pCudaCtxProp->get_CudaContext((CC_PVOID*)&cuContext);
+		if (FAILED(hr)) return hr;
+		auto err = cuCtxSetCurrent(cuContext);
+		if (!err)
+			fprintf(stderr, "cuCtxSetCurrent() error %d\n", err);
+	}
+#endif
     if(m_FrameNo == 0)
     {
       g_DecoderTimeFirstFrameOut = system_clock::now();
@@ -98,15 +110,25 @@ public:
 		  }
 		  else
 		  {
-		    auto err = cudaMemcpy(pBuffer   , m_pBuffer   , m_cbFrameBytes, cudaMemcpyDeviceToHost);
+#ifdef	USE_CUDA_DRV_API
+			auto err = cuMemcpyDtoH(pBuffer, (CUdeviceptr)m_pBuffer, m_cbFrameBytes);
+			if (!err)
+				err = cuMemcpyDtoH(pRefBuffer, (CUdeviceptr)m_pRefBuffer, m_cbFrameBytes);
+			if (err)
+			{
+				fprintf(stderr, "cuMemcpyDtoH() error %d\n", err);
+				hr = E_UNEXPECTED;
+			}
+#else
+		    auto err = cudaMemcpy(pBuffer, m_pBuffer, m_cbFrameBytes, cudaMemcpyDeviceToHost);
 		    if(!err) 
 		    	err = cudaMemcpy(pRefBuffer, m_pRefBuffer, m_cbFrameBytes, cudaMemcpyDeviceToHost);
-
 		    if(err)
 		    {
       			fprintf(stderr, "cudaMemcpy(cudaMemcpyDeviceToHost) error %d\n", err);
       			hr = E_UNEXPECTED;
 			}
+#endif
 		  }
 		}
 

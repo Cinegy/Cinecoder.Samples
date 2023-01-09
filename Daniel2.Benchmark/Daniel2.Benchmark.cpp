@@ -13,9 +13,6 @@
 using namespace std::chrono;
 using namespace std::chrono_literals;
 
-#include "../common/cuda_dyn/cuda_dyn_load.h"
-//#include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
-
 #include <Cinecoder_h.h>
 #include <Cinecoder_i.c>
 
@@ -33,7 +30,14 @@ using namespace std::chrono_literals;
 #include "../common/c_unknown.h"
 #include "../common/conio.h"
 #include "../common/cpu_load_meter.h"
+
+//#define USE_CUDA_DRV_API
+
+#ifdef USE_CUDA_DRV_API
+#include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
+#else
 #include "../common/cuda_dyn/cuda_dyn_load.h"
+#endif
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
@@ -73,8 +77,11 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   if(type == MEM_PINNED)
   {
     void *ptr = nullptr;
+#ifdef	USE_CUDA_DRV_API
+	auto err = cuMemAllocHost(&ptr, size);
+#else
     auto err = cudaMallocHost(&ptr, size);
-	//auto err = cuMemAllocHost(&ptr, size);
+#endif
     if(err) fprintf(stderr, "CUDA error %d\n", err);
     return ptr;
   }
@@ -83,29 +90,33 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   {
     printf("Using CUDA GPU memory: %zd byte(s) on Device %d\n", size, device);
 
+#ifdef	USE_CUDA_DRV_API
+	CUdevice cuDevice;
+	CUcontext cuContext = nullptr;
+
+	auto err = cuDeviceGet(&cuDevice, 0);
+	if (err) return fprintf(stderr, "cuDeviceGet() error %d\n", err), nullptr;
+
+	err = cuDevicePrimaryCtxRetain(&cuContext, cuDevice);
+	if (err) return fprintf(stderr, "cuDevicePrimaryCtxRetain() error %d\n", err), nullptr;
+
+	err = cuCtxSetCurrent(cuContext);
+	if (err) return fprintf(stderr, "cuCtxSetCurrent() error %d\n", err), nullptr;
+#else
     int old_device;
     auto err = cudaGetDevice(&old_device);
     if(err)
       return fprintf(stderr, "cudaGetDevice() error %d\n", err), nullptr;
 
-	//CUdevice cuDevice;
-	//CUcontext cuContext = nullptr;
-
-	//auto err = cuDeviceGet(&cuDevice, 0);
-	//if (err) return fprintf(stderr, "cuDeviceGet() error %d\n", err), nullptr;
-
-	//err = cuDevicePrimaryCtxRetain(&cuContext, cuDevice);
-	//if (err) return fprintf(stderr, "cuDevicePrimaryCtxRetain() error %d\n", err), nullptr;
-
-	//err = cuCtxSetCurrent(cuContext);
-	//if (err) return fprintf(stderr, "cuCtxSetCurrent() error %d\n", err), nullptr;
-
     if(device != old_device && (err = cudaSetDevice(device)) != 0)
       return fprintf(stderr, "cudaSetDevice(%d) error %d\n", device, err), nullptr;
-
+#endif
     void *ptr = nullptr;
-  	err = cudaMalloc(&ptr, size);
-	//err = cuMemAlloc((CUdeviceptr*)&ptr, size);
+#ifdef	USE_CUDA_DRV_API
+	err = cuMemAlloc((CUdeviceptr*)&ptr, size);
+#else
+	err = cudaMalloc(&ptr, size);
+#endif
     if(err)
       return fprintf(stderr, "CUDA error %d\n", err), nullptr;
 
@@ -134,12 +145,20 @@ void mem_release(MemType type, void* ptr)
 
   if(type == MEM_PINNED)
   {
-    cudaFreeHost(ptr);
+#ifdef	USE_CUDA_DRV_API
+	cuMemFreeHost(ptr);
+#else
+	cudaFreeHost(ptr);
+#endif
   }
 
   if(type == MEM_GPU)
   {
+#ifdef	USE_CUDA_DRV_API
+	cuMemFree((CUdeviceptr)ptr);
+#else
   	cudaFree(ptr);
+#endif
   }
 }
 
@@ -167,23 +186,29 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
 int main(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
-  g_CudaEnabled = __InitCUDA() == 0;
+#ifdef	USE_CUDA_DRV_API
+  g_CudaEnabled = LoadCudaDrvApiLib() == 0;
 
-  //g_CudaEnabled = LoadCudaDrvApiLib() == 0;
+  CUcontext cuContext = nullptr;
 
-  //if (g_CudaEnabled)
-  //{
-	 // auto err = cuInit(0);
-	 // if (err)
-	 // {
-		//  fprintf(stderr, "cuInit() error %d\n", err);
-		//  g_CudaEnabled = false;
-	 // }
-  //}
+  if (g_CudaEnabled)
+  {
+	  auto err = cuInit(0);
+	  if (err)
+	  {
+		  fprintf(stderr, "cuInit() error %d\n", err);
+		  g_CudaEnabled = false;
+	  }
+	  err = cuDevicePrimaryCtxRetain(&cuContext, 0);
+	  err = cuCtxSetCurrent(cuContext);
+  }
+#else
+	g_CudaEnabled = __InitCUDA() == 0;
+#endif
 
   if(argc < 5)
   {
-    puts("Usage: intra_encoder <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#]");
+    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#]");
     puts("Where the <codec> is one of the following:");
     puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
@@ -474,7 +499,15 @@ int main(int argc, char* argv[])
 
   hr = pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder);
   if(FAILED(hr)) return hr;
-
+#ifdef	USE_CUDA_DRV_API
+  com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+  hr = pEncoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
+  if (SUCCEEDED(hr))
+  {
+	  hr = pCudaCtxProp->put_CudaContext(cuContext);
+	  if (FAILED(hr)) return hr;
+  }
+#endif
   if(NumThreads > 0)
   {
     fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ", NumThreads);
@@ -625,8 +658,11 @@ int main(int argc, char* argv[])
 
 	if (g_mem_type == MEM_GPU)
 	{
+#ifdef	USE_CUDA_DRV_API
+		cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
+#else
 		cudaMemcpy(buf, read_buffer, uncompressed_frame_size, cudaMemcpyHostToDevice);
-		//cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
+#endif
 	}
   	else
   	  memcpy(buf, read_buffer, uncompressed_frame_size);
@@ -747,7 +783,15 @@ int main(int argc, char* argv[])
   com_ptr<ICC_VideoDecoder> pDecoder;
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
-
+#ifdef	USE_CUDA_DRV_API
+  pCudaCtxProp = nullptr;
+  hr = pDecoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
+  if (SUCCEEDED(hr))
+  {
+	  hr = pCudaCtxProp->put_CudaContext(cuContext);
+	  if (FAILED(hr)) return hr;
+  }
+#endif
   if(NumThreads > 0)
   {
     fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ", NumThreads);
