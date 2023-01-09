@@ -156,6 +156,9 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
+  if(0 == strcmp(s, "P016")) return CCF_P016;
+  if(0 == strcmp(s, "YUV444")) return CCF_YUV444;
+  if(0 == strcmp(s, "YUV444_16")) return CCF_YUV444_16BIT;
   if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
   return (CC_COLOR_FMT)-1;
 }
@@ -206,7 +209,7 @@ int main(int argc, char* argv[])
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
 //#endif
-    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA' or 'NULL'");
+    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
     return 1;
   }
 
@@ -590,6 +593,12 @@ int main(int argc, char* argv[])
 
   //__declspec(align(32)) static BYTE buffer[];
   size_t uncompressed_frame_size = size_t(frame_pitch) * frame_size.cy;
+
+  if(cFormat == CCF_NV12 || cFormat == CCF_P016)
+    uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cFormat == CCF_YUV444 || cFormat == CCF_YUV444_16BIT)
+    uncompressed_frame_size = uncompressed_frame_size * 3;
+  
   printf("Frame size: %dx%d, pitch=%d, bytes=%zd\n", frame_size.cx, frame_size.cy, frame_pitch, uncompressed_frame_size);
 
   BYTE *read_buffer = (BYTE*)mem_alloc(MEM_SYSTEM, uncompressed_frame_size);
@@ -815,6 +824,11 @@ int main(int argc, char* argv[])
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
+  if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
+    uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
+    uncompressed_frame_size = uncompressed_frame_size * 3;
+  
   BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
