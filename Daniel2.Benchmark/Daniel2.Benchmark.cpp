@@ -842,7 +842,7 @@ int main(int argc, char* argv[])
   else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
     fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
 
-  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, pPsnrCalc, source_frames[0]));
+  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, dec_frame_pitch, pPsnrCalc, source_frames[0]));
   if(FAILED(hr)) return hr;
 
   com_ptr<ICC_ProcessDataPolicyProp> pPDP;
