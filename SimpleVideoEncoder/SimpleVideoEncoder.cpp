@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: video_encoder <profile.xml> <input_file.yuv> <color_format> <output_file>");
-    puts("Where <color_format> can be YUY2, UYVY, YUY2_10, UYVY_10");
+    puts("Usage: video_encoder <profile.xml> <input_file.raw> <color_format> <output_file>");
+    puts("Where <color_format> can be YUY2, UYVY, YUY2_10, UYVY_10, RGB32");
     return 1;
   }
 
@@ -78,6 +78,8 @@ int main(int argc, char* argv[])
     clsidVideoEncoder = CLSID_CC_H264VideoEncoder;
   else if(0 == strncmp(p+1, "AVCI", 4))
     clsidVideoEncoder = CLSID_CC_AVCIntraEncoder;
+  else if (0 == strncmp(p+1, "DanielCUDA", 10))
+	  clsidVideoEncoder = CLSID_CC_DanielVideoEncoder_CUDA;
   else if(0 == strncmp(p+1, "Daniel", 6))
     clsidVideoEncoder = CLSID_CC_DanielVideoEncoder;
   else
@@ -91,6 +93,7 @@ int main(int argc, char* argv[])
   else if(0 == stricmp(argv[3], "UYVY"))	color_fmt = CCF_UYVY;      
   else if(0 == stricmp(argv[3], "YUY2_10")) color_fmt = CCF_YUY2_10BIT;
   else if(0 == stricmp(argv[3], "UYVY_10")) color_fmt = CCF_UYVY_10BIT; 
+  else if(0 == stricmp(argv[3], "RGB32"))   color_fmt = CCF_RGB32;
   else return fprintf(stderr, "Unknown color format '%s'.\n", argv[3]), -3;
 
   // Initializing the Cinecoder ------------------------------------
@@ -143,11 +146,12 @@ int main(int argc, char* argv[])
   if(frame_size.cx == 1440) frame_size.cx = 1920;
 
   int bpp = 2 << int(color_fmt == CCF_YUY2_10BIT || color_fmt == CCF_UYVY_10BIT);
+  if(color_fmt == CCF_RGB32) bpp = 4;
   int pitch = frame_size.cx * bpp;
   int src_frame_size = pitch * frame_size.cy;
 
-  BYTE *yuv_buffer = (BYTE*)malloc(src_frame_size);
-  if(!yuv_buffer)
+  BYTE *input_buffer = (BYTE*)malloc(src_frame_size);
+  if(!input_buffer)
     return fprintf(stderr, "Memory allocation error for %d byte(s)", src_frame_size), E_OUTOFMEMORY;
 
   puts("");
@@ -157,10 +161,10 @@ int main(int argc, char* argv[])
 
   CC_ADD_VIDEO_FRAME_PARAMS vpar = { color_fmt, frame_size, pitch };
 
-  // Opening source YUV file --------------------------
+  // Opening source file --------------------------
   FILE *inpf = fopen(argv[2], "rb");
   if(inpf == NULL)
-    return fprintf(stderr, "Can't open the source YUV file %s", argv[2]), -2;
+    return fprintf(stderr, "Can't open the source file %s", argv[2]), -2;
 
   // Creating target file for compressed video --------
   FILE *outf = fopen(argv[4], "wb");
@@ -177,15 +181,15 @@ int main(int argc, char* argv[])
 
   for(;;)
   {
-    size_t ret_size = fread(yuv_buffer, 1, src_frame_size, inpf);
+    size_t ret_size = fread(input_buffer, 1, src_frame_size, inpf);
     
     if(ret_size != src_frame_size) 
       break;
 
     fprintf(stderr, "\rframe # %d", frame++);
 
-    //if(FAILED(hr = pVideoEncoder->AddFrame(color_fmt, yuv_buffer, src_frame_size, 0, NULL)))
-    if(FAILED(hr = pVideoEncoder->AddScaleFrame(yuv_buffer, src_frame_size, &vpar)))
+    //if(FAILED(hr = pVideoEncoder->AddFrame(color_fmt, input_buffer, src_frame_size, 0, NULL)))
+    if(FAILED(hr = pVideoEncoder->AddScaleFrame(input_buffer, src_frame_size, &vpar)))
       break;
 
     if(_kbhit() && _getch() == 27)
@@ -195,7 +199,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  free(yuv_buffer);
+  free(input_buffer);
 
   if(SUCCEEDED(hr)) hr = pVideoEncoder->Done(CC_TRUE);
 
