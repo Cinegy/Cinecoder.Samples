@@ -14,10 +14,10 @@ install:
 - sh: git submodule update --init --recursive
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "P2FfEGEN1gVwTg7aYaI2Hby7HAXdvXwnQBA6fILPC4j/QgQL4M4="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "P2FfEGEN1gVwTg7aYaI2Hby7HAXdvXwnQBA6fILPC4j/QgQL4M4="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "VtHevM+V1YfVhRsa0nhgKNY364Eb0ggWuVvIZJASX4sRav13iUs="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "VtHevM+V1YfVhRsa0nhgKNY364Eb0ggWuVvIZJASX4sRav13iUs="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "cHoEMvnd5VIkGIsmZKPsn6KZTTRVeAyN8RFOxFLfVGPSKv/MMM4="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "cHoEMvnd5VIkGIsmZKPsn6KZTTRVeAyN8RFOxFLfVGPSKv/MMM4="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "Gp/YYf7CQyFpVF6ukBDESRauZJ4NwoZrW1L07487W0PKP71o+ds="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "Gp/YYf7CQyFpVF6ukBDESRauZJ4NwoZrW1L07487W0PKP71o+ds="
 - cmd: nuget restore
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln
