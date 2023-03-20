@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.props')" />
   <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -101,11 +101,11 @@
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.targets'))" />
   </Target>
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" />
-  <Import Project="..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.11.1.39284-alpha\build\Cinecoder.targets')" />
+  <Import Project="..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.12.3.34388-alpha\build\Cinecoder.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
