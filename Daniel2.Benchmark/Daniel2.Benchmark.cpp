@@ -41,6 +41,7 @@ using namespace std::chrono_literals;
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
+bool g_bWaitAtExit = false;
 
 // variables used for encoder/decoder latency calculation
 static decltype(system_clock::now()) g_EncoderTimeFirstFrameIn, g_EncoderTimeFirstFrameOut;
@@ -182,8 +183,24 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   return (CC_COLOR_FMT)-1;
 }
 
+int main_impl(int argc, char* argv[]);
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[])
+//-----------------------------------------------------------------------------
+{
+	auto result = main_impl(argc, argv);
+
+	if (g_bWaitAtExit)
+	{
+		printf("Press any key to exit...");
+		_getch();
+	}
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+int main_impl(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
 #ifdef	USE_CUDA_DRV_API
@@ -476,7 +493,10 @@ int main(int argc, char* argv[])
     {
  	  ThreadsPriority = atoi(argv[i] + 10);
     }
-
+    else if(0 == strcmp(argv[i], "/wait"))
+    {
+	  g_bWaitAtExit = true;
+	}
     else
       return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
   }
