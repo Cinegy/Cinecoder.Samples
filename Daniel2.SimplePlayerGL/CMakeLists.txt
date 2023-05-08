@@ -8,6 +8,11 @@ find_package(GLUT   REQUIRED)
 #find_package(GLEW   REQUIRED)
 #find_package(OpenCL REQUIRED)
 
+if(APPLE)
+find_library(APPLICATION_SERVICES_LIBRARY ApplicationServices)
+#find_library(CORE_GRAPHICS_LIBRARY CoreGraphics)
+endif()
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -66,7 +71,15 @@ endif()
 set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl)
+
+#target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} ${GLUT_LIBRARY} pthread dl)
+
+if(NOT APPLE)
+target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} GLUT::GLUT pthread dl)
+else()
+#target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} GLUT::GLUT pthread dl ${APPLICATION_SERVICES_LIBRARY} ${CORE_GRAPHICS_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES} ${OPENGL_LIBRARY} ${OPENAL_LIBRARY} GLUT::GLUT pthread dl ${APPLICATION_SERVICES_LIBRARY})
+endif()
 
 if(CUDAConvertLib_FOUND)
 target_link_libraries(${PROJECT_NAME} ${CUDAConvertLib_LIBRARIES})
