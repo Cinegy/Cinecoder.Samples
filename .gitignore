@@ -255,3 +255,5 @@ _toolkits/
 !appveyor-tools/readme.md
 appveyor-tools/*
 *.mxf
+_Output
+_ROutput
