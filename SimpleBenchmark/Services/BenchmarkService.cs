@@ -15,13 +15,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using Cinecoder.Interop;
@@ -37,45 +31,31 @@ public class BenchmarkService : IHostedService
 {
     private readonly ILogger _logger;
     private readonly AppConfig _appConfig;
-    private readonly IHostApplicationLifetime _appLifetime;
     private CancellationToken _cancellationToken;
     private readonly Meter _metricsMeter = new($"Cinecoder.SimpleBenchmark.{nameof(BenchmarkService)}");
-    private int _framesLastSecond;
-    private readonly Histogram<int> _framesLastSecondHistogram;
-    private readonly ObservableGauge<int> _framesLastSecondGauge;
-
+    
     private const string LineBreak = "---------------------------------------------------------------------";
     private static bool _pendingExit;
-    
-    private const int WarmUpTime = 500;
-    private static bool _warmedUp;
     
     private static readonly DateTime StartTime = DateTime.UtcNow;
     private static readonly List<string> ConsoleLines = new(1024);
     private readonly CinecoderFactory _cinecoderFactory;
-    private ICC_Demultiplexer _demuxer;
-    private ICC_Decoder _decoder;
-    private int _videoPid = 0; 
-    private long _nextFrameDueTime = 0;
-    private long _totalFrames;
-
-
+    private long _nextFrameDueTime;
+    private int _totalFrames;
+    
     private static string _encoderString = string.Empty;
     private static string _encoderSettingsString = string.Empty;
 
     #region Constructor and IHostedService
 
-    public BenchmarkService(ILoggerFactory loggerFactory, IConfiguration configuration, IHostApplicationLifetime appLifetime)
+    public BenchmarkService(ILoggerFactory loggerFactory, IConfiguration configuration)
     {
         _logger = loggerFactory.CreateLogger<BenchmarkService>();
         _appConfig = configuration.Get<AppConfig>();
 
-        _appLifetime = appLifetime;
         _cinecoderFactory = new CinecoderFactory(loggerFactory.CreateLogger<CinecoderFactory>());
         _cinecoderFactory.Initialize();
 
-        _framesLastSecondHistogram = _metricsMeter.CreateHistogram<int>("_framesLastSecond","frames","Encoded frames measured in the last second (histogram)");
-        _framesLastSecondGauge = _metricsMeter.CreateObservableGauge<int>("_framesLastSecondGauge",() => _framesLastSecond, "frames","Encoded frames measured in last second");
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -127,12 +107,6 @@ public class BenchmarkService : IHostedService
 
         _logger.LogInformation("Logging stopped.");
     }
-
-    //private void CinecoderWorker()
-    //{
-    //    PrepareCinecoderPipeline();
-    //}
-
 
     private void EncodeFramesWorker()
     {
@@ -237,14 +211,12 @@ public class BenchmarkService : IHostedService
         }
 
         encoder.OutputCallback = videoPin;
-        muxer.OutputCallback = new MuxerCallback(_metricsMeter);
+        muxer.OutputCallback = new MuxerCallback(_logger,_cinecoderFactory, _metricsMeter);
         byte[] frameBuffer = null;
 
         var startDateTime = DateTime.UtcNow;
         _nextFrameDueTime = startDateTime.Ticks;
         var startTimeTicks = startDateTime.Ticks + TimeSpan.TicksPerMillisecond;
-        var fps = 0;
-        var lastFpsSecond = DateTime.UtcNow.TimeOfDay.Seconds;
 
         while (!_cancellationToken.IsCancellationRequested)
         {
@@ -264,23 +236,13 @@ public class BenchmarkService : IHostedService
                 }
 
                 _totalFrames++;
-                fps++;
                 if (!_appConfig.AsapMode)
                 {
                     _nextFrameDueTime = startTimeTicks + _totalFrames * TimeSpan.TicksPerSecond *
                         encoderSettings.FrameRate.denom / encoderSettings.FrameRate.num;
                 }
             }
-
-            if (lastFpsSecond != DateTime.UtcNow.Second)
-            {
-                _logger.LogDebug($"Produced {fps} frames in last second");
-                _framesLastSecondHistogram.Record(fps);
-                _framesLastSecond = fps;
-                fps = 0;
-                lastFpsSecond = DateTime.UtcNow.Second;
-            }
-
+            
             if (!_appConfig.AsapMode)
             {
                 Thread.Sleep(1);
@@ -304,23 +266,6 @@ public class BenchmarkService : IHostedService
         }
     }
 
-    private void PrepareCinecoderPipeline()
-    {
-        _demuxer = _cinecoderFactory.CreateInstanceByName<ICC_Demultiplexer>("TransportStreamDemultiplexer");
-
-        if (_demuxer != null)
-        {
-            _logger.LogInformation("Created demuxer");
-        }
-        else
-        {
-            _logger.LogCritical("OMG DEMUX DEATH");
-            return;
-        }
-
-        _demuxer.Init();
-
-    }
 
     #region ConsoleOutput
 
@@ -348,16 +293,7 @@ public class BenchmarkService : IHostedService
         ConsoleLines.Clear();
 
     }
-
-    private static void PrintClearLineToConsole()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            ConsoleLines.Add("\t"); //use a tab for a clear line, to ensure that an operation runs
-        }
-    }
-
-    // TODO: LK to clean up
+    
     private static void PrintToConsole(string message, params object[] arguments)
     {
         if (OperatingSystem.IsWindows())
@@ -366,8 +302,7 @@ public class BenchmarkService : IHostedService
             ConsoleLines.Add(string.Format(message, arguments));
         }
     }
-
-    // TODO: LK to clean up
+    
     private static void ClearCurrentConsoleLine()
     {
         if (OperatingSystem.IsWindows())

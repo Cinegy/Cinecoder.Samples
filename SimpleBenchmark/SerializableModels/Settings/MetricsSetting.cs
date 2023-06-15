@@ -27,6 +27,6 @@ namespace SimpleBenchmark.SerializableModels.Settings
 
         public string OpenTelemetryEndpoint { get; set; } = "http://localhost:4317";
 
-        public int OpenTelemetryPeriodicExportInterval { get; set; } = 10000;
+        public int OpenTelemetryPeriodicExportInterval { get; set; } = 1000;
     }
 }

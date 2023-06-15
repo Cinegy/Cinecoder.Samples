@@ -58,6 +58,7 @@ namespace SimpleBenchmark
         private static IHost _host;
         private static List<KeyValuePair<string,object>> _metricsTags = new();
         private static readonly Meter MetricsMeter = new("Cinecoder.SimpleBenchmark");
+        // ReSharper disable once NotAccessedField.Local
         private static readonly ObservableGauge<double> ServiceUptimeGauge;
         private static readonly DateTime StartTime = DateTime.UtcNow;
 
@@ -79,8 +80,9 @@ namespace SimpleBenchmark
         public static void Main(string[] args)
         {
             Console.CancelKeyPress += async delegate {
+                // ReSharper disable once PossibleNullReferenceException
                 await _host?.StopAsync();
-                await _host?.WaitForShutdownAsync();
+                await _host?.WaitForShutdownAsync()!;
             };
 
             Activity.DefaultIdFormat = ActivityIdFormat.W3C;
@@ -95,6 +97,7 @@ namespace SimpleBenchmark
             _metricsTags.Add(new KeyValuePair<string, object>("ProductVersion", Product.Version));
             _metricsTags.Add(new KeyValuePair<string, object>("OS", $"{Environment.OSVersion.Platform}({Environment.OSVersion.VersionString})"));
             
+
             try 
             {
                 _host = CreateHostBuilder(args, logger).Build();
@@ -117,7 +120,7 @@ namespace SimpleBenchmark
         [RequiresUnreferencedCode("Calls Microsoft.Extensions.Configuration.ConfigurationBinder.Get<T>()")]
         private static IHostBuilder CreateHostBuilder(string[] args, ILogger logger)
         {
-            var config = _configRoot.Get<AppConfig>();
+            var config = _configRoot.Get<AppConfig>() ?? new AppConfig();
             
             _metricsTags.Add(new KeyValuePair<string, object>("Ident", config.Ident));
 
@@ -136,7 +139,7 @@ namespace SimpleBenchmark
             
             return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(configHost => { configHost.AddConfiguration(_configRoot); })
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((_, services) =>
                 {
                     if (config.Metrics?.Enabled == true && !Sdk.SuppressInstrumentation)
                     {
@@ -191,7 +194,7 @@ namespace SimpleBenchmark
 
         private static ILogger InitializeLogger()
         {
-            var config = _configRoot.Get<AppConfig>();
+            var config = _configRoot.Get<AppConfig>() ?? new AppConfig();
 
             var logger = LogManager.Setup()
                 .LoadConfigurationFromSection(_configRoot)

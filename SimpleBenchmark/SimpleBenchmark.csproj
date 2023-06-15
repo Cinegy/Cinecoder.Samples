@@ -14,12 +14,18 @@
     <NoWarn>1701;1702;1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>../_Output</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>../_ROutput</OutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\common\cinecoder_license_string.cs" Link="cinecoder_license_string.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Cinecoder" Version="4.12.11.60573-alpha" />
     <PackageReference Include="Cinegy.Marshaling" Version="1.0.9.16934" />
@@ -34,8 +40,11 @@
     <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.5.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.5.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Universe.CpuUsage" Version="2.2.497.598" />
   </ItemGroup>
+
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
+
 </Project>
