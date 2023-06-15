@@ -19,7 +19,7 @@ namespace SimpleBenchmark.SerializableModels.Settings
 {
     public class AppConfig
     {
-        private bool _liveConsole = true;
+        private bool _liveConsole = false;
 
         public bool AsapMode { get; set; }
 

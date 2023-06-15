@@ -150,6 +150,9 @@ namespace SimpleBenchmark
                             builder
                                 .AddMeter("Cinecoder.SimpleBenchmark")
                                 .AddMeter($"Cinecoder.SimpleBenchmark.{nameof(BenchmarkService)}")
+                                .AddMeter("Cinegy.Marshaling.ComMarshaler")
+                                .AddMeter("Cinegy.Marshaling.ComCallback")
+                                .AddMeter("Cinegy.Marshaling.ComObject")
                                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(Product.TracingName, config.Ident, Product.Version,false, telemetryInstanceId.ToString()));
 
                             if (config.Metrics.ConsoleExporterEnabled)

@@ -3,15 +3,15 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["SimpleBenchmark.csproj", ""]
+COPY ["SimpleBenchmark/SimpleBenchmark.csproj", "SimpleBenchmark/"]
 
-RUN dotnet restore "SimpleBenchmark.csproj"
+RUN dotnet restore "SimpleBenchmark/SimpleBenchmark.csproj"
 COPY . .
 WORKDIR "/src/"
-RUN dotnet build "SimpleBenchmark.csproj" -c Release -o /app/build
+RUN dotnet build "SimpleBenchmark/SimpleBenchmark.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "SimpleBenchmark.csproj" -c Release --os linux -o /app/publish
+RUN dotnet publish "SimpleBenchmark/SimpleBenchmark.csproj" -c Release --os linux -o /app/publish
 
 FROM base AS final
 WORKDIR /app

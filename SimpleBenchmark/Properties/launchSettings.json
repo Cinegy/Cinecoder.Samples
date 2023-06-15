@@ -2,7 +2,7 @@
   "profiles": {
     "SimpleBenchmark": {
       "commandName": "Project",
-      "commandLineArgs": "--metrics:opentelemetryexporterenabled=true --metrics:opentelemetryendpoint=http://otel-local.cinegy.com "
+      "commandLineArgs": "--metrics:opentelemetryexporterenabled=true --metrics:opentelemetryendpoint=http://otel-local.cinegy.com --asapmode=true --usegpu=true"
     }
   }
 }
