@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using Cinecoder.Interop;
 using Cinegy.Marshaling.Extensions;
 using Microsoft.Extensions.Logging;
-using SimpleBenchmark.Extensions;
 
 namespace SimpleBenchmark.Cinecoder;
 
@@ -35,12 +34,9 @@ public class DecoderCallback : ICC_DataReadyCallback
         try
         {
             var videoProducer = pDataProducer?.As<ICC_VideoProducer>();
-
             if (videoProducer == null) return;
 
             var videoFrameInfo = videoProducer.GetVideoFrameInfo();
-            videoFrameInfo.Free();
-
             if (videoFrameInfo == null) return;
 
             if (_frameBufferPtr == IntPtr.Zero)
