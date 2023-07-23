@@ -63,7 +63,10 @@ public class CinecoderFactory : IDisposable, ICC_ErrorHandler
     {
         _logger?.LogDebug($"Creating instance of {typeof(T).Name} [{clsName}]");
 
-        return _classFactory.CreateInstanceByName(clsName).As<T>();
+        var instanceByName = _classFactory.CreateInstanceByName(clsName);
+        var result = instanceByName.As<T>();
+        instanceByName.Free();
+        return result;
     }
 
     public void Dispose()
