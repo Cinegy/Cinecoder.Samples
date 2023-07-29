@@ -19,10 +19,12 @@ using System.Diagnostics.Metrics;
 using System.Threading;
 using System.Threading.Tasks;
 using Cinecoder.Interop;
+using Cinegy.Marshaling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SimpleBenchmark.Cinecoder;
+using SimpleBenchmark.Extensions;
 using SimpleBenchmark.SerializableModels.Settings;
 
 namespace SimpleBenchmark.Services;
@@ -53,6 +55,7 @@ public class BenchmarkService : IHostedService
         _logger = loggerFactory.CreateLogger<BenchmarkService>();
         _appConfig = configuration.Get<AppConfig>();
 
+        ComMarshaler.SetLogger(loggerFactory.CreateLogger<ComMarshaler>());
         _cinecoderFactory = new CinecoderFactory(loggerFactory.CreateLogger<CinecoderFactory>());
         _cinecoderFactory.Initialize();
 
@@ -130,7 +133,6 @@ public class BenchmarkService : IHostedService
         }
 
         var encoderSettings = _cinecoderFactory.CreateInstanceByName<ICC_H264VideoEncoderSettings>(_encoderSettingsString);
-
         if (encoderSettings != null)
         {
             _logger.LogInformation($"Created {_encoderSettingsString} Cinecoder EncoderSettings");
@@ -248,7 +250,10 @@ public class BenchmarkService : IHostedService
                 Thread.Sleep(1);
             }
         }
-        
+
+        // This Free() call is important, otherwise JIT optimization will decrease counter after OutputCallback assignment
+        // so callback will never be called.
+        muxer.Free();
         Console.WriteLine("Finished!");
     }
 

@@ -152,9 +152,7 @@ public class MuxerCallback : ICC_ByteStreamCallback
 
         try
         {
-            var demuxerCallback = new DemuxerCallback(_logger, _videoPid, _decoder, _demuxer);
-            var callbackAsInterface = demuxerCallback.As<ICC_DemultiplexedDataCallbackExt>();
-            _demuxer.OutputCallback = callbackAsInterface;
+            _demuxer.OutputCallback = new DemuxerCallback(_logger, _videoPid, _decoder, _demuxer);
         }
         catch (Exception ex)
         {

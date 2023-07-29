@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="Cinecoder" Version="4.12.11.60573-alpha" />
-    <PackageReference Include="Cinegy.Marshaling" Version="1.0.12.52939" />
+    <PackageReference Include="Cinegy.Marshaling" Version="1.0.13.12724" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="NLog" Version="5.2.2" />
     <PackageReference Include="NLog.Extensions.Hosting" Version="5.3.2" />
