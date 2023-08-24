@@ -41,6 +41,7 @@ using namespace std::chrono_literals;
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
+bool g_bWaitAtExit = false;
 
 // variables used for encoder/decoder latency calculation
 static decltype(system_clock::now()) g_EncoderTimeFirstFrameIn, g_EncoderTimeFirstFrameOut;
@@ -182,8 +183,24 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   return (CC_COLOR_FMT)-1;
 }
 
+int main_impl(int argc, char* argv[]);
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[])
+//-----------------------------------------------------------------------------
+{
+	auto result = main_impl(argc, argv);
+
+	if (g_bWaitAtExit)
+	{
+		printf("Press any key to exit...");
+		_getch();
+	}
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+int main_impl(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
 #ifdef	USE_CUDA_DRV_API
@@ -233,6 +250,8 @@ int main(int argc, char* argv[])
     puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
+    puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
+    puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
 //#endif
     puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
     return 1;
@@ -371,6 +390,20 @@ int main(int argc, char* argv[])
     strEncName = "Intel QuickSync HEVC (SOFTWARE)";
     bLoadGpuCodecsPlugin = true;
   }
+  if(0 == strcmp(argv[1], "H264_IVPL"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder_IVPL; 
+    clsidDec = CLSID_CC_H264VideoDecoder_IVPL; 
+    strEncName = "Intel OneVPL H264"; 
+    bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "HEVC_IVPL"))
+  { 
+    clsidEnc = CLSID_CC_HEVCVideoEncoder_IVPL; 
+    clsidDec = CLSID_CC_HEVCVideoDecoder_IVPL; 
+    strEncName = "Intel OneVPL HEVC"; 
+    bLoadGpuCodecsPlugin = true;
+  }
   if(0 == strcmp(argv[1], "H264"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder; 
@@ -460,7 +493,10 @@ int main(int argc, char* argv[])
     {
  	  ThreadsPriority = atoi(argv[i] + 10);
     }
-
+    else if(0 == strcmp(argv[i], "/wait"))
+    {
+	  g_bWaitAtExit = true;
+	}
     else
       return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
   }
