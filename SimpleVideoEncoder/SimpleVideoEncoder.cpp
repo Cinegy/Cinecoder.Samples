@@ -11,9 +11,7 @@
 #include <tchar.h>
 
 #include <conio.h>
-#ifdef __LINUX__
 #include <malloc.h>
-#endif
 
 //#include <windows.h>
 
@@ -44,7 +42,7 @@ int main(int argc, char* argv[])
   if(argc < 5)
   {
     puts("Usage: video_encoder <profile.xml> <input_file.raw> <color_format> <output_file>");
-    puts("Where <color_format> can be YUY2, UYVY, YUY2_10, UYVY_10, RGB32");
+    puts("Where <color_format> can be YUY2, UYVY, YUY2_10, UYVY_10, RGB32, RGB64");
     return 1;
   }
 
@@ -94,6 +92,7 @@ int main(int argc, char* argv[])
   else if(0 == stricmp(argv[3], "YUY2_10")) color_fmt = CCF_YUY2_10BIT;
   else if(0 == stricmp(argv[3], "UYVY_10")) color_fmt = CCF_UYVY_10BIT; 
   else if(0 == stricmp(argv[3], "RGB32"))   color_fmt = CCF_RGB32;
+  else if(0 == stricmp(argv[3], "RGB64"))   color_fmt = CCF_RGB64;
   else return fprintf(stderr, "Unknown color format '%s'.\n", argv[3]), -3;
 
   // Initializing the Cinecoder ------------------------------------
@@ -147,6 +146,8 @@ int main(int argc, char* argv[])
 
   int bpp = 2 << int(color_fmt == CCF_YUY2_10BIT || color_fmt == CCF_UYVY_10BIT);
   if(color_fmt == CCF_RGB32) bpp = 4;
+  if(color_fmt == CCF_RGB64) bpp = 8;
+
   int pitch = frame_size.cx * bpp;
   int src_frame_size = pitch * frame_size.cy;
 
