@@ -50,6 +50,7 @@ private:
 	BUFFER_FORMAT m_outputBufferFormat;
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
+	CC_RATIONAL m_AspectRatio;
 
 	CC_FRAME_RATE m_FrameRate;
 	CC_CHROMA_FORMAT m_ChromaFormat;
@@ -102,6 +103,7 @@ public:
 	size_t GetImageHeight() { return m_height; }
 	IMAGE_FORMAT GetImageFormat() { return m_outputImageFormat; }
 	BUFFER_FORMAT GetBufferFormat() { return m_outputBufferFormat; }
+	CC_RATIONAL GetAspectRatio() { return m_AspectRatio; }
 
 	C_Block* MapFrame();
 	void  UnmapFrame(C_Block* pBlock);

@@ -44,6 +44,9 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
 
+	m_AspectRatio.num = 1;
+	m_AspectRatio.denom = 1;
+
 #if defined(__WIN32__)
 	m_pVideoDecD3D11 = nullptr;
 	m_pRender = nullptr;
@@ -654,6 +657,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	CC_COLOUR_DESCRIPTION		ColorCoefs = { CC_CPRIMS_UNKNOWN, CC_TXCHRS_UNKNOWN, CC_MCOEFS_UNKNOWN };
 	CC_FRAME_RATE				FrameRate = { 0 };
 	CC_SIZE						FrameSize = { 0 };
+	CC_RATIONAL					AspectRatio = { 0 };
 	CC_PICTURE_ORIENTATION		PictureOrientation = CC_PO_DEFAULT;
 	CC_FLOAT					QuantScale = 0;
 	CC_UINT						CodingNumber = 0;
@@ -671,6 +675,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 	hr = pVideoStreamInfo->get_FrameRate(&FrameRate); __check_hr
 	hr = pVideoStreamInfo->get_FrameSize(&FrameSize); __check_hr
+	hr = pVideoStreamInfo->get_AspectRatio(&AspectRatio); __check_hr
 	
 	com_ptr<ICC_VideoStreamInfoExt>	pVideoStreamInfoExt = nullptr;
 	if(FAILED(hr = pVideoStreamInfo->QueryInterface(IID_ICC_VideoStreamInfoExt, (void**)&pVideoStreamInfoExt)) || !pVideoStreamInfoExt)
@@ -833,6 +838,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 		m_width = FrameSize.cx; // get width
 		m_height = FrameSize.cy; // get height
+		m_AspectRatio = AspectRatio;
 
 		m_llTimeBase = 1; m_llDuration = 0;
 
@@ -936,11 +942,16 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		hr = pVideoProducer->IsFormatSupported(fmt, &bRes);
 		if (!bRes || hr != S_OK)
 		{
-			static bool err = true;
-			if (err)
+			fmt = CCF_B8G8R8A8; // last chance - try RGBA format
+			hr = pVideoProducer->IsFormatSupported(fmt, &bRes);
+			if (!bRes || hr != S_OK)
 			{
-				err = false;
-				return printf("IsFormatSupported failed! (error = 0x%x)\n", hr), hr;
+				static bool err = true;
+				if (err)
+				{
+					err = false;
+					return printf("IsFormatSupported failed! (error = 0x%x)\n", hr), hr;
+				}
 			}
 		}
 
