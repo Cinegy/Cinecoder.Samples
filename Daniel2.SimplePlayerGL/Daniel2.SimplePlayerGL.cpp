@@ -9,6 +9,8 @@ bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
 bool g_useQuickSync = false;
+bool g_useAMF = false;
+bool g_useNVDEC = false;
 bool g_useOpenCL = false;
 bool g_useDirectX11 = false;
 bool g_useModernOGL = false;
@@ -104,7 +106,9 @@ void printHelp(void)
 	printf("-opencl             enable OpenCL decoding (default: disable)\n");
 #endif
 #endif
-	//printf("-quicksync          enable QuickSync decoding (default: disable, PC only)\n");
+	printf("-quicksync          enable QuickSync H264/HEVC GPU decoding (default: disable)\n");
+	printf("-amf                enable AMF H264/HEVC GPU decoding (default: disable)\n");
+	printf("-nvdec              enable NVIDIA H264/HEVC GPU decoding (default: disable)\n");
 #if defined(__WIN32__)
 	printf("-d3d11 [adapter]   enable DirectX11 pipeline (default: OpenGL)\n");
 	printf("    any:            Any Graphics Adapter (without cuda)\n");
@@ -143,6 +147,8 @@ void printHelp(void)
 }
 
 ///////////////////////////////////////////////////////////////////////////
+
+// GPU decoding pipeline on NVIDIA: -cuda -cinecoderD3D11 -d3d11
 
 int main(int argc, char **argv)
 {
@@ -235,6 +241,16 @@ int main(int argc, char **argv)
 		g_useQuickSync = true; // use QuickSync decoder
 	}
 
+	if (checkCmdLineArg(argc, (const char**)argv, "amf"))
+	{
+		g_useAMF = true; // use AMF decoder
+	}	
+
+	if (checkCmdLineArg(argc, (const char**)argv, "nvdec"))
+	{
+		g_useNVDEC = true; // use AMF decoder
+	}
+
 	size_t gpuDevice = 1;
 #if defined(__WIN32__)
 	if (checkCmdLineArg(argc, (const char **)argv, "d3d11"))
@@ -321,8 +337,14 @@ int main(int argc, char **argv)
 	if (g_useCuda)
 		dec_params.type = VD_TYPE_CUDA;
 
-	//if (g_useQuickSync)
-	//	dec_params.type = VD_TYPE_QuickSync;
+	if (g_useQuickSync)
+		dec_params.type = VD_TYPE_QuickSync;
+
+	if (g_useAMF)
+		dec_params.type = VD_TYPE_AMF;
+
+	if (g_useNVDEC)
+		dec_params.type = VD_TYPE_NVDEC;
 
 #if defined(__WIN32__) && !defined(__USE_GLUT_RENDER__)
 	std::shared_ptr<BaseGPURender> render = nullptr; // pointer to render (OpenGL or DirectX11)

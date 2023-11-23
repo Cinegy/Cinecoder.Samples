@@ -70,7 +70,7 @@ int BaseGPURender::SetParameters(bool bVSync, bool bRotate, bool bMaxFPS)
 
 int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params, size_t gpuDevice)
 {
-	m_bUseGPU = dec_params.type & VD_TYPE_CUDA ? true : false;
+	m_bUseGPU = dec_params.type == VD_TYPE_CUDA ? true : false;
 
 	m_decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
 
@@ -136,8 +136,8 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	unsigned int image_width_ = image_width;
 	unsigned int image_height_ = (unsigned int)((float)image_width_ * (float)AspectRatio.denom / (float)AspectRatio.num);
 
-	int iWinW = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	int iWinH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	int iWinW = GetSystemMetrics(SM_CXSCREEN);
+	int iWinH = GetSystemMetrics(SM_CYSCREEN);
 
 	float fKoeffDiv = (float)image_width_ / ((float)iWinW / 3.f);
 	// Correction start of window size using global height of monitor

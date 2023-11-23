@@ -12,7 +12,9 @@ enum VIDEO_DECODER_TYPE
 	
 	VD_TYPE_CPU = 0,		// CPU
 	VD_TYPE_CUDA,			// NVIVIA GPU(CUDA)
+	VD_TYPE_NVDEC,			// NVIVIA GPU(NVDEC)
 	VD_TYPE_QuickSync,		// Intel GPU(QuickSync)
+	VD_TYPE_AMF,			// AMD GPU(AMF)
 	VD_TYPE_OpenCL			// OpenCL
 };
 

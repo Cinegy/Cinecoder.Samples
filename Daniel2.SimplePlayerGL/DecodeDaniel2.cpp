@@ -369,6 +369,8 @@ int DecodeDaniel2::CreateDecoder()
 
 	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
 	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
+	bool useAMF = m_dec_params.type == VD_TYPE_AMF ? true : false;
+	bool useNVDEC = m_dec_params.type == VD_TYPE_NVDEC ? true : false;
 
 	Cinecoder_CreateClassFactory((ICC_ClassFactory**)&m_piFactory); // get Factory
 	if (FAILED(hr)) 
@@ -440,11 +442,13 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "AVC1";
 
-#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
 #endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
-			clsidDecoder = useQuickSync ? CLSID_CC_H264VideoDecoder_IMDK : clsidDecoder;
+			if (useQuickSync) clsidDecoder = CLSID_CC_H264VideoDecoder_IMDK;
+			if (useAMF) clsidDecoder = CLSID_CC_H264VideoDecoder_AMF;
+			if (useNVDEC) clsidDecoder = CLSID_CC_H264VideoDecoder_NV;
 			m_strStreamType = "H264";
 			bIntraFormat = false;
 			break;
@@ -454,11 +458,14 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "HVC1";
 
-#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11) / GetFrame failed for only GPU
+#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
 #endif
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
+			if (useQuickSync) clsidDecoder = CLSID_CC_HEVCVideoDecoder_IMDK;
+			if (useAMF) clsidDecoder = CLSID_CC_HEVCVideoDecoder_AMF;
+			if (useNVDEC) clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
 			m_strStreamType = "HEVC";
 			bIntraFormat = false;
 			break;
@@ -478,7 +485,7 @@ int DecodeDaniel2::CreateDecoder()
 	if (m_bUseCuda && !useCuda)
 	{
 		//m_bUseCudaHost = true; // use CUDA-pipeline with host memory
-		printf("Error: cannot support GPU-decoding for this format!\n");
+		printf("Error: cannot support GPU-decoding for this format or pipe!\n");
 		return -1; // if not GPU-decoder -> exit
 	}
 
@@ -866,6 +873,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			{
 				if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 				{
+					if (m_dec_params.type == VD_TYPE_QuickSync ||
+						m_dec_params.type == VD_TYPE_AMF ||
+						m_dec_params.type == VD_TYPE_NVDEC)
+						return 0;
+
 					//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
 					if (m_bUseCuda && !m_bUseCudaHost) return 0; // Init GPU-decoder failed -> exit
 				}
