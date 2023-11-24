@@ -179,14 +179,23 @@ object BuildWin : BuildType({
             }
             param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
         }
-        msBuild {
+         dotnetMsBuild {
             name = "(build) Samples Solution"
-            path = "Cinecoder.Samples.sln"
-            version = MSBuildStep.MSBuildVersion.V14_0
-            toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
-            platform = MSBuildStep.Platform.x64
-            args = "-p:Configuration=Release"
+            projects = "Cinecoder.Samples.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            targets = "Build"
+            configuration = "Release"
+            args = "/p:Platform=x64"
+            param("dotNetCoverage.dotCover.home.path", "%teamcity.tool.JetBrains.dotCover.CommandLineTools.DEFAULT%")
         }
+        // msBuild {
+        //     name = "(build) Samples Solution"
+        //     path = "Cinecoder.Samples.sln"
+        //     version = MSBuildStep.MSBuildVersion.V14_0
+        //     toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
+        //     platform = MSBuildStep.Platform.x64
+        //     args = "-p:Configuration=Release"
+        // }
     }
 })
 
