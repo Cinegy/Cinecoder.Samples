@@ -1,15 +1,10 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.ui.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.MSBuildStep
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.exec
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.msBuild
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.nuGetInstaller
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.powerShell
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.projectFeatures.dockerRegistry
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 
 version = "2020.1"
 
@@ -179,14 +174,22 @@ object BuildWin : BuildType({
             }
             param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
         }
-        msBuild {
+         dotnetMsBuild {
             name = "(build) Samples Solution"
-            path = "Cinecoder.Samples.sln"
-            version = MSBuildStep.MSBuildVersion.V14_0
-            toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
-            platform = MSBuildStep.Platform.x64
-            args = "-p:Configuration=Release"
+            projects = "Cinecoder.Samples.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            targets = "Build"
+            configuration = "Release"
+            args = "/p:Platform=x64"
         }
+        // msBuild {
+        //     name = "(build) Samples Solution"
+        //     path = "Cinecoder.Samples.sln"
+        //     version = MSBuildStep.MSBuildVersion.V14_0
+        //     toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
+        //     platform = MSBuildStep.Platform.x64
+        //     args = "-p:Configuration=Release"
+        // }
     }
 })
 
