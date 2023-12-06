@@ -240,6 +240,14 @@ object BuildLinux : BuildType({
         }
     }
 
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
+        }
+    }
+    
     dependencies {
         snapshot(Version) {
             reuseBuilds = ReuseBuilds.NO
@@ -292,6 +300,14 @@ object BuildLinuxArm64 : BuildType({
         vcs {
             enabled = false
             branchFilter = ""
+        }
+    }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
         }
     }
 
