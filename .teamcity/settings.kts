@@ -264,7 +264,7 @@ object BuildLinuxArm64 : BuildType({
     // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
     if(!isIntegrationBuild)
     { 
-        artifactRules = """README.md => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
     vcs {
