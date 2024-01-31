@@ -319,6 +319,7 @@ object BuildLinuxArm64 : BuildType({
 	
 	requirements {
 		doesNotExist("tools.xcode.home")
+		contains("docker.server.osType", "linux")
 	}
 })
 
