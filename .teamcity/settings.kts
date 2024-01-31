@@ -279,6 +279,8 @@ object BuildLinuxArm64 : BuildType({
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
         exec {
             name = "(patch) Inject license"
@@ -286,6 +288,8 @@ object BuildLinuxArm64 : BuildType({
             workingDir = "common"
             arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
         }
         exec {
             name = "(build) Samples Script"
@@ -293,6 +297,8 @@ object BuildLinuxArm64 : BuildType({
             path = "./build_samples-linux-arm64.sh"
             arguments = "Release --platform=linux/arm64"            
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
     }
 
