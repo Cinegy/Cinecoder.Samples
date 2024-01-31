@@ -139,6 +139,10 @@ object BuildWin : BuildType({
     common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
     """.trimIndent()
 
+	params {
+        password("LICENSE_KEY_TEST", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
 
@@ -172,7 +176,7 @@ object BuildWin : BuildType({
             scriptMode = file {
                 path = "common/inject-license.ps1"
             }
-            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
+            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY_TEST%")
         }
          dotnetMsBuild {
             name = "(build) Samples Solution"
