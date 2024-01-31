@@ -108,7 +108,7 @@ object Version : BuildType({
         text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("LICENSE_COMPANYNAME", "CinecoderSamples", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
-        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+        //password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 
     steps {
@@ -140,7 +140,7 @@ object BuildWin : BuildType({
     """.trimIndent()
 
 	params {
-        password("LICENSE_KEY_TEST", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 	
     vcs {
@@ -176,7 +176,7 @@ object BuildWin : BuildType({
             scriptMode = file {
                 path = "common/inject-license.ps1"
             }
-            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY_TEST%")
+            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%")
         }
          dotnetMsBuild {
             name = "(build) Samples Solution"
@@ -209,6 +209,10 @@ object BuildLinux : BuildType({
         artifactRules = """_bin/linux => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -226,7 +230,7 @@ object BuildLinux : BuildType({
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
         }
         exec {
@@ -271,6 +275,10 @@ object BuildLinuxArm64 : BuildType({
         artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -290,7 +298,7 @@ object BuildLinuxArm64 : BuildType({
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
 			dockerPull = true
             dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
@@ -326,11 +334,6 @@ object BuildLinuxArm64 : BuildType({
             reuseBuilds = ReuseBuilds.NO
         }
     }
-	
-	requirements {
-		doesNotExist("tools.xcode.home")
-		contains("docker.server.osType", "linux")
-	}
 })
 
 object BuildAggregation : BuildType({
