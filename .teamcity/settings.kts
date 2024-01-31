@@ -316,6 +316,10 @@ object BuildLinuxArm64 : BuildType({
             reuseBuilds = ReuseBuilds.NO
         }
     }
+	
+	requirements {
+		doesNotExist("tools.xcode.home")
+	}
 })
 
 object BuildAggregation : BuildType({
