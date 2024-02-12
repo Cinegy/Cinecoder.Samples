@@ -287,22 +287,31 @@ object BuildLinuxArm64 : BuildType({
     }
 
     steps {
-        script {
-            name = "(patch) Version (from Version Step)"
-            workingDir = "."
-            scriptContent = "pwsh ./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
-        }        
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
+        }
         exec {
             name = "(patch) Inject license"
-            workingDir = "."
-             path = "./inject_license.sh"
-            arguments = "%LICENSE_COMPANYNAME% %LICENSE_KEY%"
+            path = "pwsh"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
         }
         exec {
             name = "(build) Samples Script"
-            workingDir = "."
-            path = "./build_samples-linux.sh"
-            arguments = "Release"
+            //enabled=false
+            path = "./build_samples-linux-arm64.sh"
+            arguments = "Release --platform=linux/arm64"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
     }
 
@@ -343,7 +352,7 @@ object BuildMacOSArm64 : BuildType({
 	params {
         password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
-    
+
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -351,29 +360,23 @@ object BuildMacOSArm64 : BuildType({
     }
 
     steps {
-        exec {
-            name = "(patch) Version (from version step)"
-            path = "pwsh"
-            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
-            dockerPull = true
-            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
-        }
+        script {
+            name = "(patch) Version (from Version Step)"
+            workingDir = "."
+            scriptContent = "pwsh ./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+        }        
         exec {
             name = "(patch) Inject license"
-            path = "pwsh"
-            workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
-			dockerPull = true
-            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+            workingDir = "."
+            path = "./inject_license.sh"
+            arguments = "%LICENSE_COMPANYNAME% %LICENSE_KEY%"
         }
         exec {
             name = "(build) Samples Script"
-            workingDir = ""
+            workingDir = "."
             path = "./build_samples-linux.sh"
             arguments = "Release"
-        }        
+        }     
     }
 
     // triggers {
