@@ -85,9 +85,11 @@ object SampleBinaries : Project({
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildLinuxArm64)
+    //buildType(BuildMacOS)
+    buildType(BuildMacOSArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, /*BuildMacOS,*/ BuildMacOSArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -333,6 +335,65 @@ object BuildLinuxArm64 : BuildType({
         snapshot(Version) {
             reuseBuilds = ReuseBuilds.NO
         }
+    }
+})
+
+object BuildMacOSArm64 : BuildType({
+    name = "build (macos arm64)"
+    description = "Cinecoder Samples MacOS Arm64 build"
+
+    artifactRules = """
+        ./_bin/macosx => CinecoderSamples-MacOSArm64-%build.number%.7z
+        """.trimIndent()
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
+        }
+        exec {
+            name = "(patch) Inject license"
+            path = "pwsh"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+        }        
+        exec {
+            name = "(build) Samples Script"
+            workingDir = ""
+            path = "./build_samples-linux.sh"
+            arguments = "Release"
+        }        
+    }
+
+    // triggers {
+    //     vcs {
+    //         enabled = false
+    //         branchFilter = ""
+    //     }
+    // }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+
+    requirements {
+        moreThan("tools.xcode.version.major", "11")
+        equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
