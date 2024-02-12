@@ -9,6 +9,7 @@ bool g_bRotate = true;
 bool g_bLastRotate = g_bRotate;
 bool g_useCuda = false;
 bool g_useQuickSync = false;
+bool g_useIVPL = false;
 bool g_useAMF = false;
 bool g_useNVDEC = false;
 bool g_useOpenCL = false;
@@ -107,14 +108,15 @@ void printHelp(void)
 #endif
 #endif
 	printf("-quicksync          enable QuickSync H264/HEVC GPU decoding (default: disable)\n");
+	printf("-ivpl               enable Intel VPL H264/HEVC GPU decoding (default: disable)\n");
 	printf("-amf                enable AMF H264/HEVC GPU decoding (default: disable)\n");
 	printf("-nvdec              enable NVIDIA H264/HEVC GPU decoding (default: disable)\n");
 #if defined(__WIN32__)
-	printf("-d3d11 [adapter]   enable DirectX11 pipeline (default: OpenGL)\n");
-	printf("    any:            Any Graphics Adapter (without cuda)\n");
-	printf("    intel:          IntelHD Graphics Adapter (without cuda)\n");
-	printf("    nvidia:         NVIDIA Adapter (set by default)\n");
-	printf("-cinecoderD3D11    enable Cinecode+DirectX11 pipeline\n");
+	printf("-d3d11 [adapter]    enable DirectX11 pipeline (default: OpenGL)\n");
+	printf("    any:            use any Graphics Adapter (without cuda)\n");
+	printf("    intel:          use Intel Graphics Adapter (without cuda)\n");
+	printf("    nvidia:         use NVIDIA Graphics Adapter (set by default)\n");
+	printf("-cinecoderD3D11     enable Cinecode+DirectX11 pipeline\n");
 #endif
 #if !defined(__WIN32__)
 	printf("-ogl33              enable modern OpenGL 3.3 (default use OpenGL 1.1)\n");
@@ -241,6 +243,11 @@ int main(int argc, char **argv)
 		g_useQuickSync = true; // use QuickSync decoder
 	}
 
+	if (checkCmdLineArg(argc, (const char**)argv, "ivpl"))
+	{
+		g_useIVPL = true; // use Intel VPL decoder
+	}
+
 	if (checkCmdLineArg(argc, (const char**)argv, "amf"))
 	{
 		g_useAMF = true; // use AMF decoder
@@ -339,6 +346,9 @@ int main(int argc, char **argv)
 
 	if (g_useQuickSync)
 		dec_params.type = VD_TYPE_QuickSync;
+
+	if (g_useIVPL)
+		dec_params.type = VD_TYPE_IVPL;
 
 	if (g_useAMF)
 		dec_params.type = VD_TYPE_AMF;

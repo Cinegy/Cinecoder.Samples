@@ -107,8 +107,8 @@ object Version : BuildType({
         text("BuildVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
-        text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
-        password("LICENSE_KEY", "credentialsJSON:2808c77b-9bd2-48a8-808f-eea5179c9bb2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+        text("LICENSE_COMPANYNAME", "CinecoderSamples", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
+        //password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 
     steps {
@@ -139,6 +139,10 @@ object BuildWin : BuildType({
     common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
     """.trimIndent()
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
 
@@ -172,7 +176,7 @@ object BuildWin : BuildType({
             scriptMode = file {
                 path = "common/inject-license.ps1"
             }
-            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
+            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%")
         }
          dotnetMsBuild {
             name = "(build) Samples Solution"
@@ -205,6 +209,10 @@ object BuildLinux : BuildType({
         artifactRules = """_bin/linux => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -222,7 +230,7 @@ object BuildLinux : BuildType({
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
         }
         exec {
@@ -240,6 +248,14 @@ object BuildLinux : BuildType({
         }
     }
 
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
+        }
+    }
+    
     dependencies {
         snapshot(Version) {
             reuseBuilds = ReuseBuilds.NO
@@ -256,9 +272,13 @@ object BuildLinuxArm64 : BuildType({
     // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
     if(!isIntegrationBuild)
     { 
-        artifactRules = """README.md => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -271,20 +291,26 @@ object BuildLinuxArm64 : BuildType({
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
         }
         exec {
             name = "(build) Samples Script"
-            enabled=false
+            //enabled=false
             path = "./build_samples-linux-arm64.sh"
-            arguments = "Release"            
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/gcc750aarch64:latest"
+            arguments = "Release --platform=linux/arm64"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
     }
 
@@ -292,6 +318,14 @@ object BuildLinuxArm64 : BuildType({
         vcs {
             enabled = false
             branchFilter = ""
+        }
+    }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
         }
     }
 

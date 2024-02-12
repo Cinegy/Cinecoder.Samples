@@ -369,6 +369,7 @@ int DecodeDaniel2::CreateDecoder()
 
 	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
 	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
+	bool useIVPL = m_dec_params.type == VD_TYPE_IVPL ? true : false;
 	bool useAMF = m_dec_params.type == VD_TYPE_AMF ? true : false;
 	bool useNVDEC = m_dec_params.type == VD_TYPE_NVDEC ? true : false;
 
@@ -447,6 +448,7 @@ int DecodeDaniel2::CreateDecoder()
 #endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
 			if (useQuickSync) clsidDecoder = CLSID_CC_H264VideoDecoder_IMDK;
+			if (useIVPL) clsidDecoder = CLSID_CC_H264VideoDecoder_IVPL;
 			if (useAMF) clsidDecoder = CLSID_CC_H264VideoDecoder_AMF;
 			if (useNVDEC) clsidDecoder = CLSID_CC_H264VideoDecoder_NV;
 			m_strStreamType = "H264";
@@ -464,6 +466,7 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
 			if (useQuickSync) clsidDecoder = CLSID_CC_HEVCVideoDecoder_IMDK;
+			if (useIVPL) clsidDecoder = CLSID_CC_HEVCVideoDecoder_IVPL;
 			if (useAMF) clsidDecoder = CLSID_CC_HEVCVideoDecoder_AMF;
 			if (useNVDEC) clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
 			m_strStreamType = "HEVC";
