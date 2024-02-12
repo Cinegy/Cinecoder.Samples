@@ -369,7 +369,7 @@ object BuildMacOSArm64 : BuildType({
             name = "(patch) Inject license"
             workingDir = "."
             path = "./inject_license.sh"
-            arguments = "%LICENSE_COMPANYNAME% %LICENSE_KEY%"
+            arguments = "${Version.depParamRefs["LICENSE_COMPANYNAME"]} %LICENSE_KEY%"
         }
         exec {
             name = "(build) Samples Script"
@@ -394,7 +394,7 @@ object BuildMacOSArm64 : BuildType({
 
     requirements {
         moreThan("tools.xcode.version.major", "11")
-        equals("teamcity.agent.jvm.os.arch", "aarch64")
+        //equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
