@@ -85,11 +85,10 @@ object SampleBinaries : Project({
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildLinuxArm64)
-    //buildType(BuildMacOS)
     buildType(BuildMacOSArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, /*BuildMacOS,*/ BuildMacOSArm64, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildMacOSArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -340,7 +339,6 @@ object BuildLinuxArm64 : BuildType({
 
 object BuildMacOSArm64 : BuildType({
     name = "build (macos arm64)"
-    description = "Cinecoder Samples MacOS Arm64 build"
 
     // check if the build type is Integration Build
     val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
@@ -398,7 +396,7 @@ object BuildMacOSArm64 : BuildType({
 
     requirements {
         moreThan("tools.xcode.version.major", "11")
-        equals("teamcity.agent.jvm.os.arch", "aarch64")
+        //equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
@@ -453,7 +451,7 @@ object BuildAggregation : BuildType({
                     CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
-        }          
+        }
         dependency(BuildWin) {
             snapshot {
             }
