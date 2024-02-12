@@ -372,8 +372,8 @@ object BuildMacOSArm64 : BuildType({
         }        
         /*exec {
             name = "(patch) Inject license"
-            workingDir = "."
-            path = "./inject_license.sh"
+            workingDir = "common"
+            path = "./common/inject_license.sh"
             arguments = "${Version.depParamRefs["LICENSE_COMPANYNAME"]} %LICENSE_KEY%"
         }*/
         exec {
