@@ -349,6 +349,10 @@ object BuildMacOSArm64 : BuildType({
         artifactRules = """_bin/macosx => CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+    
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -372,7 +376,7 @@ object BuildMacOSArm64 : BuildType({
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
 			dockerPull = true
             dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
-        }        
+        }
         exec {
             name = "(build) Samples Script"
             workingDir = ""
@@ -396,7 +400,7 @@ object BuildMacOSArm64 : BuildType({
 
     requirements {
         moreThan("tools.xcode.version.major", "11")
-        //equals("teamcity.agent.jvm.os.arch", "aarch64")
+        equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
