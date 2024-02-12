@@ -242,12 +242,12 @@ object BuildLinux : BuildType({
         }
     }
 
-    triggers {
-        vcs {
-            enabled = false
-            branchFilter = ""
-        }
-    }
+    // triggers {
+    //     vcs {
+    //         enabled = false
+    //         branchFilter = ""
+    //     }
+    // }
 
     features {
         dockerSupport {
@@ -315,12 +315,12 @@ object BuildLinuxArm64 : BuildType({
         }
     }
 
-    triggers {
-        vcs {
-            enabled = false
-            branchFilter = ""
-        }
-    }
+    // triggers {
+    //     vcs {
+    //         enabled = false
+    //         branchFilter = ""
+    //     }
+    // }
 
     features {
         dockerSupport {
@@ -420,10 +420,10 @@ object BuildAggregation : BuildType({
         cleanCheckout = true
     }
     
-    triggers {
-        vcs {
-        }
-    }
+    // triggers {
+    //     vcs {
+    //     }
+    // }
 
     dependencies {
         dependency(BuildLinux) {
