@@ -399,7 +399,7 @@ object BuildMacOSArm64 : BuildType({
 
     requirements {
         moreThan("tools.xcode.version.major", "11")
-        //equals("teamcity.agent.jvm.os.arch", "aarch64")
+        equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
