@@ -342,9 +342,14 @@ object BuildMacOSArm64 : BuildType({
     name = "build (macos arm64)"
     description = "Cinecoder Samples MacOS Arm64 build"
 
-    artifactRules = """
-        ./_bin/macosx => CinecoderSamples-MacOSArm64-%build.number%.7z
-        """.trimIndent()
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """_bin/macosx => CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -439,6 +444,16 @@ object BuildAggregation : BuildType({
                 """.trimIndent()
             }
         }        
+        dependency(BuildMacOSArm64) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }          
         dependency(BuildWin) {
             snapshot {
             }
