@@ -364,13 +364,18 @@ object BuildMacOSArm64 : BuildType({
             name = "(patch) Version (from Version Step)"
             workingDir = "."
             scriptContent = "pwsh ./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+        }
+		script {
+            name = "(patch) Inject license"
+            workingDir = "."
+            scriptContent = "pwsh ./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
         }        
-        exec {
+        /*exec {
             name = "(patch) Inject license"
             workingDir = "."
             path = "./inject_license.sh"
             arguments = "${Version.depParamRefs["LICENSE_COMPANYNAME"]} %LICENSE_KEY%"
-        }
+        }*/
         exec {
             name = "(build) Samples Script"
             workingDir = "."
