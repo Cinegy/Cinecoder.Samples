@@ -367,8 +367,8 @@ object BuildMacOSArm64 : BuildType({
         }
 		script {
             name = "(patch) Inject license"
-            workingDir = "."
-            scriptContent = "pwsh ./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
+            workingDir = "common"
+            scriptContent = "pwsh ./common/inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
         }        
         /*exec {
             name = "(patch) Inject license"
