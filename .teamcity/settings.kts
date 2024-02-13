@@ -85,10 +85,11 @@ object SampleBinaries : Project({
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildLinuxArm64)
+    buildType(BuildMacOS)
     buildType(BuildMacOSArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildMacOSArm64, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildMacOS, BuildMacOSArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -337,6 +338,66 @@ object BuildLinuxArm64 : BuildType({
     }
 })
 
+object BuildMacOS : BuildType({
+    name = "build (macos x86_64)"
+
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """_bin/macosx => CinecoderSamples-MacOS-%teamcity.build.branch%-%build.number%.zip"""
+    }
+
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        script {
+            name = "(patch) Version (from Version Step)"
+            workingDir = "."
+            scriptContent = "pwsh ./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+        }
+		script {
+            name = "(patch) Inject license"
+            workingDir = "common"
+            scriptContent = "pwsh ./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
+        }        
+        exec {
+            name = "(build) Samples Script"
+            workingDir = "."
+            path = "./build_samples-linux.sh"
+            arguments = "Release"
+        }     
+    }
+
+    // triggers {
+    //     vcs {
+    //         enabled = false
+    //         branchFilter = ""
+    //     }
+    // }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+
+    requirements {
+        moreThan("tools.xcode.version.major", "11")
+        equals("teamcity.agent.jvm.os.arch", "x86_64")
+    }
+})
+
 object BuildMacOSArm64 : BuildType({
     name = "build (macos arm64)"
 
@@ -438,7 +499,17 @@ object BuildAggregation : BuildType({
                     CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
-        }        
+        }
+        dependency(BuildMacOS) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-MacOS-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }
         dependency(BuildMacOSArm64) {
             snapshot {
             }
