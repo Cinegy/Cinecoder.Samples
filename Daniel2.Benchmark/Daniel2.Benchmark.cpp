@@ -225,7 +225,7 @@ int main_impl(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#]");
+    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#] [/duration=#sec[,#sec]]");
     puts("Where the <codec> is one of the following:");
     puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
@@ -442,6 +442,8 @@ int main_impl(int argc, char* argv[])
   int NumThreads = 0;
   size_t ThreadsAffinityMask = 0;
   int ThreadsPriority = 0;
+  int TestDurationInSecondsEnc = -1;
+  int TestDurationInSecondsDec = -1;
 
   for(int i = 5; i < argc; i++)
   {
@@ -496,6 +498,14 @@ int main_impl(int argc, char* argv[])
     else if(0 == strcmp(argv[i], "/wait"))
     {
 	  g_bWaitAtExit = true;
+	}
+	else if(0 == strncmp(argv[i], "/duration=", 10))
+	{
+	  TestDurationInSecondsEnc = atoi(argv[i] + 10);
+	  if(char *p = strchr(argv[i] + 10, ','))
+	    TestDurationInSecondsDec = atoi(p+1);
+	  else
+	    TestDurationInSecondsDec = TestDurationInSecondsEnc;
 	}
     else
       return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
@@ -760,14 +770,18 @@ int main_impl(int argc, char* argv[])
 		  std::this_thread::sleep_for(milliseconds{ Tideal - Treal });
 	}
 
+	bool break_time_out = false;
+
     if((frame_count & update_mask) == update_mask)
     {
  	  auto t1 = system_clock::now();
       auto dT = duration<double>(t1 - t0).count();
 	  auto coded_size = pFileWriter->GetTotalBytesWritten();
 
-      fprintf(stderr, " %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
-      	frame_no, frame_count / dT, 
+	  auto dT0 = duration<double>(t1 - t00).count();
+
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
+      	dT0, frame_no, frame_count / dT, 
       	uncompressed_frame_size / 1E9 * frame_count / dT,
       	(coded_size - coded_size0) * 8 / 1E6 / dT,
       	cpuLoadMeter.GetLoad());
@@ -785,13 +799,27 @@ int main_impl(int argc, char* argv[])
         update_mask = (update_mask>>1) | 1;
         dT /= 2;
       }
+
+      if(TestDurationInSecondsEnc >= 0 && dT0 > TestDurationInSecondsEnc)
+      {
+        break_time_out = true;
+      }
     }
 
     frame_count++;
     total_frame_count++;
 
     if(_kbhit() && _getch() == 27)
+    {
+      fprintf(stderr, "\nEncoder test is terminated by user\n");
       break;
+    }
+
+    if(break_time_out)
+    {
+      fprintf(stderr, "\nEncoder test is terminated by time out (%d sec)\n", TestDurationInSecondsEnc);
+      break;
+    }
   }
 
   hr = pEncoder->Done(CC_TRUE);
@@ -804,8 +832,8 @@ int main_impl(int argc, char* argv[])
   puts("\nDone.\n");
 
   auto dT = duration<double>(t1 - t00).count();
-  printf("Average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
-          total_frame_count / dT, dT * 1000 / total_frame_count,
+  printf("Encoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+  		  dT, total_frame_count / dT, dT * 1000 / total_frame_count,
           uncompressed_frame_size / 1E9 * total_frame_count / dT);
 
   auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_EncoderTimeFirstFrameOut - g_EncoderTimeFirstFrameIn);
@@ -993,6 +1021,8 @@ int main_impl(int argc, char* argv[])
       t00 = t0 = system_clock::now();
     }
 
+    bool break_time_out = false;
+
     if((frame_count & update_mask) == update_mask)
     {
 	  auto t1 = system_clock::now();
@@ -1003,8 +1033,10 @@ int main_impl(int argc, char* argv[])
       else if(dT > 2)
         update_mask = (update_mask>>1) | 1;
 
-      fprintf(stderr, " %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
-      	frame_no, frame_count / dT, 
+	  auto dT0 = duration<double>(t1 - t00).count();
+
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
+      	dT0, frame_no, frame_count / dT, 
       	(coded_size - coded_size0) * 8 / 1E6 / dT,
       	uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
       
@@ -1012,13 +1044,27 @@ int main_impl(int argc, char* argv[])
       coded_size0 = coded_size;
 
       frame_count = 0;
+
+      if(TestDurationInSecondsDec >= 0 && dT0 > TestDurationInSecondsDec)
+      {
+        break_time_out = true;
+      }
     }
 
     frame_count++;
     total_frame_count++;
 
     if(_kbhit() && _getch() == 27)
+    {
+      fprintf(stderr, "\nDecoder test is terminated by user\n");
       break;
+    }
+
+    if(break_time_out)
+    {
+      fprintf(stderr, "\nDecoder test is terminated by time out (%d sec)\n", TestDurationInSecondsDec);
+      break;
+    }
   }
 
   hr = pDecoder->Done(CC_TRUE);
@@ -1031,8 +1077,8 @@ int main_impl(int argc, char* argv[])
   puts("\nDone.\n");
 
   dT = duration<double>(t1 - t00).count();
-  printf("Average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
-          total_frame_count / dT, dT * 1000 / total_frame_count,
+  printf("Decoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+          dT, total_frame_count / dT, dT * 1000 / total_frame_count,
           uncompressed_frame_size / 1E9 * total_frame_count / dT);
 
   time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_DecoderTimeFirstFrameOut - g_DecoderTimeFirstFrameIn);
