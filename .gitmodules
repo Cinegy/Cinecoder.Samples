@@ -10,3 +10,6 @@
 [submodule "external/cuda_drvapi_dyn_load"]
 	path = external/cuda_drvapi_dyn_load
 	url = https://github.com/Cinegy/cuda_drvapi_dyn_load
+[submodule "external/CUDART"]
+	path = external/CUDART
+	url = https://gitlab.com/nvidia/headers/cuda-individual/cudart.git
