@@ -31,13 +31,7 @@ using namespace std::chrono_literals;
 #include "../common/conio.h"
 #include "../common/cpu_load_meter.h"
 
-//#define USE_CUDA_DRV_API
-
-#ifdef USE_CUDA_DRV_API
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
-#else
-#include "../common/cuda_dyn/cuda_dyn_load.h"
-#endif
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
@@ -47,11 +41,58 @@ bool g_bWaitAtExit = false;
 static decltype(system_clock::now()) g_EncoderTimeFirstFrameIn, g_EncoderTimeFirstFrameOut;
 static decltype(system_clock::now()) g_DecoderTimeFirstFrameIn, g_DecoderTimeFirstFrameOut;
 
+CUcontext g_cudaContext = nullptr;
+int       g_cudaDeviceNo = -1;
+char      g_cudaDeviceName[128] = {};
+
+//---------------------------------------------------------------------
+int SetCudaContext(CUcontext ctx)
+//---------------------------------------------------------------------
+{
+  if(auto err = cuCtxSetCurrent((CUcontext)ctx))
+    return fprintf(stderr, "cuCtxSetCurrent(%p) error %d (%s)\n", ctx, err, GetCudaDrvApiErrorText(err)), err;
+
+  CUdevice device;
+  if(auto err = cuCtxGetDevice(&device))
+    return fprintf(stderr, "cuCtxGetDevice() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), err;
+
+  if(auto err = cuDeviceGetName(g_cudaDeviceName, sizeof(g_cudaDeviceName), device))
+    return fprintf(stderr, "cuDeviceGetName() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), err;
+
+  g_cudaDeviceNo = -1;
+
+  int num_devices;
+  if(auto err = cuDeviceGetCount(&num_devices))
+    return fprintf(stderr, "cuDeviceGetCount() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), err;
+
+  for(int i = 0; i < num_devices; i++)
+  {
+    CUdevice device_i;
+    if(auto err = cuDeviceGet(&device_i, i))
+      return fprintf(stderr, "cuDeviceGet(%d) error %d (%s)\n", i, err, GetCudaDrvApiErrorText(err)), err;
+
+    if(device_i == device)
+    {
+      g_cudaDeviceNo = i;
+      break;
+    }
+  }
+
+  if(g_cudaDeviceNo < 0)
+    return fprintf(stderr, "Can't find CUDA device ordinal number\n"), E_UNEXPECTED;
+
+  printf("Selected CUDA device: %d \"%s\"\n", g_cudaDeviceNo, g_cudaDeviceName);
+
+  g_cudaContext = ctx;
+
+  return 0;
+}
+
 // Memory types used in benchmark
 enum MemType { MEM_SYSTEM, MEM_PINNED, MEM_GPU };
 MemType g_mem_type = MEM_SYSTEM;
 
-void* mem_alloc(MemType type, size_t size, int device = 0)
+void* mem_alloc(MemType type, size_t size)
 {
   if(type == MEM_SYSTEM)
   {
@@ -64,11 +105,11 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
 #elif defined(__APPLE__)
 	return (LPBYTE)malloc(size);
 #elif defined(__ANDROID__)
-	  void *ptr = nullptr;
-	  posix_memalign(&ptr, 4096, size);
-	  return ptr;
+	void *ptr = nullptr;
+	posix_memalign(&ptr, 4096, size);
+	return ptr;
 #else
-	 return (LPBYTE)aligned_alloc(4096, size);
+	return (LPBYTE)aligned_alloc(4096, size);
 #endif		
   }
 
@@ -78,48 +119,21 @@ void* mem_alloc(MemType type, size_t size, int device = 0)
   if(type == MEM_PINNED)
   {
     void *ptr = nullptr;
-#ifdef	USE_CUDA_DRV_API
-	auto err = cuMemAllocHost(&ptr, size);
-#else
-    auto err = cudaMallocHost(&ptr, size);
-#endif
-    if(err) fprintf(stderr, "CUDA error %d\n", err);
+
+	if(auto err = cuMemAllocHost(&ptr, size))
+      return fprintf(stderr, "cuMemAllocHost() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), nullptr;
+    
     return ptr;
   }
 
   if(type == MEM_GPU)
   {
-    printf("Using CUDA GPU memory: %zd byte(s) on Device %d\n", size, device);
+    //printf("Allocating CUDA GPU memory: %zd byte(s)\n", size, device);
 
-#ifdef	USE_CUDA_DRV_API
-	CUdevice cuDevice;
-	CUcontext cuContext = nullptr;
-
-	auto err = cuDeviceGet(&cuDevice, 0);
-	if (err) return fprintf(stderr, "cuDeviceGet() error %d\n", err), nullptr;
-
-	err = cuDevicePrimaryCtxRetain(&cuContext, cuDevice);
-	if (err) return fprintf(stderr, "cuDevicePrimaryCtxRetain() error %d\n", err), nullptr;
-
-	err = cuCtxSetCurrent(cuContext);
-	if (err) return fprintf(stderr, "cuCtxSetCurrent() error %d\n", err), nullptr;
-#else
-    int old_device;
-    auto err = cudaGetDevice(&old_device);
-    if(err)
-      return fprintf(stderr, "cudaGetDevice() error %d\n", err), nullptr;
-
-    if(device != old_device && (err = cudaSetDevice(device)) != 0)
-      return fprintf(stderr, "cudaSetDevice(%d) error %d\n", device, err), nullptr;
-#endif
     void *ptr = nullptr;
-#ifdef	USE_CUDA_DRV_API
-	err = cuMemAlloc((CUdeviceptr*)&ptr, size);
-#else
-	err = cudaMalloc(&ptr, size);
-#endif
-    if(err)
-      return fprintf(stderr, "CUDA error %d\n", err), nullptr;
+
+	if(auto err = cuMemAlloc((CUdeviceptr*)&ptr, size))
+      return fprintf(stderr, "cuMemAlloc() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), nullptr;
 
     return ptr;
   }
@@ -146,20 +160,14 @@ void mem_release(MemType type, void* ptr)
 
   if(type == MEM_PINNED)
   {
-#ifdef	USE_CUDA_DRV_API
 	cuMemFreeHost(ptr);
-#else
-	cudaFreeHost(ptr);
-#endif
+	return;
   }
 
   if(type == MEM_GPU)
   {
-#ifdef	USE_CUDA_DRV_API
 	cuMemFree((CUdeviceptr)ptr);
-#else
-  	cudaFree(ptr);
-#endif
+	return;
   }
 }
 
@@ -203,25 +211,7 @@ int main(int argc, char* argv[])
 int main_impl(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
-#ifdef	USE_CUDA_DRV_API
   g_CudaEnabled = LoadCudaDrvApiLib() == 0;
-
-  CUcontext cuContext = nullptr;
-
-  if (g_CudaEnabled)
-  {
-	  auto err = cuInit(0);
-	  if (err)
-	  {
-		  fprintf(stderr, "cuInit() error %d\n", err);
-		  g_CudaEnabled = false;
-	  }
-	  err = cuDevicePrimaryCtxRetain(&cuContext, 0);
-	  err = cuCtxSetCurrent(cuContext);
-  }
-#else
-	g_CudaEnabled = __InitCUDA() == 0;
-#endif
 
   if(argc < 5)
   {
@@ -233,7 +223,7 @@ int main_impl(int argc, char* argv[])
 	{
     puts("\t'D2CUDA'       -- Daniel2 CUDA codec test, data is copying from GPU into CPU pinned memory");
     puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is copying from GPU into GPU global memory");
-    puts("\t'D2CUDANP'     -- Daniel2 CUDA codec test, data is copying from GPU into CPU NOT-pinned memory (bad case test)");
+    puts("\t'D2CUDANP'     -- Daniel2 CUDA codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
     }
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
@@ -476,11 +466,11 @@ int main_impl(int argc, char* argv[])
     else if(0 == strncmp(argv[i], "/device=", 8))
     {
  	  EncDeviceID = atoi(argv[i] + 8);
-    }
 
-    else if(0 == strncmp(argv[i], "/device2=", 9))
-    {
- 	  DecDeviceID = atoi(argv[i] + 9);
+	  if(char *p = strchr(argv[i] + 8, ','))
+	    DecDeviceID = atoi(p+1);
+	  else
+	    DecDeviceID = EncDeviceID;
     }
 
     else if(0 == strncmp(argv[i], "/numthreads=", 12))
@@ -510,8 +500,6 @@ int main_impl(int argc, char* argv[])
     else
       return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
   }
-
-//  cudaSetDeviceFlags(cudaDeviceMapHost);
 
   HRESULT hr = S_OK;
 
@@ -545,15 +533,7 @@ int main_impl(int argc, char* argv[])
 
   hr = pFactory->CreateInstance(clsidEnc, IID_ICC_VideoEncoder, (IUnknown**)&pEncoder);
   if(FAILED(hr)) return hr;
-#ifdef	USE_CUDA_DRV_API
-  com_ptr<ICC_CudaContextProp> pCudaCtxProp;
-  hr = pEncoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
-  if (SUCCEEDED(hr))
-  {
-	  hr = pCudaCtxProp->put_CudaContext(cuContext);
-	  if (FAILED(hr)) return hr;
-  }
-#endif
+
   if(NumThreads > 0)
   {
     fprintf(stderr, "Setting up specified number of threads = %d for the encoder: ", NumThreads);
@@ -637,6 +617,22 @@ int main_impl(int argc, char* argv[])
   if(EncDeviceID >= -1)
     printf("Encoder device id = %d\n", EncDeviceID);
 
+  if(g_mem_type == MEM_GPU)
+  {
+    printf("Setting up the current CUDA context\n");
+
+    com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
+      return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+    
+    void *cuda_ctx;
+	if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
+      return fprintf(stderr, "Failed getting CUDA context from the encoder (code %08x)", hr), hr;
+
+	if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
+	  return fprintf(stderr, "SetCudaContext failed (code %08x)", hr), hr;
+  }
+
   CC_AMOUNT concur_level = 0;
   com_ptr<ICC_ConcurrencyLevelProp> pConcur;
   if(S_OK == pEncoder->QueryInterface(IID_ICC_ConcurrencyLevelProp, (void**)&pConcur))
@@ -696,7 +692,7 @@ int main_impl(int argc, char* argv[])
     if(read_size < uncompressed_frame_size)
       break;
 
-    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, EncDeviceID);
+    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
     if(!buf)
       return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
     else
@@ -704,14 +700,12 @@ int main_impl(int argc, char* argv[])
 
 	if (g_mem_type == MEM_GPU)
 	{
-#ifdef	USE_CUDA_DRV_API
-		cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
-#else
-		cudaMemcpy(buf, read_buffer, uncompressed_frame_size, cudaMemcpyHostToDevice);
-#endif
+	  cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
 	}
   	else
+  	{
   	  memcpy(buf, read_buffer, uncompressed_frame_size);
+  	}
 
   	source_frames.push_back(buf);
   }
@@ -847,15 +841,7 @@ int main_impl(int argc, char* argv[])
   com_ptr<ICC_VideoDecoder> pDecoder;
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
-#ifdef	USE_CUDA_DRV_API
-  pCudaCtxProp = nullptr;
-  hr = pDecoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
-  if (SUCCEEDED(hr))
-  {
-	  hr = pCudaCtxProp->put_CudaContext(cuContext);
-	  if (FAILED(hr)) return hr;
-  }
-#endif
+
   if(NumThreads > 0)
   {
     fprintf(stderr, "Setting up specified number of threads = %d for the decoder: ", NumThreads);
@@ -933,6 +919,22 @@ int main_impl(int argc, char* argv[])
     printf("Decoder concurrency level = %d\n", concur_level);
   }
 
+  if (g_mem_type == MEM_GPU && DecDeviceID != EncDeviceID)
+  {
+    printf("Setting up the current CUDA context\n");
+
+    com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
+      return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+
+    void* cuda_ctx;
+    if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
+      return fprintf(stderr, "Failed getting CUDA context from the decoder (code %08x)", hr), hr;
+
+    if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
+      return fprintf(stderr, "SetCudaContext failed (code %08x)", hr), hr;
+  }
+
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
   if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
@@ -940,7 +942,7 @@ int main_impl(int argc, char* argv[])
   if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
-  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size, DecDeviceID);
+  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
   else
