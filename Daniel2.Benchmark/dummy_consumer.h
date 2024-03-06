@@ -4,7 +4,7 @@ class C_DummyWriter : public ICC_DataReadyCallback
 {
   _IMPLEMENT_IUNKNOWN_STATICALLY(ICC_DataReadyCallback)
 
-  BYTE         *m_pBuffer;
+  memobj_t&     m_memBuffer;
   CC_FRAME_RATE m_rFrameRate;
   CC_SIZE       m_szFrame;
   DWORD         m_cbFrameBytes;
@@ -13,17 +13,17 @@ class C_DummyWriter : public ICC_DataReadyCallback
   int		    m_FrameNo;
 
   com_ptr<ICC_VideoQualityMeter> m_pPsnrCalc;
-  BYTE         *m_pRefBuffer;
+  memobj_t&     m_memRefBuffer;
 
 public:
-  C_DummyWriter(CC_COLOR_FMT fmt, BYTE *buffer, int bufsize, int pitch, ICC_VideoQualityMeter *pPsnrCalc, BYTE *pRefBuffer)
+  C_DummyWriter(CC_COLOR_FMT fmt, memobj_t &buffer, int bufsize, int pitch, ICC_VideoQualityMeter *pPsnrCalc, memobj_t &refBuffer)
   : m_Format(fmt)
-  , m_pBuffer(buffer)
+  , m_memBuffer(buffer)
   , m_cbFrameBytes(bufsize)
   , m_pitch(pitch)
   , m_FrameNo(0)
   , m_pPsnrCalc(pPsnrCalc)
-  , m_pRefBuffer(pRefBuffer)
+  , m_memRefBuffer(refBuffer)
   {}
 
   virtual ~C_DummyWriter()
@@ -68,7 +68,7 @@ public:
     if(m_Format != CCF_UNKNOWN)
     {
       DWORD dwBytesWrote = 0;
-      if(FAILED(hr = spProducer->GetFrame(m_Format, m_pBuffer, m_cbFrameBytes, m_pitch, &dwBytesWrote)))
+      if(FAILED(hr = spProducer->GetFrame(m_Format, (BYTE*)m_memBuffer, m_cbFrameBytes, m_pitch, &dwBytesWrote)))
         return hr;
 #if 0
       if(m_FrameNo == 0)
@@ -84,31 +84,30 @@ public:
 
       if(m_FrameNo == 0 && m_pPsnrCalc)
       {
-        BYTE *pBuffer    = m_pBuffer;
-        BYTE *pRefBuffer = m_pRefBuffer;
+        memobj_t memTmpBuffer = {}, memTmpRefBuffer = {};
+        
+        BYTE* pBuffer    = (BYTE*)m_memBuffer;
+        BYTE *pRefBuffer = (BYTE*)m_memRefBuffer;
 
 		if(g_mem_type == MEM_GPU)
 		{
 		  if(auto err = cuCtxPushCurrent(g_cudaContext))
-			return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), err;
+			return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), E_FAIL;
 
-		  pBuffer    = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
-		  pRefBuffer = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
+          memTmpBuffer    = mem_alloc(MEM_PINNED, m_cbFrameBytes);
+		  memTmpRefBuffer = mem_alloc(MEM_PINNED, m_cbFrameBytes);
 
-		  if(!pBuffer || !pRefBuffer)
+          pBuffer    = (BYTE*)(memTmpBuffer);
+          pRefBuffer = (BYTE*)(memTmpRefBuffer);
+
+		  if(!memTmpBuffer || !memTmpRefBuffer)
 		  {
 		    hr = E_OUTOFMEMORY;
 		  }
 		  else
 		  {
-			auto err = cuMemcpyDtoH(pBuffer, (CUdeviceptr)m_pBuffer, m_cbFrameBytes);
-			if (!err)
-				err = cuMemcpyDtoH(pRefBuffer, (CUdeviceptr)m_pRefBuffer, m_cbFrameBytes);
-			if (err)
-			{
-				fprintf(stderr, "cuMemcpyDtoH() error %d\n", err);
-				hr = E_UNEXPECTED;
-			}
+            mem_copy(pBuffer, m_memBuffer, m_cbFrameBytes);
+            mem_copy(pRefBuffer, m_memRefBuffer, m_cbFrameBytes);
 		  }
 
 		  cuCtxPopCurrent(NULL);
@@ -126,8 +125,8 @@ public:
 
 		if(g_mem_type == MEM_GPU)
 		{
-		  mem_release(MEM_SYSTEM, pBuffer);
-		  mem_release(MEM_SYSTEM, pRefBuffer);
+		  mem_release(memTmpBuffer);
+		  mem_release(memTmpRefBuffer);
 		}
 
 		if(FAILED(hr))

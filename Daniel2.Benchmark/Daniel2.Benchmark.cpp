@@ -203,7 +203,7 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA (NOT PINNED MEMORY!!)";
-    //g_mem_type = MEM_PINNED;
+    g_mem_type = MEM_SYSTEM;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAGPU"))
   {
@@ -594,13 +594,14 @@ int main_impl(int argc, char* argv[])
   
   printf("Frame size: %dx%d, pitch=%d, bytes=%zd\n", frame_size.cx, frame_size.cy, frame_pitch, uncompressed_frame_size);
 
-  BYTE *read_buffer = (BYTE*)mem_alloc(MEM_SYSTEM, uncompressed_frame_size);
+  auto read_buffer = mem_alloc(g_mem_type == MEM_GPU ? MEM_PINNED : MEM_SYSTEM, uncompressed_frame_size);
+
   if(!read_buffer)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
-  else
-    printf("Compressed buffer address  : 0x%p\n", read_buffer);
+  //else
+  //  printf("Compressed buffer address  : 0x%p\n", read_buffer);
 
-  std::vector<BYTE*> source_frames;
+  std::vector<memobj_t> source_frames;
   int max_num_frames_in_loop = 32;
 
   for(int i = 0; i < max_num_frames_in_loop; i++)
@@ -610,23 +611,18 @@ int main_impl(int argc, char* argv[])
     if(read_size < uncompressed_frame_size)
       break;
 
-    BYTE *buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+    auto buf = mem_alloc(g_mem_type, uncompressed_frame_size);
     if(!buf)
       return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
-    else
-      printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", buf, strInputFormat, uncompressed_frame_size);
+    //else
+    //  printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", buf, strInputFormat, uncompressed_frame_size);
 
-	if (g_mem_type == MEM_GPU)
-	{
-	  cuMemcpyHtoD((CUdeviceptr)buf, read_buffer, uncompressed_frame_size);
-	}
-  	else
-  	{
-  	  memcpy(buf, read_buffer, uncompressed_frame_size);
-  	}
+    mem_copy(buf, (BYTE*)read_buffer, uncompressed_frame_size);
 
   	source_frames.push_back(buf);
   }
+
+  mem_release(read_buffer);
 
   if(source_frames.empty())
     return fprintf(stderr, "the footage is too small, no source frame(s) are loaded"), E_OUTOFMEMORY;
@@ -860,11 +856,11 @@ int main_impl(int argc, char* argv[])
   if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
-  BYTE *dec_buf = (BYTE*)mem_alloc(g_mem_type, uncompressed_frame_size);
+  auto dec_buf = mem_alloc(g_mem_type, uncompressed_frame_size);
   if(!dec_buf)
     return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
-  else
-    printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", dec_buf, strOutputFormat, uncompressed_frame_size);
+  //else
+  //  printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", dec_buf, strOutputFormat, uncompressed_frame_size);
 
   com_ptr<ICC_VideoQualityMeter> pPsnrCalc;
   if(cOutputFormat != cFormat)
