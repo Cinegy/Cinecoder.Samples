@@ -5,6 +5,7 @@ MemType g_mem_type = MEM_SYSTEM;
 struct memobj_t
 {
 	void*	Ptr;
+	void*	OrgPtr;
 	size_t	Size;
 	MemType	Type;
 
@@ -12,9 +13,9 @@ struct memobj_t
     operator PBYTE() const { return PBYTE(Ptr);  }
 };
 
-memobj_t MK_MEMOBJ(MemType type, size_t size, void* ptr)
+memobj_t MK_MEMOBJ(MemType type, size_t size, void* ptr, void *org_ptr = nullptr)
 {
-	memobj_t obj = { ptr, size, type };
+	memobj_t obj = { ptr, org_ptr, size, type };
 	return obj;
 }
 
@@ -41,22 +42,61 @@ memobj_t mem_alloc(MemType type, size_t size)
 
   if(type == MEM_PINNED)
   {
-    void *ptr = nullptr;
+    if(g_cudaContext)
+    {
+      void *ptr = nullptr;
 
-    if(auto err = cuMemAllocHost(&ptr, size))
-      fprintf(stderr, "cuMemAllocHost(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err));
+	  if(auto err = cuMemAllocHost(&ptr, size))
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "cuMemAllocHost(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err)), nullptr));
 
-    return MK_MEMOBJ(type, size, ptr);
+      return MK_MEMOBJ(type, size, ptr);
+    }
+
+    if(g_clContext)
+    {
+      cl_int err;
+	  
+	  auto clbuf = clCreateBuffer(g_clContext, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, size, NULL, &err);
+	  if(err != CL_SUCCESS)
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "clCreateBuffer(%zd) error %d (%s)\n", size, err, GetOpenClErrorText(err)), nullptr));
+
+      auto ptr = clEnqueueMapBuffer(g_clMemAllocQueue, clbuf, CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, size, 0, NULL, NULL, &err);
+      if(err != CL_SUCCESS)
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "clEnqueueMapBuffer(%zd) error %d (%s)\n", size, err, GetOpenClErrorText(err)), nullptr));
+
+      if(auto err = clFinish(g_clMemAllocQueue))
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "clFinish() error %d (%s)\n", err, GetOpenClErrorText(err)), nullptr));
+
+      return MK_MEMOBJ(type, size, ptr, clbuf);
+    }
+
+    return MK_MEMOBJ(type, size, (fprintf(stderr, "GPU context is not set\n"), nullptr));
   }
 
   if(type == MEM_GPU)
   {
-    void *ptr = nullptr;
+    if(g_cudaContext)
+    {
+      void *ptr = nullptr;
 
-    if(auto err = cuMemAlloc((CUdeviceptr*)&ptr, size))
-      fprintf(stderr, "cuMemAlloc() error %d (%s)\n", err, GetCudaDrvApiErrorText(err));
+	  if(auto err = cuMemAlloc((CUdeviceptr*)&ptr, size))
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "cuMemAlloc() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), nullptr));
 
-    return MK_MEMOBJ(type, size, ptr);
+      return MK_MEMOBJ(type, size, ptr);
+    }
+
+    else if(g_clContext)
+    {
+      cl_int err;
+	  
+	  auto clbuf = clCreateBuffer(g_clContext, CL_MEM_READ_WRITE, size, NULL, &err);
+	  if(err != CL_SUCCESS)
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "clCreateBuffer(%zd) error %d (%s)\n", size, err, GetOpenClErrorText(err)), nullptr));
+
+      return MK_MEMOBJ(type, size, clbuf);
+    }
+
+    return MK_MEMOBJ(type, size, (fprintf(stderr, "GPU context is not set\n"), nullptr));
   }
 
   return MK_MEMOBJ(MEM_SYSTEM, 0, nullptr);
@@ -78,14 +118,54 @@ void mem_release(memobj_t &obj)
 
   if(obj.Type == MEM_PINNED)
   {
-	if(auto err = cuMemFreeHost(obj.Ptr))
-      fprintf(stderr, "cuMemFreeHost() error %d (%s)\n", err, GetCudaDrvApiErrorText(err));
+    if(g_cudaContext)
+    {
+	  if(auto err = cuMemFreeHost(obj.Ptr))
+      {
+        fprintf(stderr, "cuMemFreeHost() error %d (%s)\n", err, GetCudaDrvApiErrorText(err));
+        return;
+      }
+    }
+    else if(g_clContext)
+    {
+      if (auto err = clEnqueueUnmapMemObject(g_clMemAllocQueue, (cl_mem)obj.OrgPtr, obj.Ptr, 0, 0, 0))
+      {
+        fprintf(stderr, "clEnqueueUnmapMemObject() error %d (%s)\n", err, GetOpenClErrorText(err));
+        return;
+      }
+
+      if (auto err = clFinish(g_clMemAllocQueue))
+      {
+        fprintf(stderr, "clFinish() error %d (%s)\n", err, GetOpenClErrorText(err));
+        return;
+      }
+
+	  if(auto err = clReleaseMemObject((cl_mem)obj.Ptr))
+      {
+        fprintf(stderr, "clReleaseMemObject() error %d (%s)\n", err, GetOpenClErrorText(err));
+        return;
+      }
+	}
   }
 
   if(obj.Type == MEM_GPU)
   {
-	if(auto err = cuMemFree((CUdeviceptr)obj.Ptr))
-      fprintf(stderr, "cuMemFree() error %d (%s)\n", err, GetCudaDrvApiErrorText(err));
+    if(g_cudaContext)
+    {
+	  if(auto err = cuMemFree((CUdeviceptr)obj.Ptr))
+        fprintf(stderr, "cuMemFree() error %d (%s)\n", err, GetCudaDrvApiErrorText(err));
+
+      return;
+    }
+
+    if(g_clContext)
+    {
+	  if(auto err = clReleaseMemObject((cl_mem)obj.Ptr))
+      {
+        fprintf(stderr, "clReleaseMemObject() error %d (%s)\n", err, GetOpenClErrorText(err));
+        return;
+      }
+    }
   }
 
   memset(&obj, 0, sizeof(obj));
@@ -101,10 +181,26 @@ int mem_copy(memobj_t &dst, const void *src_ptr, size_t size)
     return 0;
   }
 
-  if(auto err = cuMemcpyHtoD((CUdeviceptr)dst.Ptr, src_ptr, size))
-    return fprintf(stderr, "cuMemcpyHtoD(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err)), err;
+  if(g_cudaContext)
+  {
+	if(auto err = cuMemcpyHtoD((CUdeviceptr)dst.Ptr, src_ptr, size))
+	  return fprintf(stderr, "cuMemcpyHtoD(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err)), err;
 
-  return 0;
+    return 0;
+  }	
+
+  if(g_clContext)
+  {
+    if(auto err = clEnqueueWriteBuffer(g_clMemAllocQueue, (cl_mem)dst.Ptr, CL_TRUE, 0, size, src_ptr, 0, 0, 0))
+      return fprintf(stderr, "clEnqueueWriteBuffer(%zd) failed with code %d(%s)", size, err, GetOpenClErrorText(err)), err;
+
+    if(auto err = clFinish(g_clMemAllocQueue))
+      return fprintf(stderr, "clFinish() failed with code %d(%s)", err, GetOpenClErrorText(err)), err;
+
+    return 0;
+  }
+
+  return fprintf(stderr, "GPU context is not set\n"), E_UNEXPECTED;
 }
 
 int mem_copy(void *dst_ptr, memobj_t &src, size_t size)
@@ -115,8 +211,24 @@ int mem_copy(void *dst_ptr, memobj_t &src, size_t size)
     return 0;
   }
 
-  if(auto err = cuMemcpyDtoH(dst_ptr, (CUdeviceptr)src.Ptr, size))
-    return fprintf(stderr, "cuMemcpyDtoH(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err)), err;
+  if(g_cudaContext)
+  {
+	if(auto err = cuMemcpyDtoH(dst_ptr, (CUdeviceptr)src.Ptr, size))
+	  return fprintf(stderr, "cuMemcpyDtoH(%zd) error %d (%s)\n", size, err, GetCudaDrvApiErrorText(err)), err;
 
-  return 0;
+    return 0;
+  }	
+
+  if(g_clContext)
+  {
+    if(auto err = clEnqueueReadBuffer(g_clMemAllocQueue, (cl_mem)src.Ptr, CL_TRUE, 0, size, dst_ptr, 0, 0, 0))
+      return fprintf(stderr, "clEnqueueReadBuffer(%zd) failed with code %d(%s)", size, err, GetOpenClErrorText(err)), err;
+
+    if(auto err = clFinish(g_clMemAllocQueue))
+      return fprintf(stderr, "clFinish() failed with code %d(%s)", err, GetOpenClErrorText(err)), err;
+
+    return 0;
+  }
+
+  return fprintf(stderr, "GPU context is not set\n"), E_UNEXPECTED;
 }

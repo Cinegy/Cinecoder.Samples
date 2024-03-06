@@ -32,18 +32,28 @@ using namespace std::chrono_literals;
 #include "../common/cpu_load_meter.h"
 
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
+#include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
+bool g_OpenclEnabled = false;
 bool g_bWaitAtExit = false;
 
 // variables used for encoder/decoder latency calculation
 static decltype(system_clock::now()) g_EncoderTimeFirstFrameIn, g_EncoderTimeFirstFrameOut;
 static decltype(system_clock::now()) g_DecoderTimeFirstFrameIn, g_DecoderTimeFirstFrameOut;
 
-CUcontext g_cudaContext = nullptr;
-int       g_cudaDeviceNo = -1;
-char      g_cudaDeviceName[128] = {};
+bool	   g_bUseCUDA = false;
+CUcontext  g_cudaContext = nullptr;
+int        g_cudaDeviceNo = -1;
+char       g_cudaDeviceName[128] = {};
+
+bool	   g_bUseOpenCL = false;
+cl_context g_clContext = nullptr;
+int        g_clDeviceNo = -1;
+char       g_clDeviceName[128] = {};
+
+cl_command_queue g_clMemAllocQueue = nullptr;
 
 //---------------------------------------------------------------------
 int SetCudaContext(CUcontext ctx)
@@ -84,6 +94,60 @@ int SetCudaContext(CUcontext ctx)
   printf("Selected CUDA device: %d \"%s\"\n", g_cudaDeviceNo, g_cudaDeviceName);
 
   g_cudaContext = ctx;
+
+  return 0;
+}
+
+//---------------------------------------------------------------------
+int SetOpenCLContext(cl_context ctx)
+//---------------------------------------------------------------------
+{
+  cl_device_id device_id;
+  if(auto err = clGetContextInfo(ctx, CL_CONTEXT_DEVICES, sizeof(device_id), &device_id, NULL))
+    return fprintf(stderr, "clGetContextInfo(CL_CONTEXT_DEVICES) error %d (%s)\n", err, GetOpenClErrorText(err)), err;
+
+  cl_int device_vendor_id = 0;
+  if(auto err = clGetDeviceInfo(device_id, CL_DEVICE_VENDOR_ID, sizeof(device_vendor_id), &device_vendor_id, NULL))
+    return fprintf(stderr, "clGetDeviceInfo(CL_DEVICE_VENDOR_ID) failed with code %d (%s)", err, GetOpenClErrorText(err)), err;
+
+  if(auto err = clGetDeviceInfo(device_id, device_vendor_id == 0x1002 ? CL_DEVICE_BOARD_NAME_AMD : CL_DEVICE_NAME, sizeof(g_clDeviceName), g_clDeviceName, NULL))
+    return fprintf(stderr, "clGetDeviceInfo(%s) failed with code %d (%s)", device_vendor_id == 0x1002 ? "CL_DEVICE_BOARD_NAME_AMD" : "CL_DEVICE_NAME", err, GetOpenClErrorText(err)), err;
+
+  g_clDeviceNo = -1;
+
+  cl_uint num_platforms;
+  if(auto err = clGetPlatformIDs(0, NULL, &num_platforms))
+    return fprintf(stderr, "clGetPlatformIDs() error %d (%s)\n", err, GetOpenClErrorText(err)), err;
+
+  auto clSelectedPlatformID = (cl_platform_id*)_alloca(sizeof(cl_platform_id) * num_platforms);
+
+  if(auto err = clGetPlatformIDs(num_platforms, clSelectedPlatformID, NULL))
+    return fprintf(stderr, "clGetPlatformIDs() error %d (%s)\n", err, GetOpenClErrorText(err)), err;
+
+  for(cl_uint i = 0; i < num_platforms; i++)
+  {
+    cl_device_id device_id_i;
+    if(auto err = clGetDeviceIDs(clSelectedPlatformID[i], CL_DEVICE_TYPE_GPU, 1, &device_id_i, NULL))
+      return fprintf(stderr, "clGetDeviceIDs() error %d (%s)\n", err, GetOpenClErrorText(err)), err;
+
+    if(device_id_i == device_id)
+    {
+      g_clDeviceNo = i;
+      break;
+    }
+  }
+
+  if(g_clDeviceNo < 0)
+    return fprintf(stderr, "Can't find OpenCL device ordinal number\n"), E_UNEXPECTED;
+
+  cl_int err = 0;
+  g_clMemAllocQueue = clCreateCommandQueue(ctx, device_id, 0, &err);
+  if(err)
+    return fprintf(stderr, "clCreateCommandQueue() error %d (%s)\n", err, GetOpenClErrorText(err)), err;
+
+  printf("Selected OpenCL device: %d \"%s\"\n", g_clDeviceNo, g_clDeviceName);
+
+  g_clContext = ctx;
 
   return 0;
 }
@@ -130,6 +194,7 @@ int main_impl(int argc, char* argv[])
 //-----------------------------------------------------------------------------
 {
   g_CudaEnabled = LoadCudaDrvApiLib() == 0;
+  g_OpenclEnabled = LoadOpenClLib() == 0;
 
   if(argc < 5)
   {
@@ -142,6 +207,12 @@ int main_impl(int argc, char* argv[])
     puts("\t'D2CUDA'       -- Daniel2 CUDA codec test, data is copying from GPU into CPU pinned memory");
     puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2CUDANP'     -- Daniel2 CUDA codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    }
+    if(g_OpenclEnabled)
+    {
+    puts("\t'D2OCL'        -- Daniel2 OpenCL codec test, data is copying from GPU into CPU pinned memory");
+    puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
+    puts("\t'D2OCLNP'      -- Daniel2 OpenCL codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
     }
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
@@ -197,6 +268,7 @@ int main_impl(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA";
     g_mem_type = MEM_PINNED;
+    g_bUseCUDA = true;
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDANP"))
   {
@@ -211,7 +283,33 @@ int main_impl(int argc, char* argv[])
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
     strEncName = "Daniel2_CUDA (GPU-GPU mode)";
     g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
   }
+
+  if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCL"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_OCL; 
+    strEncName = "Daniel2_OCL";
+    g_mem_type = MEM_PINNED;
+    g_bUseOpenCL = true;
+  }
+  if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCLNP"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_OCL; 
+    strEncName = "Daniel2_OCL (NOT PINNED MEMORY!!)";
+    g_mem_type = MEM_SYSTEM;
+  }
+  if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCLGPU"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_OCL; 
+    strEncName = "Daniel2_OCL (GPU-GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseOpenCL = true;
+  }
+  
   if(0 == strcmp(argv[1], "MPEG"))
   { 
     clsidEnc = CLSID_CC_MpegVideoEncoder; 
@@ -240,6 +338,7 @@ int main_impl(int argc, char* argv[])
     strEncName = "NVidia H264"; 
     bLoadGpuCodecsPlugin = true;
     g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
   }
   if(0 == strcmp(argv[1], "HEVC_NV"))
   { 
@@ -253,8 +352,9 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_HEVCVideoEncoder_NV; 
     clsidDec = CLSID_CC_HEVCVideoDecoder_NV; 
     strEncName = "NVidia HEVC"; 
-    g_mem_type = MEM_GPU;
     bLoadGpuCodecsPlugin = true;
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
   }
   if(0 == strcmp(argv[1], "H264_AMF"))
   { 
@@ -535,20 +635,42 @@ int main_impl(int argc, char* argv[])
   if(EncDeviceID >= -1)
     printf("Encoder device id = %d\n", EncDeviceID);
 
-  if(g_mem_type == MEM_GPU)
+  if(g_mem_type == MEM_GPU || g_mem_type == MEM_PINNED)
   {
-    printf("Setting up the current CUDA context\n");
+    if(g_bUseCUDA)
+    {
+      printf("Setting up the current CUDA context\n");
 
-    com_ptr<ICC_CudaContextProp> pCudaCtxProp;
-    if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
-      return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
-    
-    void *cuda_ctx;
-	if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
-      return fprintf(stderr, "Failed getting CUDA context from the encoder (code %08x)", hr), hr;
+      com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+      if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
+        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
 
-	if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
-	  return fprintf(stderr, "SetCudaContext failed (code %08x)", hr), hr;
+      void *cuda_ctx;
+      if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
+        return fprintf(stderr, "Failed getting CUDA context from the encoder (code %08x)", hr), hr;
+
+      if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
+        return fprintf(stderr, "SetCudaContext() failed (code %08x)", hr), hr;
+    }
+    else if(g_bUseOpenCL)
+    {
+      printf("Setting up the current OpenCL context\n");
+
+      com_ptr<ICC_OCL_ContextProp> pOclCtxProp;
+      if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_OCL_ContextProp, (void**)&pOclCtxProp)))
+        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+
+      void *ocl_ctx;
+      if(FAILED(hr = pOclCtxProp->get_OCL_Context(&ocl_ctx)))
+        return fprintf(stderr, "Failed getting OpenCL context from the encoder (code %08x)", hr), hr;
+
+      if(FAILED(hr = SetOpenCLContext((cl_context)ocl_ctx)))
+        return fprintf(stderr, "SetOpenCLContext() failed (code %08x)", hr), hr;
+    }
+    else
+    {
+      return fprintf(stderr, "Unknown GPU acceleration type\n"), E_UNEXPECTED;
+    }
   }
 
   CC_AMOUNT concur_level = 0;
@@ -833,20 +955,42 @@ int main_impl(int argc, char* argv[])
     printf("Decoder concurrency level = %d\n", concur_level);
   }
 
-  if (g_mem_type == MEM_GPU && DecDeviceID != EncDeviceID)
+  if ((g_mem_type == MEM_GPU || g_mem_type == MEM_PINNED) && DecDeviceID != EncDeviceID)
   {
-    printf("Setting up the current CUDA context\n");
+	if(g_bUseCUDA)
+    {
+      printf("Setting up the current CUDA context\n");
 
-    com_ptr<ICC_CudaContextProp> pCudaCtxProp;
-    if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
-      return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+      com_ptr<ICC_CudaContextProp> pCudaCtxProp;
+      if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
+        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
 
-    void* cuda_ctx;
-    if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
-      return fprintf(stderr, "Failed getting CUDA context from the decoder (code %08x)", hr), hr;
+      void* cuda_ctx;
+      if(FAILED(hr = pCudaCtxProp->get_CudaContext(&cuda_ctx)))
+        return fprintf(stderr, "Failed getting CUDA context from the decoder (code %08x)", hr), hr;
 
-    if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
-      return fprintf(stderr, "SetCudaContext failed (code %08x)", hr), hr;
+      if(FAILED(hr = SetCudaContext((CUcontext)cuda_ctx)))
+        return fprintf(stderr, "SetCudaContext failed (code %08x)", hr), hr;
+    }
+    else if(g_bUseOpenCL)
+    {
+      printf("Setting up the current OpenCL context\n");
+
+      com_ptr<ICC_OCL_ContextProp> pOclCtxProp;
+      if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_OCL_ContextProp, (void**)&pOclCtxProp)))
+        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+
+      void *ocl_ctx;
+      if(FAILED(hr = pOclCtxProp->get_OCL_Context(&ocl_ctx)))
+        return fprintf(stderr, "Failed getting OpenCL context from the encoder (code %08x)", hr), hr;
+
+      if(FAILED(hr = SetOpenCLContext((cl_context)ocl_ctx)))
+        return fprintf(stderr, "SetOpenCLContext() failed (code %08x)", hr), hr;
+    }
+    else
+    {
+      return fprintf(stderr, "Unknown GPU acceleration type\n"), E_UNEXPECTED;
+    }
   }
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;

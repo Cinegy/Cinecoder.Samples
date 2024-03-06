@@ -89,10 +89,11 @@ public:
         BYTE* pBuffer    = (BYTE*)m_memBuffer;
         BYTE *pRefBuffer = (BYTE*)m_memRefBuffer;
 
-		if(g_mem_type == MEM_GPU)
+        if (g_mem_type == MEM_GPU)
 		{
-		  if(auto err = cuCtxPushCurrent(g_cudaContext))
-			return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), E_FAIL;
+          if(g_cudaContext)
+            if(auto err = cuCtxPushCurrent(g_cudaContext))
+              return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), E_FAIL;
 
           memTmpBuffer    = mem_alloc(MEM_PINNED, m_cbFrameBytes);
 		  memTmpRefBuffer = mem_alloc(MEM_PINNED, m_cbFrameBytes);
@@ -109,8 +110,6 @@ public:
             mem_copy(pBuffer, m_memBuffer, m_cbFrameBytes);
             mem_copy(pRefBuffer, m_memRefBuffer, m_cbFrameBytes);
 		  }
-
-		  cuCtxPopCurrent(NULL);
 		}
 
         CC_VIDEO_QUALITY_MEASUREMENT psnr = {};
@@ -129,7 +128,10 @@ public:
 		  mem_release(memTmpRefBuffer);
 		}
 
-		if(FAILED(hr))
+        if(g_cudaContext)
+          cuCtxPopCurrent(NULL);
+        
+        if(FAILED(hr))
 		  fprintf(stderr, "PSNR calculation failed, error code %xh\n", hr);
 
 		else for(int i = 0; i < psnr.NumVals; i++)

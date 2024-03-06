@@ -24,6 +24,9 @@
     <ClCompile Include="..\external\cuda_drvapi_dyn_load\src\cuda_drvapi_dyn_load.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\external\opencl_dyn_load\src\opencl_dyn_load.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="file_writer.h">
