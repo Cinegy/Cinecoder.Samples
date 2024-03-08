@@ -198,7 +198,7 @@ int main_impl(int argc, char* argv[])
 
   if(argc < 5)
   {
-    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [/outfile=<output_file.bin>] [/outfmt=<rawtype>] [/outscale=#] [/fps=#] [/device=#] [/affinity=#] [/priority=#] [/duration=#sec[,#sec]]");
+    puts("Usage: Daniel2.Benchmark <codec> <profile.xml> <rawtype> <input_file.raw> [switches]");
     puts("Where the <codec> is one of the following:");
     puts("\t'DMMY'         -- Dmmy codec test (RAM bandwidth test)");
     puts("\t'D2'           -- Daniel2 CPU codec test");
@@ -232,7 +232,19 @@ int main_impl(int argc, char* argv[])
     puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
 //#endif
-    puts("\n      <rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
+    puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
+    puts("\n");
+    puts("\n<switches>:");
+    puts("\t/outfile=<filename.bin> - outputs encoded data into the file");
+    puts("\t/outfmt=<rawtype>       - specifies the output format for the decoder (if it differs from the encoder)");
+    puts("\t/outscale=#             - specifies the scaling factor for the decoder");
+    puts("\t/fps=#                  - executes the test at some constant frame rate (realtime imitation)");
+    puts("\t/device=#[,#]           - device index to compute at (second parameter toggles it for the decoder)");
+    puts("\t/numthreads=#           - number of threads in the thread pool");
+    puts("\t/affinity=#             - threads affinity mask");
+    puts("\t/priority=#             - threads priority (-15..15), 0=normal" );
+    puts("\t/duration=#[,#]         - the test duration(s) in seconds. -1 means continuous test.");
+    puts("\t/wait                   - waits for the keypress after the test ends");
     return 1;
   }
 
