@@ -140,7 +140,7 @@ void mem_release(memobj_t &obj)
         return;
       }
 
-	  if(auto err = clReleaseMemObject((cl_mem)obj.Ptr))
+	  if(auto err = clReleaseMemObject((cl_mem)obj.OrgPtr))
       {
         fprintf(stderr, "clReleaseMemObject() error %d (%s)\n", err, GetOpenClErrorText(err));
         return;
