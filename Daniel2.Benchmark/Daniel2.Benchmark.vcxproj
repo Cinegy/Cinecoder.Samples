@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" />
   <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <ItemGroup Label="ProjectConfigurations">
@@ -176,7 +176,7 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" />
     <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
-    <Import Project="..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -186,7 +186,7 @@
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.8.20045\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.4.12342-alpha\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.8.38002-alpha\build\Cinecoder.targets'))" />
   </Target>
 </Project>
