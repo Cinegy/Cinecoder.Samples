@@ -35,6 +35,10 @@ using namespace std::chrono_literals;
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
 #include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
+#ifndef CL_DEVICE_BOARD_NAME_AMD // FIXME in opencl_dyn_load
+#define CL_DEVICE_BOARD_NAME_AMD 0x4038
+#endif
+
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
 bool g_OpenclEnabled = false;
