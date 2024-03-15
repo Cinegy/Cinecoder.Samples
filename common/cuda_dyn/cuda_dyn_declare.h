@@ -64,6 +64,15 @@ DECLARE_FUNC_CUDA(cudaMallocArray)
 DECLARE_FUNC_CUDA(cudaFreeArray)
 DECLARE_FUNC_CUDA(cudaCreateChannelDesc)
 
+DECLARE_FUNC_CUDA(cudaHostAlloc)
+DECLARE_FUNC_CUDA(cudaHostGetDevicePointer)
+DECLARE_FUNC_CUDA(cudaSetDeviceFlags)
+DECLARE_FUNC_CUDA(cudaHostRegister)
+DECLARE_FUNC_CUDA(cudaHostUnregister)
+
+DECLARE_FUNC_CUDA(cudaDeviceGetAttribute)
+DECLARE_FUNC_CUDA(cudaGetDeviceProperties)
+
 #ifdef _extern
 #undef _extern
 #endif

@@ -70,7 +70,7 @@ int BaseGPURender::SetParameters(bool bVSync, bool bRotate, bool bMaxFPS)
 
 int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params, size_t gpuDevice)
 {
-	m_bUseGPU = dec_params.type & VD_TYPE_CUDA ? true : false;
+	m_bUseGPU = dec_params.type == VD_TYPE_CUDA ? true : false;
 
 	m_decodeD2 = std::make_shared<DecodeDaniel2>(); // Create decoder for decoding DN2 files
 
@@ -131,16 +131,21 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	image_width = (unsigned int)m_decodeD2->GetImageWidth();
 	image_height = (unsigned int)m_decodeD2->GetImageHeight();
 
-	int iWinW = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-	int iWinH = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	CC_RATIONAL AspectRatio = m_decodeD2->GetAspectRatio();
 
-	float fKoeffDiv = (float)image_width / ((float)iWinW / 3.f);
+	unsigned int image_width_ = image_width;
+	unsigned int image_height_ = (unsigned int)((float)image_width_ * (float)AspectRatio.denom / (float)AspectRatio.num);
+
+	int iWinW = GetSystemMetrics(SM_CXSCREEN);
+	int iWinH = GetSystemMetrics(SM_CYSCREEN);
+
+	float fKoeffDiv = (float)image_width_ / ((float)iWinW / 3.f);
 	// Correction start of window size using global height of monitor
 	while (window_height >= iWinH)
 		fKoeffDiv *= 1.5f;
 
-	window_width = static_cast<unsigned int>((float)(image_width) / fKoeffDiv);
-	window_height = static_cast<unsigned int>((float)(image_height) / fKoeffDiv);
+	window_width = static_cast<unsigned int>((float)(image_width_) / fKoeffDiv);
+	window_height = static_cast<unsigned int>((float)(image_height_) / fKoeffDiv);
 
 	//window_width = 1920; window_height = 1080;
 

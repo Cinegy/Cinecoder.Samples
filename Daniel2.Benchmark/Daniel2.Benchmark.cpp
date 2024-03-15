@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <vector>
 #include <thread>
 #include <chrono>
 using namespace std::chrono;
@@ -547,9 +548,21 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "Error loading '%s'", gpu_plugin_name), hr;
 #endif
   
-  char profile_text[4096] = { 0 };
-  if (fread(profile_text, 1, sizeof(profile_text), profile) < 0)
-	return fprintf(stderr, "Profile reading error"), -1;
+  //char profile_text[4096] = { 0 };
+
+  if (fseek(profile, 0, SEEK_END) != 0)
+    return fprintf(stderr, "Profile seeking error"), -1;
+
+  long fileSize = ftell(profile);
+
+  std::vector<char> profile_vec(fileSize);
+  char* profile_text = profile_vec.data();
+
+  if (fseek(profile, 0, SEEK_SET) != 0)
+    return fprintf(stderr, "Profile seeking error"), -1;
+
+  if (fread(profile_text, 1, fileSize, profile) < 0)
+    return fprintf(stderr, "Profile reading error"), -1;
 
 #ifdef _WIN32
   CComBSTR pProfile = profile_text;

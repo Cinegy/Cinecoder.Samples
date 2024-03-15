@@ -123,6 +123,15 @@ int DynamicLoadCUDA::InitCUDA()
 		LOAD_CUDA_FUNC(cudaMallocArray)
 		LOAD_CUDA_FUNC(cudaFreeArray)
 		LOAD_CUDA_FUNC(cudaCreateChannelDesc)
+
+		LOAD_CUDA_FUNC(cudaHostAlloc)
+		LOAD_CUDA_FUNC(cudaHostGetDevicePointer)
+		LOAD_CUDA_FUNC(cudaSetDeviceFlags)
+		LOAD_CUDA_FUNC(cudaHostRegister)
+		LOAD_CUDA_FUNC(cudaHostUnregister)
+
+		LOAD_CUDA_FUNC(cudaDeviceGetAttribute)
+		LOAD_CUDA_FUNC(cudaGetDeviceProperties)
 	}
 	else
 		return fprintf(stderr, "CUDA init error: failed to load!\n"), -1;

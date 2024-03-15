@@ -1,15 +1,10 @@
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.ui.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.MSBuildStep
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.exec
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.msBuild
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.nuGetInstaller
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.powerShell
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.v2019_2.projectFeatures.dockerRegistry
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.dockerSupport
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.dockerCommand
 
 version = "2020.1"
 
@@ -90,9 +85,10 @@ object SampleBinaries : Project({
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildLinuxArm64)
+    buildType(BuildMacOSArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildMacOSArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -112,8 +108,8 @@ object Version : BuildType({
         text("BuildVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("MinorVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
         text("SourceVersion", "", display = ParameterDisplay.HIDDEN, allowEmpty = true) //set by version script
-        text("LICENSE_COMPANYNAME", "cinegy", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
-        password("LICENSE_KEY", "credentialsJSON:2808c77b-9bd2-48a8-808f-eea5179c9bb2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+        text("LICENSE_COMPANYNAME", "CinecoderSamples", label = "License comany name", description = "Used to set integrated Cinecoder license values", allowEmpty = false)
+        //password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
     }
 
     steps {
@@ -144,6 +140,10 @@ object BuildWin : BuildType({
     common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
     """.trimIndent()
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
 
@@ -177,16 +177,24 @@ object BuildWin : BuildType({
             scriptMode = file {
                 path = "common/inject-license.ps1"
             }
-            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}")
+            param("jetbrains_powershell_scriptArguments", "-CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%")
         }
-        msBuild {
+         dotnetMsBuild {
             name = "(build) Samples Solution"
-            path = "Cinecoder.Samples.sln"
-            version = MSBuildStep.MSBuildVersion.V14_0
-            toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
-            platform = MSBuildStep.Platform.x64
-            args = "-p:Configuration=Release"
+            projects = "Cinecoder.Samples.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            targets = "Build"
+            configuration = "Release"
+            args = "/p:Platform=x64"
         }
+        // msBuild {
+        //     name = "(build) Samples Solution"
+        //     path = "Cinecoder.Samples.sln"
+        //     version = MSBuildStep.MSBuildVersion.V14_0
+        //     toolsVersion = MSBuildStep.MSBuildToolsVersion.V14_0
+        //     platform = MSBuildStep.Platform.x64
+        //     args = "-p:Configuration=Release"
+        // }
     }
 })
 
@@ -202,6 +210,10 @@ object BuildLinux : BuildType({
         artifactRules = """_bin/linux => CinecoderSamples-Linux-%teamcity.build.branch%-%build.number%.zip"""
     }
 
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
     vcs {
         root(DslContext.settingsRoot)
         checkoutMode = CheckoutMode.ON_AGENT
@@ -219,7 +231,7 @@ object BuildLinux : BuildType({
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
         }
         exec {
@@ -237,6 +249,14 @@ object BuildLinux : BuildType({
         }
     }
 
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
+        }
+    }
+    
     dependencies {
         snapshot(Version) {
             reuseBuilds = ReuseBuilds.NO
@@ -253,7 +273,80 @@ object BuildLinuxArm64 : BuildType({
     // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
     if(!isIntegrationBuild)
     { 
-        artifactRules = """README.md => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+        artifactRules = """_bin/linux => CinecoderSamples-Linux-Arm64-%teamcity.build.branch%-%build.number%.zip"""
+    }
+
+	params {
+        password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
+    }
+	
+    vcs {
+        root(DslContext.settingsRoot)
+        checkoutMode = CheckoutMode.ON_AGENT
+        cleanCheckout = true
+    }
+
+    steps {
+        exec {
+            name = "(patch) Version (from version step)"
+            path = "pwsh"
+            arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
+        }
+        exec {
+            name = "(patch) Inject license"
+            path = "pwsh"
+            workingDir = "common"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+        }
+        exec {
+            name = "(build) Samples Script"
+            //enabled=false
+            path = "./build_samples-linux-arm64.sh"
+            arguments = "Release --platform=linux/arm64"            
+            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
+        }
+    }
+
+    triggers {
+        vcs {
+            enabled = false
+            branchFilter = ""
+        }
+    }
+
+    features {
+        dockerSupport {
+            loginToRegistry = on {
+                dockerRegistryId = "CINEGY_REGISTRY"
+            }
+        }
+    }
+
+    dependencies {
+        snapshot(Version) {
+            reuseBuilds = ReuseBuilds.NO
+        }
+    }
+})
+
+object BuildMacOSArm64 : BuildType({
+    name = "build (macos arm64)"
+
+    // check if the build type is Integration Build
+    val isIntegrationBuild = DslContext.projectId.value.contains("IntegrationBuilds", ignoreCase = true)
+
+    // Integration Builds: disable most artifacts (adding readme so there is something in the zip to bundle)
+    if(!isIntegrationBuild)
+    { 
+        artifactRules = """_bin/macosx => CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip"""
     }
 
     vcs {
@@ -268,34 +361,42 @@ object BuildLinuxArm64 : BuildType({
             path = "pwsh"
             arguments = "./set_version.ps1 -majorVer ${Version.depParamRefs["MajorVersion"]} -minorVer ${Version.depParamRefs["MinorVersion"]}  -buildVer ${Version.depParamRefs["BuildVersion"]}  -sourceVer ${Version.depParamRefs["SourceVersion"]}"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
+            dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
         }
         exec {
             name = "(patch) Inject license"
             path = "pwsh"
             workingDir = "common"
-            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey ${Version.depParamRefs["LICENSE_KEY"]}"
+            arguments = "./inject-license.ps1 -CompanyName ${Version.depParamRefs["LICENSE_COMPANYNAME"]} -LicenseKey %LICENSE_KEY%"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/devbase:latest"
-        }
+			dockerPull = true
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+        }        
         exec {
             name = "(build) Samples Script"
-            enabled=false
-            path = "./build_samples-linux-arm64.sh"
-            arguments = "Release"            
-            dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu1804/gcc750aarch64:latest"
-        }
+            workingDir = ""
+            path = "./build_samples-linux.sh"
+            arguments = "Release"
+        }        
     }
 
-    triggers {
-        vcs {
-            enabled = false
-            branchFilter = ""
-        }
-    }
+    // triggers {
+    //     vcs {
+    //         enabled = false
+    //         branchFilter = ""
+    //     }
+    // }
 
     dependencies {
         snapshot(Version) {
             reuseBuilds = ReuseBuilds.NO
         }
+    }
+
+    requirements {
+        moreThan("tools.xcode.version.major", "11")
+        //equals("teamcity.agent.jvm.os.arch", "aarch64")
     }
 })
 
@@ -341,6 +442,16 @@ object BuildAggregation : BuildType({
                 """.trimIndent()
             }
         }        
+        dependency(BuildMacOSArm64) {
+            snapshot {
+            }
+
+            artifacts {
+                artifactRules = """
+                    CinecoderSamples-MacOS-Arm64-%teamcity.build.branch%-%build.number%.zip
+                """.trimIndent()
+            }
+        }
         dependency(BuildWin) {
             snapshot {
             }

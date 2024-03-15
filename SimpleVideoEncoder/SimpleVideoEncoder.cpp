@@ -11,7 +11,10 @@
 #include <tchar.h>
 
 #include <conio.h>
+
+#ifdef _WIN32
 #include <malloc.h>
+#endif
 
 //#include <windows.h>
 

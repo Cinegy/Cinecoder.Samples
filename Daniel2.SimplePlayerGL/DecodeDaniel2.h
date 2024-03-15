@@ -12,7 +12,10 @@ enum VIDEO_DECODER_TYPE
 	
 	VD_TYPE_CPU = 0,		// CPU
 	VD_TYPE_CUDA,			// NVIVIA GPU(CUDA)
+	VD_TYPE_NVDEC,			// NVIVIA GPU(NVDEC)
 	VD_TYPE_QuickSync,		// Intel GPU(QuickSync)
+	VD_TYPE_IVPL,			// Intel GPU(OneVPL)
+	VD_TYPE_AMF,			// AMD GPU(AMF)
 	VD_TYPE_OpenCL			// OpenCL
 };
 
@@ -50,6 +53,7 @@ private:
 	BUFFER_FORMAT m_outputBufferFormat;
 	CC_COLOR_FMT m_fmt;
 	const char* m_strStreamType;
+	CC_RATIONAL m_AspectRatio;
 
 	CC_FRAME_RATE m_FrameRate;
 	CC_CHROMA_FORMAT m_ChromaFormat;
@@ -102,6 +106,7 @@ public:
 	size_t GetImageHeight() { return m_height; }
 	IMAGE_FORMAT GetImageFormat() { return m_outputImageFormat; }
 	BUFFER_FORMAT GetBufferFormat() { return m_outputBufferFormat; }
+	CC_RATIONAL GetAspectRatio() { return m_AspectRatio; }
 
 	C_Block* MapFrame();
 	void  UnmapFrame(C_Block* pBlock);

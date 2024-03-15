@@ -11,6 +11,7 @@
 #include <GLUT/glut.h> // GLUT framework
 #include <OpenGL/OpenGL.h> // OpenGL framework
 #include <ApplicationServices/ApplicationServices.h> // CoreGraphics
+//#include <CoreGraphics/CoreGraphics.h>
 
 // for XCode
 //#define GLEW_STATIC
