@@ -9,18 +9,18 @@ set(SOURCES
 	Daniel2.Benchmark.cpp
 
 	../common/cuda_dyn/cuda_dyn_load.cpp
-#	../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.cpp
+	../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.cpp
+    ../external/opencl_dyn_load/src/opencl_dyn_load.cpp
 )
 
 #set(HEADERS
 #)
 
-include_directories("/usr/local/cuda/include")
+include_directories("../external/CUDART")
+include_directories("../external/OpenCL")
 include_directories("../common")
 include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
-
-link_directories("/usr/local/cuda/lib64")
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 
