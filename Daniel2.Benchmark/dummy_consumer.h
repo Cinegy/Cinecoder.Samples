@@ -4,26 +4,30 @@ class C_DummyWriter : public ICC_DataReadyCallback
 {
   _IMPLEMENT_IUNKNOWN_STATICALLY(ICC_DataReadyCallback)
 
-  BYTE         *m_pBuffer;
+  //memobj_t&     m_memBuffer;
+  std::vector<memobj_t> &m_memBuffers;
   CC_FRAME_RATE m_rFrameRate;
   CC_SIZE       m_szFrame;
   DWORD         m_cbFrameBytes;
   CC_COLOR_FMT  m_Format;
   int           m_pitch;
+  CC_MEMORY_TYPE m_memtype;
+
   int		    m_FrameNo;
 
   com_ptr<ICC_VideoQualityMeter> m_pPsnrCalc;
-  BYTE         *m_pRefBuffer;
+  memobj_t&     m_memRefBuffer;
 
 public:
-  C_DummyWriter(CC_COLOR_FMT fmt, BYTE *buffer, int bufsize, int pitch, ICC_VideoQualityMeter *pPsnrCalc, BYTE *pRefBuffer)
+  C_DummyWriter(CC_COLOR_FMT fmt, std::vector<memobj_t> &buffers, int bufsize, int pitch, CC_MEMORY_TYPE mem_type, ICC_VideoQualityMeter *pPsnrCalc, memobj_t &refBuffer)
   : m_Format(fmt)
-  , m_pBuffer(buffer)
+  , m_memBuffers(buffers)
   , m_cbFrameBytes(bufsize)
   , m_pitch(pitch)
+  , m_memtype(mem_type)
   , m_FrameNo(0)
   , m_pPsnrCalc(pPsnrCalc)
-  , m_pRefBuffer(pRefBuffer)
+  , m_memRefBuffer(refBuffer)
   {}
 
   virtual ~C_DummyWriter()
@@ -51,19 +55,10 @@ public:
     com_ptr<ICC_VideoProducer> spProducer;
     if(FAILED(hr = pUnk->QueryInterface(IID_ICC_VideoProducer, (void**)&spProducer)))
       return hr;
-#ifdef	USE_CUDA_DRV_API
-	com_ptr<ICC_CudaContextProp> pCudaCtxProp;
-	hr = spProducer->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp);
-	if (SUCCEEDED(hr))
-	{
-		CUcontext cuContext = nullptr;
-		hr = pCudaCtxProp->get_CudaContext((CC_PVOID*)&cuContext);
-		if (FAILED(hr)) return hr;
-		auto err = cuCtxSetCurrent(cuContext);
-		if (!err)
-			fprintf(stderr, "cuCtxSetCurrent() error %d\n", err);
-	}
-#endif
+
+    com_ptr<ICC_VideoProducerExtAsync2> spProdExtAsync2;
+    pUnk->QueryInterface(IID_ICC_VideoProducerExtAsync2, (void**)&spProdExtAsync2);
+
     if(m_FrameNo == 0)
     {
       g_DecoderTimeFirstFrameOut = system_clock::now();
@@ -79,9 +74,23 @@ public:
 
     if(m_Format != CCF_UNKNOWN)
     {
-      DWORD dwBytesWrote = 0;
-      if(FAILED(hr = spProducer->GetFrame(m_Format, m_pBuffer, m_cbFrameBytes, m_pitch, &dwBytesWrote)))
-        return hr;
+      auto target_buffer = m_memBuffers[m_FrameNo % m_memBuffers.size()];
+
+      if(spProdExtAsync2)
+      {
+        void *pData; DWORD cbSize; CC_MEMORY_TYPE mem_type;
+
+        if(FAILED(hr = spProdExtAsync2->GetDecodeFrameAsyncSurface2(&pData, &cbSize, &mem_type, NULL)))
+          return hr;
+
+        target_buffer.Ptr = pData;
+        target_buffer.Size = cbSize;
+      }
+      else
+      {
+        if(FAILED(hr = spProducer->GetFrame(m_Format, (BYTE*)target_buffer, m_cbFrameBytes, m_pitch)))
+          return hr;
+      }
 #if 0
       if(m_FrameNo == 0)
       {
@@ -96,39 +105,31 @@ public:
 
       if(m_FrameNo == 0 && m_pPsnrCalc)
       {
-        BYTE *pBuffer    = m_pBuffer;
-        BYTE *pRefBuffer = m_pRefBuffer;
+        memobj_t memTmpBuffer = {}, memTmpRefBuffer = {};
+        
+        BYTE* pBuffer    = (BYTE*)target_buffer;
+        BYTE *pRefBuffer = (BYTE*)m_memRefBuffer;
 
-		if(g_mem_type == MEM_GPU)
+        if (g_mem_type == MEM_GPU)
 		{
-		  pBuffer    = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
-		  pRefBuffer = (BYTE*)mem_alloc(MEM_SYSTEM, m_cbFrameBytes);
+          if(g_cudaContext)
+            if(auto err = cuCtxPushCurrent(g_cudaContext))
+              return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), E_FAIL;
 
-		  if(!pBuffer || !pRefBuffer)
+          memTmpBuffer    = mem_alloc(MEM_PINNED, m_cbFrameBytes);
+		  memTmpRefBuffer = mem_alloc(MEM_PINNED, m_cbFrameBytes);
+
+          pBuffer    = (BYTE*)(memTmpBuffer);
+          pRefBuffer = (BYTE*)(memTmpRefBuffer);
+
+		  if(!memTmpBuffer || !memTmpRefBuffer)
 		  {
 		    hr = E_OUTOFMEMORY;
 		  }
 		  else
 		  {
-#ifdef	USE_CUDA_DRV_API
-			auto err = cuMemcpyDtoH(pBuffer, (CUdeviceptr)m_pBuffer, m_cbFrameBytes);
-			if (!err)
-				err = cuMemcpyDtoH(pRefBuffer, (CUdeviceptr)m_pRefBuffer, m_cbFrameBytes);
-			if (err)
-			{
-				fprintf(stderr, "cuMemcpyDtoH() error %d\n", err);
-				hr = E_UNEXPECTED;
-			}
-#else
-		    auto err = cudaMemcpy(pBuffer, m_pBuffer, m_cbFrameBytes, cudaMemcpyDeviceToHost);
-		    if(!err) 
-		    	err = cudaMemcpy(pRefBuffer, m_pRefBuffer, m_cbFrameBytes, cudaMemcpyDeviceToHost);
-		    if(err)
-		    {
-      			fprintf(stderr, "cudaMemcpy(cudaMemcpyDeviceToHost) error %d\n", err);
-      			hr = E_UNEXPECTED;
-			}
-#endif
+            mem_copy(pBuffer, target_buffer, m_cbFrameBytes);
+            mem_copy(pRefBuffer, m_memRefBuffer, m_cbFrameBytes);
 		  }
 		}
 
@@ -144,11 +145,14 @@ public:
 
 		if(g_mem_type == MEM_GPU)
 		{
-		  mem_release(MEM_SYSTEM, pBuffer);
-		  mem_release(MEM_SYSTEM, pRefBuffer);
+		  mem_release(memTmpBuffer);
+		  mem_release(memTmpRefBuffer);
 		}
 
-		if(FAILED(hr))
+        if(g_cudaContext)
+          cuCtxPopCurrent(NULL);
+        
+        if(FAILED(hr))
 		  fprintf(stderr, "PSNR calculation failed, error code %xh\n", hr);
 
 		else for(int i = 0; i < psnr.NumVals; i++)

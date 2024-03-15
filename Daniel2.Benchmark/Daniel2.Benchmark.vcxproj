@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.props" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.props')" />
   <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.props" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.props')" />
-  <Import Project="..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.props')" />
+  <Import Project="..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.props" Condition="Exists('..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.props')" />
   <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -100,6 +101,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\CUDART;$(SolutionDir)external\OpenCL;$(MSBuildThisFileDirectory)\..\sources\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -114,6 +116,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\CUDART;$(SolutionDir)external\OpenCL;$(MSBuildThisFileDirectory)\..\sources\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,6 +133,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\CUDART;$(SolutionDir)external\OpenCL;$(MSBuildThisFileDirectory)\..\sources\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +152,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\CUDART;$(SolutionDir)external\OpenCL;$(MSBuildThisFileDirectory)\..\sources\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,12 +163,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common\cuda_dyn\cuda_dyn_load.cpp" />
-    <ClCompile Include="..\external\cuda_drvapi_dyn_load\src\cuda_drvapi_dyn_load.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\external\cuda_drvapi_dyn_load\src\cuda_drvapi_dyn_load.cpp" />
+    <ClCompile Include="..\external\opencl_dyn_load\src\opencl_dyn_load.cpp" />
     <ClCompile Include="Daniel2.Benchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,8 +176,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
-    <Import Project="..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.targets')" />
+    <Import Project="..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.targets" Condition="Exists('..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.targets')" />
     <Import Project="..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.targets" Condition="Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.targets')" />
+    <Import Project="..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.targets" Condition="Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -184,9 +186,11 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
     <Error Condition="!Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.props'))" />
-    <Error Condition="!Exists('..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.12.25.48372-alpha\build\Cinecoder.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.4.20.9.32862-alpha\build\Cinecoder.targets'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.props'))" />
     <Error Condition="!Exists('..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.GpuCodecs.2.24.11.24048\build\Cinecoder.Plugin.GpuCodecs.targets'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.props'))" />
+    <Error Condition="!Exists('..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Cinecoder.Plugin.Multiplexers.2.0.15\build\Cinecoder.Plugin.Multiplexers.targets'))" />
   </Target>
 </Project>
