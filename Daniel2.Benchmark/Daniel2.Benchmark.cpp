@@ -768,6 +768,27 @@ int main_impl(int argc, char* argv[])
   com_ptr<ICC_VideoConsumerExtAsync> pEncAsync = 0;
   pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync, (void**)&pEncAsync);
 
+  com_ptr<ICC_VideoConsumerExtAsync2> pEncAsync2 = 0;
+  pEncoder->QueryInterface(IID_ICC_VideoConsumerExtAsync2, (void**)&pEncAsync2);
+
+  auto cc_mem_type = CC_MEMTYPE_UNKNOWN;
+
+  if(g_mem_type == MEM_GPU)
+  {
+    if(g_bUseCUDA)
+    {
+      cc_mem_type = CC_MEMTYPE_CUDA_DEVICE;
+    }
+
+    if(g_bUseOpenCL)
+    {
+      if(!pEncAsync2)
+        return fprintf(stderr, "To use OpenCL encoder with GPU memory it should support ICC_VideoConsumerExtAsync2 interface"), E_NOINTERFACE;
+
+      cc_mem_type = CC_MEMTYPE_OCL_BUFFER;
+    }
+  }
+
   CpuLoadMeter cpuLoadMeter;
   
   auto t00 = system_clock::now();
@@ -789,7 +810,10 @@ int main_impl(int argc, char* argv[])
     if(idx >= source_frames.size())
       idx = source_frames.size()*2 - idx - 1;
 
-    if(pEncAsync)
+    if(pEncAsync2)
+      hr = pEncAsync2->AddScaleFrameAsync2(source_frames[idx], (DWORD)uncompressed_frame_size, cc_mem_type, &vpar, pEncAsync);
+
+    else if(pEncAsync)
       hr = pEncAsync->AddScaleFrameAsync(source_frames[idx], (DWORD)uncompressed_frame_size, &vpar, pEncAsync);
 
     else
@@ -1007,16 +1031,35 @@ int main_impl(int argc, char* argv[])
 
   uncompressed_frame_size = size_t(dec_frame_pitch) * frame_size.cy;
 
+  vpar.iStride = dec_frame_pitch;
+
   if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
     uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
   if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
-  auto dec_buf = mem_alloc(g_mem_type, uncompressed_frame_size);
-  if(!dec_buf)
-    return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
-  //else
-  //  printf("Uncompressed buffer address: 0x%p, format: %s, size: %zd byte(s)\n", dec_buf, strOutputFormat, uncompressed_frame_size);
+  com_ptr<ICC_VideoProducerExtAsync2> pDecAsync2 = 0;
+  pDecoder->QueryInterface(IID_ICC_VideoProducerExtAsync2, (void**)&pDecAsync2);
+
+  if(g_mem_type == MEM_GPU && g_bUseOpenCL)
+  {
+    if(!pDecAsync2)
+      return fprintf(stderr, "To use OpenCL GPU memory the decoder should have ICC_VideoConsumerExtAsync2 interface"), E_NOINTERFACE;
+  }
+
+  std::vector<memobj_t> target_frames;
+
+  for(int i = 0; i < (int)concur_level; i++)
+  {
+    auto buf = mem_alloc(g_mem_type, uncompressed_frame_size);
+
+    if(!buf)
+      return fprintf(stderr, "buffer allocation error for %zd byte(s)", uncompressed_frame_size), E_OUTOFMEMORY;
+    
+    //printf("Uncompessed target buffer address: 0x%p, format: %s, size: %zd byte(s)\n", (void*)buf, strOutputFormat, uncompressed_frame_size);
+
+    target_frames.push_back(buf);
+  }
 
   com_ptr<ICC_VideoQualityMeter> pPsnrCalc;
   if(cOutputFormat != cFormat)
@@ -1025,7 +1068,7 @@ int main_impl(int argc, char* argv[])
   else if(FAILED(hr = pFactory->CreateInstance(CLSID_CC_VideoQualityMeter, IID_ICC_VideoQualityMeter, (IUnknown**)&pPsnrCalc)))
     fprintf(stdout, "Can't create VideoQualityMeter, error=%xh, PSNR calculation is disabled\n", hr);
 
-  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, dec_buf, (int)uncompressed_frame_size, dec_frame_pitch, pPsnrCalc, source_frames[0]));
+  hr = pDecoder->put_OutputCallback(new C_DummyWriter(cOutputFormat, target_frames, (int)uncompressed_frame_size, dec_frame_pitch, cc_mem_type, pPsnrCalc, source_frames[0]));
   if(FAILED(hr)) return hr;
 
   com_ptr<ICC_ProcessDataPolicyProp> pPDP;
@@ -1064,7 +1107,12 @@ int main_impl(int argc, char* argv[])
   for(int frame_no = 0; frame_no < max_frames; frame_no++)
   {
     auto codedFrame = pFileWriter->GetCodedFrame(frame_no % num_coded_frames);
-	hr = pDecoder->ProcessData(codedFrame.first, (DWORD)codedFrame.second);
+
+    if(pDecAsync2)
+      hr = pDecAsync2->DecodeFrameAsync2(codedFrame.first, (DWORD)codedFrame.second, CC_NO_TIME, cc_mem_type, &vpar, (void*)target_frames[frame_no % target_frames.size()], (DWORD)uncompressed_frame_size, pDecAsync2);
+
+    else
+	  hr = pDecoder->ProcessData(codedFrame.first, (DWORD)codedFrame.second);
 
     if(FAILED(hr))
     {

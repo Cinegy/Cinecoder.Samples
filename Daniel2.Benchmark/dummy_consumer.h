@@ -4,23 +4,27 @@ class C_DummyWriter : public ICC_DataReadyCallback
 {
   _IMPLEMENT_IUNKNOWN_STATICALLY(ICC_DataReadyCallback)
 
-  memobj_t&     m_memBuffer;
+  //memobj_t&     m_memBuffer;
+  std::vector<memobj_t> &m_memBuffers;
   CC_FRAME_RATE m_rFrameRate;
   CC_SIZE       m_szFrame;
   DWORD         m_cbFrameBytes;
   CC_COLOR_FMT  m_Format;
   int           m_pitch;
+  CC_MEMORY_TYPE m_memtype;
+
   int		    m_FrameNo;
 
   com_ptr<ICC_VideoQualityMeter> m_pPsnrCalc;
   memobj_t&     m_memRefBuffer;
 
 public:
-  C_DummyWriter(CC_COLOR_FMT fmt, memobj_t &buffer, int bufsize, int pitch, ICC_VideoQualityMeter *pPsnrCalc, memobj_t &refBuffer)
+  C_DummyWriter(CC_COLOR_FMT fmt, std::vector<memobj_t> &buffers, int bufsize, int pitch, CC_MEMORY_TYPE mem_type, ICC_VideoQualityMeter *pPsnrCalc, memobj_t &refBuffer)
   : m_Format(fmt)
-  , m_memBuffer(buffer)
+  , m_memBuffers(buffers)
   , m_cbFrameBytes(bufsize)
   , m_pitch(pitch)
+  , m_memtype(mem_type)
   , m_FrameNo(0)
   , m_pPsnrCalc(pPsnrCalc)
   , m_memRefBuffer(refBuffer)
@@ -52,6 +56,9 @@ public:
     if(FAILED(hr = pUnk->QueryInterface(IID_ICC_VideoProducer, (void**)&spProducer)))
       return hr;
 
+    com_ptr<ICC_VideoProducerExtAsync2> spProdExtAsync2;
+    pUnk->QueryInterface(IID_ICC_VideoProducerExtAsync2, (void**)&spProdExtAsync2);
+
     if(m_FrameNo == 0)
     {
       g_DecoderTimeFirstFrameOut = system_clock::now();
@@ -67,9 +74,23 @@ public:
 
     if(m_Format != CCF_UNKNOWN)
     {
-      DWORD dwBytesWrote = 0;
-      if(FAILED(hr = spProducer->GetFrame(m_Format, (BYTE*)m_memBuffer, m_cbFrameBytes, m_pitch, &dwBytesWrote)))
-        return hr;
+      auto target_buffer = m_memBuffers[m_FrameNo % m_memBuffers.size()];
+
+      if(spProdExtAsync2)
+      {
+        void *pData; DWORD cbSize; CC_MEMORY_TYPE mem_type;
+
+        if(FAILED(hr = spProdExtAsync2->GetDecodeFrameAsyncSurface2(&pData, &cbSize, &mem_type, NULL)))
+          return hr;
+
+        target_buffer.Ptr = pData;
+        target_buffer.Size = cbSize;
+      }
+      else
+      {
+        if(FAILED(hr = spProducer->GetFrame(m_Format, (BYTE*)target_buffer, m_cbFrameBytes, m_pitch)))
+          return hr;
+      }
 #if 0
       if(m_FrameNo == 0)
       {
@@ -86,7 +107,7 @@ public:
       {
         memobj_t memTmpBuffer = {}, memTmpRefBuffer = {};
         
-        BYTE* pBuffer    = (BYTE*)m_memBuffer;
+        BYTE* pBuffer    = (BYTE*)target_buffer;
         BYTE *pRefBuffer = (BYTE*)m_memRefBuffer;
 
         if (g_mem_type == MEM_GPU)
@@ -107,7 +128,7 @@ public:
 		  }
 		  else
 		  {
-            mem_copy(pBuffer, m_memBuffer, m_cbFrameBytes);
+            mem_copy(pBuffer, target_buffer, m_cbFrameBytes);
             mem_copy(pRefBuffer, m_memRefBuffer, m_cbFrameBytes);
 		  }
 		}
