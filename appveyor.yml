@@ -8,7 +8,7 @@ configuration: Release
 platform: x64
 environment:
   license_password:
-    secure: LFepKWtuGH5MBrkrYmVdfQ==
+    secure: Hk0iGo1OgnbNih0NWskajQ==
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
