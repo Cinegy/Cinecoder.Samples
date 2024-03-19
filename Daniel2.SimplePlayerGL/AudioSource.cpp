@@ -4,7 +4,7 @@
 #if defined(__APPLE__) || defined(__LINUX__)
 typedef signed char INT8;
 typedef signed short INT16;
-typedef long long UINT64;
+//typedef long long UINT64;
 #endif
 
 static void ReverseSamples(BYTE *p, int iSize, int nBlockAlign)
