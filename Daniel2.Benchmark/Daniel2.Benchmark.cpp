@@ -7,8 +7,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <sys/timeb.h>
 
 #include <vector>
+#include <string>
 #include <thread>
 #include <chrono>
 using namespace std::chrono;
@@ -156,6 +159,7 @@ int SetOpenCLContext(cl_context ctx)
 #include "mem_alloc.h"
 #include "file_writer.h"
 #include "dummy_consumer.h"
+#include "helper_funcs.h"
 
 //-----------------------------------------------------------------------------
 CC_COLOR_FMT ParseColorFmt(const char *s)
@@ -245,6 +249,7 @@ int main_impl(int argc, char* argv[])
     puts("\t/affinity=#             - threads affinity mask");
     puts("\t/priority=#             - threads priority (-15..15), 0=normal" );
     puts("\t/duration=#[,#]         - the test duration(s) in seconds. -1 means continuous test.");
+    puts("\t/stats=<filename.json>  - generates JSON statistics file");
     puts("\t/wait                   - waits for the keypress after the test ends");
     return 1;
   }
@@ -446,6 +451,22 @@ int main_impl(int argc, char* argv[])
   if(profile == NULL)
     return fprintf(stderr, "Can't open the profile %s\n", argv[2]), -2;
 
+  //char profile_text[4096] = { 0 };
+
+  if (fseek(profile, 0, SEEK_END) != 0)
+    return fprintf(stderr, "Profile seeking error"), -2;
+
+  long fileSize = ftell(profile);
+
+  std::vector<char> profile_vec(fileSize);
+  char* profile_text = profile_vec.data();
+
+  if (fseek(profile, 0, SEEK_SET) != 0)
+    return fprintf(stderr, "Profile seeking error"), -2;
+
+  if (fread(profile_text, 1, fileSize, profile) < 0)
+    return fprintf(stderr, "Profile reading error"), -2;
+
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
   if(cFormat == (CC_COLOR_FMT)-1)
@@ -465,6 +486,8 @@ int main_impl(int argc, char* argv[])
   int ThreadsPriority = 0;
   int TestDurationInSecondsEnc = -1;
   int TestDurationInSecondsDec = -1;
+
+  FILE *json_stats_file;
 
   for(int i = 5; i < argc; i++)
   {
@@ -528,8 +551,23 @@ int main_impl(int argc, char* argv[])
 	  else
 	    TestDurationInSecondsDec = TestDurationInSecondsEnc;
 	}
+    else if(0 == strncmp(argv[i], "/stats=", 7))
+    {
+      if(NULL == (json_stats_file = fopen(argv[i] + 7, "wt")))
+        return fprintf(stderr, "Can't create the file %s", argv[i] + 7), -i;
+    }
     else
       return fprintf(stderr, "Unknown switch '%s'\n", argv[i]), -i;
+  }
+
+  if(json_stats_file)
+  {
+    fprintf(json_stats_file, "{\n");
+    fprintf(json_stats_file, "\t\"platform_info\":\n");
+    fprintf(json_stats_file, "\t{\n");
+    fprintf(json_stats_file, "\t\t\"platformName\"         : \"%s\",\n", GetPlatformName());
+    fprintf(json_stats_file, "\t\t\"processorName\"        : \"%s\" \n", GetProcessorName());
+    fprintf(json_stats_file, "\t},\n");
   }
 
   HRESULT hr = S_OK;
@@ -548,22 +586,6 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "Error loading '%s'", gpu_plugin_name), hr;
 #endif
   
-  //char profile_text[4096] = { 0 };
-
-  if (fseek(profile, 0, SEEK_END) != 0)
-    return fprintf(stderr, "Profile seeking error"), -1;
-
-  long fileSize = ftell(profile);
-
-  std::vector<char> profile_vec(fileSize);
-  char* profile_text = profile_vec.data();
-
-  if (fseek(profile, 0, SEEK_SET) != 0)
-    return fprintf(stderr, "Profile seeking error"), -1;
-
-  if (fread(profile_text, 1, fileSize, profile) < 0)
-    return fprintf(stderr, "Profile reading error"), -1;
-
 #ifdef _WIN32
   CComBSTR pProfile = profile_text;
 #else
@@ -774,6 +796,34 @@ int main_impl(int argc, char* argv[])
   if(source_frames.empty())
     return fprintf(stderr, "the footage is too small, no source frame(s) are loaded"), E_OUTOFMEMORY;
 
+  if(json_stats_file)
+  {
+    fprintf(json_stats_file, "\t\"execution\":\n");
+    fprintf(json_stats_file, "\t{\n");
+    fprintf(json_stats_file, "\t\t\"appName\"              : \"%s\",\n", GetNormStr(argv[0]));
+    fprintf(json_stats_file, "\t\t\"appBuildDate\"         : \"%s\",\n", __DATE__);
+    fprintf(json_stats_file, "\t\t\"appBuildTime\"         : \"%s\",\n", __TIME__);
+    fprintf(json_stats_file, "\t\t\"cinecoderVersion\"     : \"%d.%d.%d\",\n", version.VersionHi, version.VersionLo, version.EditionNo);
+    fprintf(json_stats_file, "\t\t\"codecType\"            : \"%s\",\n", argv[1]);
+    fprintf(json_stats_file, "\t\t\"codecDescr\"           : \"%s\",\n", strEncName);
+    fprintf(json_stats_file, "\t\t\"profileFilename\"      : \"%s\",\n", argv[2]);
+    fprintf(json_stats_file, "\t\t\"footageFilename\"      : \"%s\",\n", argv[4]);
+    fprintf(json_stats_file, "\t\t\"colorFormat\"          : \"%s\",\n", argv[3]);
+    fprintf(json_stats_file, "\t\t\"numFrames\"            : \"%d\",\n", (int)source_frames.size());
+    fprintf(json_stats_file, "\t\t\"memType\"              : \"%s\",\n", g_mem_type == MEM_SYSTEM ? "SYSTEM" : 
+                                                                         g_mem_type == MEM_PINNED ? "PINNED" :
+                                                                                                    "DEVICE");
+    if(argc > 5)
+    {
+      fprintf(json_stats_file, "\t\t\"otherArgs\"            : [\n");
+      for(int i = 5; i < argc; i++)
+        fprintf(json_stats_file, "\t\t\t\"%s\"%s\n", GetNormStr(argv[i]), i < argc-1 ? "," : "");
+      fprintf(json_stats_file, "\t\t]\n");
+    }
+
+    fprintf(json_stats_file, "\t},\n");
+  }
+
   C_FileWriter *pFileWriter = new C_FileWriter(outf, true, source_frames.size());
   hr = pEncoder->put_OutputCallback(static_cast<ICC_ByteStreamCallback*>(pFileWriter));
   if(FAILED(hr)) return hr;
@@ -804,15 +854,14 @@ int main_impl(int argc, char* argv[])
 
   CpuLoadMeter cpuLoadMeter;
   
-  auto t00 = system_clock::now();
-  int frame_count = 0, total_frame_count = 0;
-  auto t0 = t00;
+  printf("Performing encoding loop, press ESC to break\n");
 
-  auto coded_size0 = pFileWriter->GetTotalBytesWritten();
-
+  auto t0 = system_clock::now(), t00 = t0;
   g_EncoderTimeFirstFrameIn = t00;
 
-  printf("Performing encoding loop, press ESC to break\n");
+  int frame_count = 0, total_frame_count = 0;
+
+  auto coded_size0 = pFileWriter->GetTotalBytesWritten();
 
   int max_frames = 0x7fffffff;
   int update_mask = 0x07;
@@ -906,7 +955,7 @@ int main_impl(int argc, char* argv[])
 
   auto t1 = system_clock::now();
 
-  pEncoder = NULL;
+  //pEncoder = NULL;
 
   puts("\nDone.\n");
 
@@ -917,6 +966,26 @@ int main_impl(int argc, char* argv[])
 
   auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_EncoderTimeFirstFrameOut - g_EncoderTimeFirstFrameIn);
   printf("Encoder latency = %d ms\n", (int)time_ms.count());
+
+  if(json_stats_file)
+  {
+    fprintf(json_stats_file, "\t\"encoding_test\":\n");
+    fprintf(json_stats_file, "\t{\n");
+	fprintf(json_stats_file, "\t\t\"encClassGUID\"         : \"%s\",\n", GetGuidStr(GetClassGUID(pEncoder)));
+	fprintf(json_stats_file, "\t\t\"encClassName\"         : \"%s\",\n", GetClassNameA(pEncoder));
+	fprintf(json_stats_file, "\t\t\"encDeviceID\"          : \"%d\",\n", EncDeviceID);
+	fprintf(json_stats_file, "\t\t\"encDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : "CPU");
+	fprintf(json_stats_file, "\t\t\"encDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : GetProcessorName());
+	fprintf(json_stats_file, "\t\t\"encTestTimeStart\"     : \"%s\",\n", GetTimeStr(t00));
+	fprintf(json_stats_file, "\t\t\"encTestTimeStop\"      : \"%s\",\n", GetTimeStr(t1));
+    fprintf(json_stats_file, "\t\t\"encTestDurationMs\"    : \"%.3f\",\n", dT*1000);
+    fprintf(json_stats_file, "\t\t\"encFrameCount\"        : \"%d\",\n", total_frame_count);
+    fprintf(json_stats_file, "\t\t\"encAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"encAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
+    fprintf(json_stats_file, "\t\t\"encAvgDataRateInMbps\" : \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"encLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t},\n");
+  }
 
   fclose(inpf);
   if(outf) fclose(outf);
@@ -1205,7 +1274,7 @@ int main_impl(int argc, char* argv[])
 
   t1 = system_clock::now();
 
-  pDecoder = NULL;
+  //pDecoder = NULL;
 
   puts("\nDone.\n");
 
@@ -1216,6 +1285,31 @@ int main_impl(int argc, char* argv[])
 
   time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_DecoderTimeFirstFrameOut - g_DecoderTimeFirstFrameIn);
   printf("Decoder latency = %d ms\n", (int)time_ms.count());
-  
-  return 0;
+
+  if(json_stats_file)
+  {
+    fprintf(json_stats_file, "\t\"decoding_test\":\n");
+    fprintf(json_stats_file, "\t{\n");
+	fprintf(json_stats_file, "\t\t\"decClassGUID\"         : \"%s\",\n", GetGuidStr(GetClassGUID(pDecoder)));
+	fprintf(json_stats_file, "\t\t\"decClassName\"         : \"%s\",\n", GetClassNameA(pDecoder));
+	fprintf(json_stats_file, "\t\t\"decDeviceID\"          : \"%d\",\n", DecDeviceID);
+	fprintf(json_stats_file, "\t\t\"decDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : "CPU");
+	fprintf(json_stats_file, "\t\t\"decDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : GetProcessorName());
+	fprintf(json_stats_file, "\t\t\"decTestTimeStart\"     : \"%s\",\n", GetTimeStr(t00));
+	fprintf(json_stats_file, "\t\t\"decTestTimeStop\"      : \"%s\",\n", GetTimeStr(t1));
+    fprintf(json_stats_file, "\t\t\"decTestDurationMs\"    : \"%.3f\",\n", dT*1000);
+    fprintf(json_stats_file, "\t\t\"decFrameCount\"        : \"%d\",\n", total_frame_count);
+    fprintf(json_stats_file, "\t\t\"decAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"decAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
+    fprintf(json_stats_file, "\t\t\"decAvgDataRateOutMbps\": \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t}\n");
+  }
+
+  if(json_stats_file)
+  {
+    fprintf(json_stats_file, "}\n");
+  }
+
+  return S_OK;
 }
