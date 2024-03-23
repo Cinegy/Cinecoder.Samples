@@ -491,7 +491,7 @@ int main_impl(int argc, char* argv[])
   int TestDurationInSecondsEnc = -1;
   int TestDurationInSecondsDec = -1;
 
-  FILE *json_stats_file;
+  FILE *json_stats_file = nullptr;
 
   for(int i = 5; i < argc; i++)
   {
