@@ -58,7 +58,13 @@ public:
         }
         else
         {
-          BYTE *ptr = (BYTE*)malloc(cbSize);
+          //BYTE *ptr = (BYTE*)malloc(cbSize);
+          if(g_cudaContext)
+            if(auto err = cuCtxPushCurrent(g_cudaContext))
+              return fprintf(stderr, "cuCtxPushCurrent() error %d (%s)\n", err, GetCudaDrvApiErrorText(err)), E_FAIL;
+
+		  auto mem_blk = mem_alloc(g_mem_type == MEM_SYSTEM ? MEM_SYSTEM : MEM_PINNED, cbSize);
+          BYTE *ptr = (BYTE*)mem_blk;
           memcpy(ptr, pbData, cbSize);
           m_CaughtFrames.push_back( std::make_pair(ptr, cbSize) );
         }
