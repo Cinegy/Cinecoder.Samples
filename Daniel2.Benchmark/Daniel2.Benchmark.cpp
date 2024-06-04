@@ -1135,7 +1135,7 @@ int main_impl(int argc, char* argv[])
 
   std::vector<memobj_t> target_frames;
 
-  for(int i = 0; i < (int)concur_level; i++)
+  for(size_t i = 0; i < __max(1, concur_level); i++)
   {
     auto buf = mem_alloc(g_mem_type, uncompressed_frame_size);
 
