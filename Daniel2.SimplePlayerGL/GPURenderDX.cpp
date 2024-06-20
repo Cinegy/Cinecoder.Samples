@@ -910,7 +910,7 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
 			// Get pointer of buffer
 			err = cudaGraphicsResourceGetMappedPointer(&buffer_ptr, &buffer_size, cuda_tex_result_resource_buff); __vrcu
-
+#if defined(__CUDAConvertLib__)
 			ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
 
 			IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
@@ -972,7 +972,9 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 					h_convert_P016_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
-
+#else
+			cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+#endif
 			// Unmap the resources of texture
 			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 
@@ -999,7 +1001,7 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 			err = cudaGraphicsMapResources(1, &cuda_tex_result_resource_buff, 0); __vrcu
 			// Get pointer of buffer
 			err = cudaGraphicsSubResourceGetMappedArray(&buffer_ptr, cuda_tex_result_resource_buff, 0, 0); __vrcu
-
+#if defined(__CUDAConvertLib__)
 			ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
 
 			IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
@@ -1062,7 +1064,9 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 					h_convert_P016_to_BGRA64_TtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
-
+#else
+			cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+#endif
 			// Unmap the resources of texture
 			err = cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 

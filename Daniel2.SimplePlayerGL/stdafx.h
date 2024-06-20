@@ -146,13 +146,12 @@ using namespace cinegy::simpl;
 
 #endif // #ifndef CUDA_WRAPPER
 
-#if defined(__WIN32__) || defined(__LINUX__) // use CUDA convert library
+#if (defined(_WIN32) && (defined(_M_IX86) || defined(_M_X64))) || defined(__LINUX__) // use CUDA convert library
 #include "CUDAConvertLib.h"
 #ifndef __CUDAConvertLib__  
 #define __CUDAConvertLib__
 #endif
-
-#endif // #ifdef USE_CUDA_SDK
+#endif
 
 #define __vrcu \
 { \
@@ -163,7 +162,8 @@ using namespace cinegy::simpl;
 		cudaLastError, cudaGetErrorString(cudaLastError), __FILE__,__LINE__); \
 	} \
 }
-#endif
+
+#endif // #ifdef USE_CUDA_SDK
 
 #define __check_hr \
 { \
