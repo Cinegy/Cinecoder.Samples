@@ -151,8 +151,7 @@ using namespace cinegy::simpl;
 #ifndef __CUDAConvertLib__  
 #define __CUDAConvertLib__
 #endif
-
-#endif // #ifdef USE_CUDA_SDK
+#endif
 
 #define __vrcu \
 { \
@@ -163,7 +162,8 @@ using namespace cinegy::simpl;
 		cudaLastError, cudaGetErrorString(cudaLastError), __FILE__,__LINE__); \
 	} \
 }
-#endif
+
+#endif // #ifdef USE_CUDA_SDK
 
 #define __check_hr \
 { \

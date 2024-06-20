@@ -10,7 +10,7 @@
 #pragma comment(lib, "windowscodecs.lib") // for IID_IDXGIFactory
 #endif
 #include "CinecoderErrorHandler.h"
-C_CinecoderErrorHandler *g_ErrorHandler = nullptr;
+C_CinecoderErrorHandler g_ErrorHandler;
 
 #ifdef max
 #undef max
@@ -401,7 +401,7 @@ int DecodeDaniel2::CreateDecoder()
 #endif
 
 //#ifdef _DEBUG
-	if (FAILED(hr = Cinecoder_SetErrorHandler(g_ErrorHandler))) // set error handler
+	if (FAILED(hr = Cinecoder_SetErrorHandler(&g_ErrorHandler))) // set error handler
 		printf("Error: call Cinecoder_SetErrorHandler() return 0x%x\n", hr);
 //#endif
 
