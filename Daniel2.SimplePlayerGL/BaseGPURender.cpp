@@ -673,7 +673,7 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 	cudaArray *texture_ptr;
 	cudaGraphicsMapResources(1, &cuda_tex_result_resource, 0); __vrcu
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, cuda_tex_result_resource, 0, 0); __vrcu
-	
+#if defined(__CUDAConvertLib__)	
 	ConvertMatrixCoeff iMatrixCoeff_YUYtoRGBA = (ConvertMatrixCoeff)(pBlock->iMatrixCoeff_YUYtoRGBA);
 
 	IMAGE_FORMAT output_format = m_decodeD2->GetImageFormat();
@@ -737,7 +737,9 @@ int BaseGPURender::CopyCUDAImage(C_Block *pBlock)
 			h_convert_P016_to_BGRA64_BtT(PARAMS); __vrcu
 		}
 	}
-
+#else
+	cudaMemcpy2DToArray(texture_ptr, 0, 0, pBlock->DataGPUPtr(), pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
+#endif
 	// Unmap the resources
 	cudaGraphicsUnmapResources(1, &cuda_tex_result_resource, 0); __vrcu
 
