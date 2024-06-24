@@ -138,6 +138,7 @@ object BuildWin : BuildType({
 
     artifactRules = """
     _bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+    _bin\Release.ARM64 => CinecoderSamples-WinARM64-%teamcity.build.branch%-%build.number%.zip
     common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
     """.trimIndent()
 
