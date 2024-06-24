@@ -188,6 +188,14 @@ object BuildWin : BuildType({
             configuration = "Release"
             args = "/p:Platform=x64"
         }
+         dotnetMsBuild {
+            name = "(build) Samples Solution"
+            projects = "Cinecoder.Samples.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            targets = "Build"
+            configuration = "Release"
+            args = "/p:Platform=ARM64"
+        }        
         // msBuild {
         //     name = "(build) Samples Solution"
         //     path = "Cinecoder.Samples.sln"
