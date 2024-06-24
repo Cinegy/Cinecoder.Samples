@@ -37,7 +37,7 @@ build_script:
     }
 after_build:
 - cmd: >-
-    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\_bin\Release.x64
+    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\_bin\Release.x64 %APPVEYOR_BUILD_FOLDER%\_bin\Release.ARM64
     
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
 - sh: >-
