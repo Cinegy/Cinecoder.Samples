@@ -536,6 +536,7 @@ object BuildAggregation : BuildType({
             artifacts {
                 artifactRules = """
                     CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+                    CinecoderSamples-WinARM64-%teamcity.build.branch%-%build.number%.zip
                     LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
