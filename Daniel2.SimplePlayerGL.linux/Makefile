@@ -11,10 +11,10 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.14/sources -I../external/OpenCL -I../external/GLEW/include
+INC = -I/usr/include/AL -I/usr/include/GL\ -I../packages/Cinecoder.3.33.62.52415/sources -I../packages/Cinecoder.3.33.62.52415/sources/winclude -I../packages/CUDAConvertLib.1.0.0.15/sources -I../external/OpenCL -I../external/GLEW/include
 CFLAGS = -Wall -std=c++14 -fexceptions
 RESINC = 
-LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release
+LIBDIR = -L/usr/lib/x86_64-linux-gnu -L/usr/local/cuda/lib64 -L../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release -L../packages/CUDAConvertLib.1.0.0.15/runtimes/linux-x64/native/release
 LIB = -lGL -lGLU -lglut -lopenal -lpthread -lCinecoder -lcudaconvertlib -lX11 -ldl
 LDFLAGS = -Wl,-rpath='.'
 
@@ -57,7 +57,7 @@ before_debug:
 
 after_debug: 
 	cp ../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release/*.so bin/Debug
-	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release/*.so bin/Debug
+	cp ../packages/CUDAConvertLib.1.0.0.15/runtimes/linux-x64/native/release/*.so bin/Debug
 
 debug: before_debug out_debug after_debug
 
@@ -108,7 +108,7 @@ before_release:
 
 after_release: 
 	cp ../packages/Cinecoder.3.33.62.52415/runtimes/linux-x64/native/release/*.so bin/Release
-	cp ../packages/CUDAConvertLib.1.0.0.14/runtimes/linux-x64/native/release/*.so bin/Release
+	cp ../packages/CUDAConvertLib.1.0.0.15/runtimes/linux-x64/native/release/*.so bin/Release
 
 release: before_release out_release after_release
 
