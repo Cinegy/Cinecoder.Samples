@@ -102,13 +102,15 @@ void printHelp(void)
 #ifdef USE_CUDA_SDK
 	printf("-cuda               enable CUDA decoding (default: disable)\n");
 #endif
-#if defined(__USE_GLUT_RENDER__)
+//#if defined(__USE_GLUT_RENDER__)
 #ifdef USE_OPENCL_SDK
 	printf("-opencl             enable OpenCL decoding (default: disable)\n");
 #endif
-#endif
+//#endif
 	printf("-quicksync          enable QuickSync H264/HEVC GPU decoding (default: disable)\n");
+#if	(CINECODER_VERSION >= 41201)
 	printf("-ivpl               enable Intel VPL H264/HEVC GPU decoding (default: disable)\n");
+#endif
 	printf("-amf                enable AMF H264/HEVC GPU decoding (default: disable)\n");
 	printf("-nvdec              enable NVIDIA H264/HEVC GPU decoding (default: disable)\n");
 #if defined(__WIN32__)
@@ -343,6 +345,9 @@ int main(int argc, char **argv)
 
 	if (g_useCuda)
 		dec_params.type = VD_TYPE_CUDA;
+
+	if (g_useOpenCL)
+		dec_params.type = VD_TYPE_OpenCL;
 
 	if (g_useQuickSync)
 		dec_params.type = VD_TYPE_QuickSync;

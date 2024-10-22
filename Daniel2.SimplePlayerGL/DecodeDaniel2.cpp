@@ -30,6 +30,7 @@ DecodeDaniel2::DecodeDaniel2() :
 	m_bDecode(true),
 	m_bInitDecoder(false),
 	m_bUseCuda(false),
+	m_bUseOpenCL(false),
 	m_bUseCudaHost(false),
 	m_bPutColorFormat(false),
 	m_pVideoDec(nullptr),
@@ -72,8 +73,10 @@ int DecodeDaniel2::OpenFile(const char* const filename, ST_VIDEO_DECODER_PARAMS 
 	m_dec_params = dec_params;
 
 	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+	bool useOpenCL = m_dec_params.type == VD_TYPE_OpenCL ? true : false;
 
 	m_bUseCuda = useCuda;
+	m_bUseOpenCL = useOpenCL;
 	
 	m_filename = filename;
 
@@ -368,6 +371,7 @@ int DecodeDaniel2::CreateDecoder()
 	size_t iMaxCountDecoders = std::max((size_t)1, std::min(m_dec_params.max_count_decoders, (size_t)4)); // 1..4
 
 	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
+	bool useOpenCL = m_dec_params.type == VD_TYPE_OpenCL ? true : false;
 	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
 	bool useIVPL = m_dec_params.type == VD_TYPE_IVPL ? true : false;
 	bool useAMF = m_dec_params.type == VD_TYPE_AMF ? true : false;
@@ -448,7 +452,9 @@ int DecodeDaniel2::CreateDecoder()
 #endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
 			if (useQuickSync) clsidDecoder = CLSID_CC_H264VideoDecoder_IMDK;
+#if	(CINECODER_VERSION >= 41201)
 			if (useIVPL) clsidDecoder = CLSID_CC_H264VideoDecoder_IVPL;
+#endif
 			if (useAMF) clsidDecoder = CLSID_CC_H264VideoDecoder_AMF;
 			if (useNVDEC) clsidDecoder = CLSID_CC_H264VideoDecoder_NV;
 			m_strStreamType = "H264";
@@ -466,7 +472,9 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
 			clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV; // as we do not have software HEVC try always NV
 			if (useQuickSync) clsidDecoder = CLSID_CC_HEVCVideoDecoder_IMDK;
+#if	(CINECODER_VERSION >= 41201)
 			if (useIVPL) clsidDecoder = CLSID_CC_HEVCVideoDecoder_IVPL;
+#endif
 			if (useAMF) clsidDecoder = CLSID_CC_HEVCVideoDecoder_AMF;
 			if (useNVDEC) clsidDecoder = CLSID_CC_HEVCVideoDecoder_NV;
 			m_strStreamType = "HEVC";
@@ -474,7 +482,11 @@ int DecodeDaniel2::CreateDecoder()
 			break;
 #endif
 		case CC_ES_TYPE_VIDEO_DANIEL:
+#if	(CINECODER_VERSION < 42003)
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
+#else
+			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : (useOpenCL ? CLSID_CC_DanielVideoDecoder_OCL : CLSID_CC_DanielVideoDecoder);
+#endif
 			m_strStreamType = "Daniel";
 			bIntraFormat = true;
 			break;
