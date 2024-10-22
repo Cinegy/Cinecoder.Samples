@@ -71,7 +71,7 @@ int GPURenderGL::GenerateImage(bool & bRotateFrame)
 
 	if (m_bCopyToTexture)
 	{
-		gpu_CopyImage(pBlock->DataPtr(), pBlock->Size());
+		gpu_CopyImage(pBlock->DataPtr(), pBlock->Pitch(), pBlock->Size());
 	}
 
 	bRotateFrame = pBlock->GetRotate() ? !bRotateFrame : bRotateFrame; // Rotate frame
@@ -100,14 +100,14 @@ int GPURenderGL::CopyBufferToTexture(C_Block *pBlock)
 	{
 		if (m_bCopyToTexture)
 		{
-			gpu_CopyImage(pBlock->DataPtr(), pBlock->Size());
+			gpu_CopyImage(pBlock->DataPtr(), pBlock->Pitch(), pBlock->Size());
 		}
 	}
 
 	return 0;
 }
 
-int GPURenderGL::gpu_CopyImage(unsigned char* pImage, size_t iSize)
+int GPURenderGL::gpu_CopyImage(unsigned char* pImage, size_t iPitch, size_t iSize)
 {
 	if (pbo)
 	{
@@ -118,7 +118,16 @@ int GPURenderGL::gpu_CopyImage(unsigned char* pImage, size_t iSize)
 
 		pboMemory = glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY);
 		if (!pboMemory) return -1;
-		memcpy(pboMemory, pImage, iSize);
+
+		if (image_size == iSize)
+			memcpy(pboMemory, pImage, iSize);
+		else
+		{
+			for (size_t y = 0; y < image_height; ++y)
+			{
+				memcpy((unsigned char*)pboMemory + (y * image_pitch), pImage + (y * iPitch), image_pitch);
+			}
+		}
 
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
@@ -512,11 +521,13 @@ int GPURenderGL::gpu_InitGLBuffers()
 
 	OGL_CHECK_ERROR_GL();
 
-	image_size = image_width * image_height * sizeof(GLubyte) * 4;
+	image_pitch = image_width * sizeof(GLubyte) * 4;
 
 	if (m_decodeD2->GetImageFormat() == IMAGE_FORMAT_BGRA16BIT ||
 		m_decodeD2->GetImageFormat() == IMAGE_FORMAT_RGBA16BIT)
-		image_size *= 2;
+		image_pitch *= 2;
+
+	image_size = image_pitch * image_height;
 
 	glewExperimental = GL_TRUE;
 	GLenum GlewInitResult = glewInit();

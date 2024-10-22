@@ -47,6 +47,6 @@ private:
 	int gpu_InitGLBuffers();
 	int gpu_DestroyGLBuffers();
 	int gpu_UpdateGLSettings();
-	int gpu_CopyImage(unsigned char* pImage, size_t iSize);
+	int gpu_CopyImage(unsigned char* pImage, size_t iPitch, size_t iSize);
 };
 
