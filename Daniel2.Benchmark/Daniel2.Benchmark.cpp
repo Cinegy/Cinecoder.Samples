@@ -916,10 +916,11 @@ int main_impl(int argc, char* argv[])
 
 	  auto dT0 = duration<double>(t1 - t00).count();
 
-      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f GB/s, out %.3f Mbps (%.3f MB/s), CPU load: %.1f%%    \r",
       	dT0, frame_no, frame_count / dT, 
       	uncompressed_frame_size / 1E9 * frame_count / dT,
       	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	(coded_size - coded_size0)     / 1E6 / dT,
       	cpuLoadMeter.GetLoad());
       
       t0 = t1;
@@ -1247,10 +1248,15 @@ int main_impl(int argc, char* argv[])
 
 	  auto dT0 = duration<double>(t1 - t00).count();
 
-      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
+	  auto input_byterate = (coded_size - coded_size0) / dT;
+	  auto output_byterate = uncompressed_frame_size / dT * frame_count;
+
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f Mbps (%.3f MB/s), out %.3f GB/s, CPU load: %.1f%%    \r", 
       	dT0, frame_no, frame_count / dT, 
-      	(coded_size - coded_size0) * 8 / 1E6 / dT,
-      	uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      	input_byterate * 8 / 1E6,
+      	input_byterate / 1E6,
+      	output_byterate / 1E9,
+      	cpuLoadMeter.GetLoad());
       
       t0 = t1;
       coded_size0 = coded_size;
