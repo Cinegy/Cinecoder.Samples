@@ -175,7 +175,9 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
+  if(0 == strcmp(s, "NV16")) return CCF_NV16;
   if(0 == strcmp(s, "P016")) return CCF_P016;
+  if(0 == strcmp(s, "P216")) return CCF_P216;
   if(0 == strcmp(s, "YUV444")) return CCF_YUV444;
   if(0 == strcmp(s, "YUV444_16")) return CCF_YUV444_16BIT;
   if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
@@ -241,7 +243,7 @@ int main_impl(int argc, char* argv[])
     puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
 //#endif
-    puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
+    puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','NV16','P016','P216','YUV444','YUV444_16' or 'NULL'");
     puts("\n");
     puts("\n<switches>:");
     puts("\t/outfile=<filename.bin> - outputs encoded data into the file");
@@ -762,6 +764,8 @@ int main_impl(int argc, char* argv[])
 
   if(cFormat == CCF_NV12 || cFormat == CCF_P016)
     uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cFormat == CCF_NV16 || cFormat == CCF_P216)
+    uncompressed_frame_size = uncompressed_frame_size * 2;
   if(cFormat == CCF_YUV444 || cFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
@@ -1121,6 +1125,8 @@ int main_impl(int argc, char* argv[])
 
   if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
     uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cOutputFormat == CCF_NV16 || cOutputFormat == CCF_P216)
+    uncompressed_frame_size = uncompressed_frame_size * 2;
   if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
