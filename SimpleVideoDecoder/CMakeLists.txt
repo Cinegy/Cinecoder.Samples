@@ -18,9 +18,12 @@ link_directories("${Cinecoder_LIBRARY_DIRS}")
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
 
-if(UNIX AND NOT APPLE)
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-Wl,-rpath='$ORIGIN'")
+if(APPLE)
+    set(CMAKE_INSTALL_RPATH "@executable_path")
+else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
 endif()
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} ${Cinecoder_LIBRARIES})
