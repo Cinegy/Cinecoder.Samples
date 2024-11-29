@@ -20,7 +20,8 @@ before_build:
 - sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "8LETFdAiXcOtRJqtPwcyX312+Ull4Lm0zzBdG3kZpRddwKldJLo="
 - cmd: nuget restore
 build_script:
-- cmd: MSBuild Cinecoder.Samples.sln
+- cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
+- cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
 - sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
 - sh: docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"
   test_script:
@@ -37,7 +38,7 @@ build_script:
     }
 after_build:
 - cmd: >-
-    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\_bin\Release.x64
+    7z a CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip %APPVEYOR_BUILD_FOLDER%\_bin\Release.x64 %APPVEYOR_BUILD_FOLDER%\_bin\Release.ARM64
     
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
 - sh: >-

@@ -138,6 +138,7 @@ object BuildWin : BuildType({
 
     artifactRules = """
     _bin\Release.x64 => CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+    _bin\Release.ARM64 => CinecoderSamples-WinARM64-%teamcity.build.branch%-%build.number%.zip
     common\cinecoder_license_string.* => LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
     """.trimIndent()
 
@@ -188,6 +189,14 @@ object BuildWin : BuildType({
             configuration = "Release"
             args = "/p:Platform=x64"
         }
+         dotnetMsBuild {
+            name = "(build) Samples Solution"
+            projects = "Cinecoder.Samples.sln"
+            version = DotnetMsBuildStep.MSBuildVersion.V17
+            targets = "Build"
+            configuration = "Release"
+            args = "/p:Platform=ARM64"
+        }        
         // msBuild {
         //     name = "(build) Samples Solution"
         //     path = "Cinecoder.Samples.sln"
@@ -527,6 +536,7 @@ object BuildAggregation : BuildType({
             artifacts {
                 artifactRules = """
                     CinecoderSamples-Win64-%teamcity.build.branch%-%build.number%.zip
+                    CinecoderSamples-WinARM64-%teamcity.build.branch%-%build.number%.zip
                     LicenseIncludes-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }

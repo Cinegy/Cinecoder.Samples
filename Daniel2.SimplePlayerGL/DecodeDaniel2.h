@@ -66,6 +66,7 @@ private:
 	bool m_bDecode;
 	bool m_bInitDecoder;
 	bool m_bUseCuda;
+	bool m_bUseOpenCL;
 	bool m_bUseCudaHost;
 	bool m_bPutColorFormat;
 
