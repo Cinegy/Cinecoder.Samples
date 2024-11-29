@@ -216,14 +216,16 @@ int main_impl(int argc, char* argv[])
 	if(g_CudaEnabled)
 	{
     puts("\t'D2CUDA'       -- Daniel2 CUDA codec test, data is copying from GPU into CPU pinned memory");
-    puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2CUDANP'     -- Daniel2 CUDA codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is not copying, using GPU global memory buffer");
+    puts("\t'D2CUDAPURE'   -- Daniel2 CUDA codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
     }
     if(g_OpenclEnabled)
     {
     puts("\t'D2OCL'        -- Daniel2 OpenCL codec test, data is copying from GPU into CPU pinned memory");
-    puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2OCLNP'      -- Daniel2 OpenCL codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
+    puts("\t'D2OCLPURE'    -- Daniel2 OpenCL codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
     }
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
@@ -305,7 +307,15 @@ int main_impl(int argc, char* argv[])
   {
     clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
-    strEncName = "Daniel2_CUDA (GPU-GPU mode)";
+    strEncName = "Daniel2_CUDA (GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
+  }
+  if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAPURE"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_CUDA_PureGpuSpeedTest; 
+    strEncName = "Daniel2_CUDA (Pure GPU mode)";
     g_mem_type = MEM_GPU;
     g_bUseCUDA = true;
   }
@@ -329,7 +339,15 @@ int main_impl(int argc, char* argv[])
   {
     clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
     clsidDec = CLSID_CC_DanielVideoDecoder_OCL; 
-    strEncName = "Daniel2_OCL (GPU-GPU mode)";
+    strEncName = "Daniel2_OCL (GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseOpenCL = true;
+  }
+  if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCLPURE"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_OCL_PureGpuSpeedTest; 
+    strEncName = "Daniel2_OCL (Pure GPU mode)";
     g_mem_type = MEM_GPU;
     g_bUseOpenCL = true;
   }
