@@ -13,8 +13,5 @@ changeBuildType(RelativeId("BuildWin")) {
         remove {
             password("LICENSE_KEY", "credentialsJSON:3fdfbbdf-f8f0-43e6-a1d9-87d30c3c10d2", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
         }
-        add {
-            password("LICENSE_KEY2", "credentialsJSON:6e2c438c-8683-4027-9c73-098432d85fce", label = "License key", description = "Value to use for integrated Cinecoder license key", display = ParameterDisplay.HIDDEN)
-        }
     }
 }
