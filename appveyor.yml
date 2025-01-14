@@ -4,8 +4,9 @@ pull_requests:
 image:
  - Ubuntu1804
  - Visual Studio 2022
+ - UbuntuARM64
 configuration: Release
-platform: x64
+#platform: x64
 environment:
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
@@ -14,17 +15,19 @@ install:
 - sh: git submodule update --init --recursive
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "sKabqg7gbaj05iymJnM5zex0srYsRtEE/o7NDhW/8/LbKfC/sf0="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "sKabqg7gbaj05iymJnM5zex0srYsRtEE/o7NDhW/8/LbKfC/sf0="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "8LETFdAiXcOtRJqtPwcyX312+Ull4Lm0zzBdG3kZpRddwKldJLo="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "8LETFdAiXcOtRJqtPwcyX312+Ull4Lm0zzBdG3kZpRddwKldJLo="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
 - cmd: nuget restore
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
-- sh: docker build --rm -t cinegy/cinegy-cinecodersamples .
-- sh: docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"
-  test_script:
+  - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "Ubuntu1804" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
+  - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "Ubuntu1804" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+  - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "UbuntuARM64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
+  - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "UbuntuARM64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
     if($IsWindows){

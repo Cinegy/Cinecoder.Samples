@@ -175,7 +175,9 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
   if(0 == strcmp(s, "RGBX")) return CCF_RGBX;
   if(0 == strcmp(s, "NV12")) return CCF_NV12;
+  if(0 == strcmp(s, "NV16")) return CCF_NV16;
   if(0 == strcmp(s, "P016")) return CCF_P016;
+  if(0 == strcmp(s, "P216")) return CCF_P216;
   if(0 == strcmp(s, "YUV444")) return CCF_YUV444;
   if(0 == strcmp(s, "YUV444_16")) return CCF_YUV444_16BIT;
   if(0 == strcmp(s, "NULL")) return CCF_UNKNOWN;
@@ -214,14 +216,16 @@ int main_impl(int argc, char* argv[])
 	if(g_CudaEnabled)
 	{
     puts("\t'D2CUDA'       -- Daniel2 CUDA codec test, data is copying from GPU into CPU pinned memory");
-    puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2CUDANP'     -- Daniel2 CUDA codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    puts("\t'D2CUDAGPU'    -- Daniel2 CUDA codec test, data is not copying, using GPU global memory buffer");
+    puts("\t'D2CUDAPURE'   -- Daniel2 CUDA codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
     }
     if(g_OpenclEnabled)
     {
     puts("\t'D2OCL'        -- Daniel2 OpenCL codec test, data is copying from GPU into CPU pinned memory");
-    puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2OCLNP'      -- Daniel2 OpenCL codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
+    puts("\t'D2OCLPURE'    -- Daniel2 OpenCL codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
     }
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
@@ -241,7 +245,7 @@ int main_impl(int argc, char* argv[])
     puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
 //#endif
-    puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','P016','YUV444','YUV444_16' or 'NULL'");
+    puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','NV16','P016','P216','YUV444','YUV444_16' or 'NULL'");
     puts("\n");
     puts("\n<switches>:");
     puts("\t/outfile=<filename.bin> - outputs encoded data into the file");
@@ -303,7 +307,15 @@ int main_impl(int argc, char* argv[])
   {
     clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA; 
-    strEncName = "Daniel2_CUDA (GPU-GPU mode)";
+    strEncName = "Daniel2_CUDA (GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
+  }
+  if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAPURE"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_CUDA_PureGpuSpeedTest; 
+    strEncName = "Daniel2_CUDA (Pure GPU mode)";
     g_mem_type = MEM_GPU;
     g_bUseCUDA = true;
   }
@@ -327,7 +339,15 @@ int main_impl(int argc, char* argv[])
   {
     clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
     clsidDec = CLSID_CC_DanielVideoDecoder_OCL; 
-    strEncName = "Daniel2_OCL (GPU-GPU mode)";
+    strEncName = "Daniel2_OCL (GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseOpenCL = true;
+  }
+  if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCLPURE"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_OCL_PureGpuSpeedTest; 
+    strEncName = "Daniel2_OCL (Pure GPU mode)";
     g_mem_type = MEM_GPU;
     g_bUseOpenCL = true;
   }
@@ -762,6 +782,8 @@ int main_impl(int argc, char* argv[])
 
   if(cFormat == CCF_NV12 || cFormat == CCF_P016)
     uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cFormat == CCF_NV16 || cFormat == CCF_P216)
+    uncompressed_frame_size = uncompressed_frame_size * 2;
   if(cFormat == CCF_YUV444 || cFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
@@ -912,10 +934,11 @@ int main_impl(int argc, char* argv[])
 
 	  auto dT0 = duration<double>(t1 - t00).count();
 
-      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f GB/s, out %.3f Mbps, CPU load: %.1f%%    \r",
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f GB/s, out %.3f Mbps (%.3f MB/s), CPU load: %.1f%%    \r",
       	dT0, frame_no, frame_count / dT, 
       	uncompressed_frame_size / 1E9 * frame_count / dT,
       	(coded_size - coded_size0) * 8 / 1E6 / dT,
+      	(coded_size - coded_size0)     / 1E6 / dT,
       	cpuLoadMeter.GetLoad());
       
       t0 = t1;
@@ -1121,6 +1144,8 @@ int main_impl(int argc, char* argv[])
 
   if(cOutputFormat == CCF_NV12 || cOutputFormat == CCF_P016)
     uncompressed_frame_size = uncompressed_frame_size * 3 / 2;
+  if(cOutputFormat == CCF_NV16 || cOutputFormat == CCF_P216)
+    uncompressed_frame_size = uncompressed_frame_size * 2;
   if(cOutputFormat == CCF_YUV444 || cOutputFormat == CCF_YUV444_16BIT)
     uncompressed_frame_size = uncompressed_frame_size * 3;
   
@@ -1241,10 +1266,15 @@ int main_impl(int argc, char* argv[])
 
 	  auto dT0 = duration<double>(t1 - t00).count();
 
-      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f Mbps, out %.3f GB/s, CPU load: %.1f%%    \r", 
+	  auto input_byterate = (coded_size - coded_size0) / dT;
+	  auto output_byterate = uncompressed_frame_size / dT * frame_count;
+
+      fprintf(stderr, "(%.1fs) %d, %.3f fps, in %.3f Mbps (%.3f MB/s), out %.3f GB/s, CPU load: %.1f%%    \r", 
       	dT0, frame_no, frame_count / dT, 
-      	(coded_size - coded_size0) * 8 / 1E6 / dT,
-      	uncompressed_frame_size / 1E9 * frame_count / dT, cpuLoadMeter.GetLoad());
+      	input_byterate * 8 / 1E6,
+      	input_byterate / 1E6,
+      	output_byterate / 1E9,
+      	cpuLoadMeter.GetLoad());
       
       t0 = t1;
       coded_size0 = coded_size;
