@@ -10,9 +10,13 @@ find_package(CUDAConvertLib REQUIRED)
 endif()
 
 if(APPLE)
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_bin/macosx")
-else()
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_bin/linux")
+    set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_bin/macosx")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+        set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_bin/linux.aarch64")
+    else()
+        set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/_bin/linux")
+    endif()
 endif()
 
 #add_custom_command(
