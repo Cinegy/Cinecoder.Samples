@@ -11,7 +11,7 @@ environment:
 #      platform: x64
 #      job_name: Build on Ubuntu x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      platform: ARM
+      platform: x64
       job_name: Build on Ubuntu ARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
@@ -33,8 +33,9 @@ build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
 #- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
 #- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
-- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
-- sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: docker buildx version
+- sh: if [[ $platform == "x64" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
+- sh: if [[ $platform == "x64" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
