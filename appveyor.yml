@@ -21,6 +21,9 @@ configuration: Release
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
+- sh: sudo apt-get update --allow-releaseinfo-change
+- sh: sudo dpkg --add-architecture amd64
+- sh: sudo dpkg --remove-architecture i386
 - sh: sudo apt-get update
 - sh: sudo apt-get install -y qemu binfmt-support qemu-user-static
 - sh: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
