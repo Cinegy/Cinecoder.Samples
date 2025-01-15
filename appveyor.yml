@@ -7,12 +7,12 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
       job_name: Build on Windows x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: x64
-      job_name: Build on Ubuntu x64
 #    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-#      platform: ARM
-#      job_name: Build on Ubuntu ARM64
+#      platform: x64
+#      job_name: Build on Ubuntu x64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2204
+      platform: ARM
+      job_name: Build on Ubuntu ARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
@@ -29,7 +29,6 @@ before_build:
 - sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
 - cmd: nuget restore
 build_script:
-- cmd: docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
 #- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
