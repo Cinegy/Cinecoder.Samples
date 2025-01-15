@@ -1,24 +1,20 @@
 version: 0.0.{build}
 pull_requests:
   do_not_increment_build_number: true
-image:
- - Ubuntu1804
- - Visual Studio 2022
-configuration: Release
-platform: 
-- x64
-- ARM
-matrix:
-  include:
+  
+environment:
+  matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       platform: x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       platform: ARM
-environment:
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
+    
+configuration: Release
+
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
@@ -30,8 +26,8 @@ before_build:
 - sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
 - cmd: nuget restore
 build_script:
-- cmd: then MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
-- cmd: then MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
+- cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
+- cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
 - sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
 - sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 - sh: if [[ $platform == "ARM" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
