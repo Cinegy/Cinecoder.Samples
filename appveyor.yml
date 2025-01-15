@@ -10,9 +10,11 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       platform: x64
       job_name: Build on Ubuntu x64
+      LINUX_PLATFORM: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       platform: ARM
       job_name: Build on Ubuntu ARM64
+      LINUX_PLATFORM: LinuxARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
@@ -20,14 +22,17 @@ configuration: Release
     
 install:
 - cmd: git submodule update --init --recursive
-- sh: git submodule update --init --recursive
-- sh: if [[ $platform == "ARM" ]]; then sudo apt-get update --allow-releaseinfo-change; fi
-- sh: if [[ $platform == "ARM" ]]; then sudo dpkg --add-architecture amd64; fi
-- sh: if [[ $platform == "ARM" ]]; then sudo apt-get update; fi
-- sh: if [[ $platform == "ARM" ]]; then sudo apt-get install -y qemu binfmt-support qemu-user-static; fi
-- sh: if [[ $platform == "ARM" ]]; then docker run --rm --privileged multiarch/qemu-user-static --reset -p yes; fi
-- sh: if [[ $platform == "ARM" ]]; then docker buildx create --use; fi
-- sh: if [[ $platform == "ARM" ]]; then docker buildx inspect --bootstrap; fi
+- sh: |
+  git submodule update --init --recursive
+  if [[ $platform == "ARM" ]]; then
+      sudo apt-get update --allow-releaseinfo-change
+      sudo dpkg --add-architecture amd64
+      sudo apt-get update
+      sudo apt-get install -y qemu binfmt-support qemu-user-static
+      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      docker buildx create --use
+      docker buildx inspect --bootstrap
+  fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
@@ -60,6 +65,6 @@ after_build:
     
     appveyor PushArtifact CinecoderSamples-%APPVEYOR_REPO_BRANCH%-%APPVEYOR_BUILD_VERSION%.zip
 - sh: >-
-    7z a CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip $APPVEYOR_BUILD_FOLDER/_bin
+    7z a CinecoderSamples-$LINUX_PLATFORM-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip $APPVEYOR_BUILD_FOLDER/_bin
     
-    appveyor PushArtifact CinecoderSamples-LINUX-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip
+    appveyor PushArtifact CinecoderSamples-$LINUX_PLATFORM-$APPVEYOR_REPO_BRANCH-$APPVEYOR_BUILD_VERSION.zip
