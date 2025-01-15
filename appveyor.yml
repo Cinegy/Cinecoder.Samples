@@ -21,6 +21,11 @@ configuration: Release
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
+- sh: sudo apt-get update
+- sh: sudo apt-get install -y qemu binfmt-support qemu-user-static
+- sh: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+- sh: docker buildx create --use
+- sh: docker buildx inspect --bootstrap
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
