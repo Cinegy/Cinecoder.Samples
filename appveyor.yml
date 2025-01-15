@@ -8,9 +8,13 @@ configuration: Release
 platform: 
 - x64
 - ARM
-skip_build:
-- APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-  platform: ARM
+matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+    platform: x64
+  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    platform: x64
+  - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    platform: ARM
 environment:
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
