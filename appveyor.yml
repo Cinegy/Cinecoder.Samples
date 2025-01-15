@@ -18,9 +18,10 @@ environment:
     
 configuration: Release
     
-install:  
+install:
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
+- sh: if [[ $platform == "ARM" ]]; then sudo apt-get update --allow-releaseinfo-change; fi
 - sh: if [[ $platform == "ARM" ]]; then sudo dpkg --add-architecture amd64; fi
 - sh: if [[ $platform == "ARM" ]]; then sudo apt-get update; fi
 - sh: if [[ $platform == "ARM" ]]; then sudo apt-get install -y qemu binfmt-support qemu-user-static; fi
