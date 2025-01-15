@@ -7,12 +7,12 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
       job_name: Build on Windows x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: x64
-      job_name: Build on Ubuntu x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#      platform: x64
+#      job_name: Build on Ubuntu x64
+    - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu2004-arm
       platform: ARM
-      job_name: Build on Ubuntu ARM
+      job_name: Build on Ubuntu ARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
@@ -31,8 +31,8 @@ before_build:
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
-- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
-- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+#- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
+#- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 - sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
 - sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 test_script:
