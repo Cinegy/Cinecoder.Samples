@@ -7,11 +7,11 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
       job_name: Build on Windows x64
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-#      platform: x64
-#      job_name: Build on Ubuntu x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       platform: x64
+      job_name: Build on Ubuntu x64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      platform: ARM
       job_name: Build on Ubuntu ARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
@@ -21,13 +21,12 @@ configuration: Release
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
-- sh: sudo apt-get update --allow-releaseinfo-change
-- sh: sudo dpkg --add-architecture amd64
-- sh: sudo apt-get update
-- sh: sudo apt-get install -y qemu binfmt-support qemu-user-static
-- sh: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-- sh: docker buildx create --use
-- sh: docker buildx inspect --bootstrap
+- sh: if [[ $platform == "ARM" ]]; then sudo dpkg --add-architecture amd64; fi
+- sh: if [[ $platform == "ARM" ]]; then sudo apt-get update; fi
+- sh: if [[ $platform == "ARM" ]]; then sudo apt-get install -y qemu binfmt-support qemu-user-static; fi
+- sh: if [[ $platform == "ARM" ]]; then docker run --rm --privileged multiarch/qemu-user-static --reset -p yes; fi
+- sh: if [[ $platform == "ARM" ]]; then docker buildx create --use; fi
+- sh: if [[ $platform == "ARM" ]]; then docker buildx inspect --bootstrap; fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
@@ -38,11 +37,10 @@ before_build:
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
-#- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
-#- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
-- sh: docker buildx version
-- sh: if [[ $platform == "x64" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
-- sh: if [[ $platform == "x64" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
+- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
+- sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
