@@ -10,7 +10,7 @@ environment:
 #    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
 #      platform: x64
 #      job_name: Build on Ubuntu x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu2004-arm
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004-arm_hidden
       platform: ARM
       job_name: Build on Ubuntu ARM64
   license_password:
