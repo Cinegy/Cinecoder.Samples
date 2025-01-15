@@ -6,29 +6,18 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
+      job_name: Build on Windows x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       platform: x64
+      job_name: Build on Ubuntu x64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       platform: ARM
+      job_name: Build on Ubuntu ARM
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
 configuration: Release
-
-jobs:
-  - name: Build on Windows x64
-    environment:
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      platform: x64
-  - name: Build on Ubuntu x64
-    environment:
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: x64
-  - name: Build on Ubuntu ARM
-    environment:
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: ARM
-      
+    
 install:  
 - cmd: git submodule update --init --recursive
 - sh: git submodule update --init --recursive
