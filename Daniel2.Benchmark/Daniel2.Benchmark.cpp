@@ -482,7 +482,7 @@ int main_impl(int argc, char* argv[])
 
   long fileSize = ftell(profile);
 
-  std::vector<char> profile_vec(fileSize);
+  std::vector<char> profile_vec(fileSize + 1);
   char* profile_text = profile_vec.data();
 
   if (fseek(profile, 0, SEEK_SET) != 0)
@@ -490,6 +490,8 @@ int main_impl(int argc, char* argv[])
 
   if (fread(profile_text, 1, fileSize, profile) < 0)
     return fprintf(stderr, "Profile reading error"), -2;
+
+  profile_text[fileSize] = 0;
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
