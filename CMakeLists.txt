@@ -33,6 +33,11 @@ if(APPLE)
 configure_file(${Cinecoder_LIBRARY_DIRS}/libCinecoder.dylib ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
 #configure_file(${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}/libMXFToolkit_portable.dylib  ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
 configure_file(${Cinecoder.Plugin.Multiplexers_LIBRARY_DIRS}/libCinecoder.Plugin.Multiplexers.dylib ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
+
+if(EXISTS "${Cinecoder_LIBRARY_DIRS}/libCinecoder.d2metallibv2.dylib")
+  configure_file(${Cinecoder_LIBRARY_DIRS}/libCinecoder.d2metallibv2.dylib ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
+endif()
+
 else()
 configure_file(${Cinecoder_LIBRARY_DIRS}/libCinecoder.so ${EXECUTABLE_OUTPUT_PATH} COPYONLY)
 
