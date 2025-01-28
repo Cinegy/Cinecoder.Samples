@@ -52,7 +52,7 @@ memobj_t mem_alloc(MemType type, size_t size)
       return MK_MEMOBJ(type, size, ptr);
     }
 
-    if(g_clContext)
+    else if(g_clContext)
     {
       cl_int err;
 	  
@@ -70,6 +70,17 @@ memobj_t mem_alloc(MemType type, size_t size)
       return MK_MEMOBJ(type, size, ptr, clbuf);
     }
 
+#ifdef __APPLE__
+    else if(g_metalDevice)
+    {
+      auto buf = ((MTL::Device*)g_metalDevice)->newBuffer(size, MTL::ResourceStorageModeShared);
+
+	  if(!buf)
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "newBuffer(%zd) allocation error\n", size), nullptr));
+
+      return MK_MEMOBJ(type, size, buf->contents(), buf);
+    }
+#endif
     return MK_MEMOBJ(type, size, (fprintf(stderr, "GPU context is not set\n"), nullptr));
   }
 
@@ -95,6 +106,18 @@ memobj_t mem_alloc(MemType type, size_t size)
 
       return MK_MEMOBJ(type, size, clbuf);
     }
+
+#ifdef __APPLE__
+    else if(g_metalDevice)
+    {
+      auto buf  = ((MTL::Device*)g_metalDevice)->newBuffer(size, MTL::ResourceStorageModeShared);
+
+	  if(!buf)
+        return MK_MEMOBJ(type, size, (fprintf(stderr, "newBuffer(%zd) allocation error\n", size), nullptr));
+
+      return MK_MEMOBJ(type, size, buf);
+    }
+#endif
 
     return MK_MEMOBJ(type, size, (fprintf(stderr, "GPU context is not set\n"), nullptr));
   }
@@ -146,6 +169,12 @@ void mem_release(memobj_t &obj)
         return;
       }
 	}
+#ifdef __APPLE__
+    else if(g_metalDevice)
+    {
+      ((MTL::Buffer*)obj.OrgPtr)->release();
+    }
+#endif
   }
 
   if(obj.Type == MEM_GPU)
@@ -158,7 +187,7 @@ void mem_release(memobj_t &obj)
       return;
     }
 
-    if(g_clContext)
+    else if(g_clContext)
     {
 	  if(auto err = clReleaseMemObject((cl_mem)obj.Ptr))
       {
@@ -166,6 +195,13 @@ void mem_release(memobj_t &obj)
         return;
       }
     }
+
+#ifdef __APPLE__
+    else if(g_metalDevice)
+    {
+      ((MTL::Buffer*)obj.Ptr)->release();
+    }
+#endif
   }
 
   memset(&obj, 0, sizeof(obj));
@@ -200,6 +236,14 @@ int mem_copy(memobj_t &dst, const void *src_ptr, size_t size)
     return 0;
   }
 
+#ifdef __APPLE__
+  if(g_metalDevice)
+  {
+    memcpy(((MTL::Buffer*)dst.Ptr)->contents(), src_ptr, size);
+    return 0;
+  }
+#endif
+
   return fprintf(stderr, "GPU context is not set\n"), E_UNEXPECTED;
 }
 
@@ -229,6 +273,14 @@ int mem_copy(void *dst_ptr, memobj_t &src, size_t size)
 
     return 0;
   }
+
+#ifdef __APPLE__
+  if(g_metalDevice)
+  {
+    memcpy(dst_ptr, ((MTL::Buffer*)src.Ptr)->contents(), size);
+    return 0;
+  }
+#endif
 
   return fprintf(stderr, "GPU context is not set\n"), E_UNEXPECTED;
 }

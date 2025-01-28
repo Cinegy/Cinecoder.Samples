@@ -38,6 +38,16 @@ using namespace std::chrono_literals;
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
 #include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
+#ifdef __APPLE__
+
+#define BOOL BOOL2 /* it is needed to fix different BOOL typedef in objc.h */
+
+#define NS_PRIVATE_IMPLEMENTATION
+#define CA_PRIVATE_IMPLEMENTATION
+#define MTL_PRIVATE_IMPLEMENTATION
+#include <Metal/Metal.hpp>
+#endif
+
 #ifndef CL_DEVICE_BOARD_NAME_AMD // FIXME in opencl_dyn_load
 #define CL_DEVICE_BOARD_NAME_AMD 0x4038
 #endif
@@ -45,6 +55,11 @@ using namespace std::chrono_literals;
 LONG g_target_bitrate = 0;
 bool g_CudaEnabled = false;
 bool g_OpenclEnabled = false;
+#if defined(__APPLE__)
+bool g_MetalEnabled = true;
+#else
+bool g_MetalEnabled = false;
+#endif
 bool g_bWaitAtExit = false;
 
 // variables used for encoder/decoder latency calculation
@@ -60,6 +75,11 @@ bool	   g_bUseOpenCL = false;
 cl_context g_clContext = nullptr;
 int        g_clDeviceNo = -1;
 char       g_clDeviceName[128] = {};
+
+bool	   g_bUseMetal = false;
+void*	   g_metalDevice = nullptr;
+int        g_metalDeviceNo = -1;
+char       g_metalDeviceName[128] = {};
 
 cl_command_queue g_clMemAllocQueue = nullptr;
 
@@ -160,6 +180,36 @@ int SetOpenCLContext(cl_context ctx)
   return 0;
 }
 
+#ifdef __APPLE__
+//---------------------------------------------------------------------
+int SetMetalDevice(MTL::Device *device)
+//---------------------------------------------------------------------
+{
+  auto dev_arr = MTL::CopyAllDevices();
+
+  for(unsigned i = 0; i < dev_arr->count(); i++)
+  {
+    if(dev_arr->object(i) == device)
+    {
+      g_metalDeviceNo = i;
+      strcpy(g_metalDeviceName, device->name()->cString(NS::UTF8StringEncoding));
+      break;
+    }
+  }
+
+  dev_arr->release();
+
+  if(g_metalDeviceNo < 0)
+    return fprintf(stderr, "Can't find Metal device ordinal number\n"), E_UNEXPECTED;
+
+  printf("Selected Metal device: %d \"%s\"\n", g_metalDeviceNo, g_metalDeviceName);
+
+  g_metalDevice = device;
+
+  return 0;
+}
+#endif
+
 #include "mem_alloc.h"
 #include "file_writer.h"
 #include "dummy_consumer.h"
@@ -226,6 +276,13 @@ int main_impl(int argc, char* argv[])
     puts("\t'D2OCLNP'      -- Daniel2 OpenCL codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
     puts("\t'D2OCLGPU'     -- Daniel2 OpenCL codec test, data is copying from GPU into GPU global memory");
     puts("\t'D2OCLPURE'    -- Daniel2 OpenCL codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
+    }
+    if(g_MetalEnabled)
+    {
+    puts("\t'D2METAL'      -- Daniel2 Metal codec test, data is copying from GPU into CPU pinned memory");
+    puts("\t'D2METALNP'    -- Daniel2 Metal codec test, data is copying from GPU into CPU NOT-pinned memory (worst case test)");
+    puts("\t'D2METALGPU'   -- Daniel2 Metal codec test, data is copying from GPU into GPU global memory");
+    puts("\t'D2METALPURE'  -- Daniel2 Metal codec test, data is not copying, using GPU global memory buffer, coded data is also not copying (decoder only)");
     }
 #ifndef __aarch64__
     puts("\t'AVCI'         -- AVC-Intra CPU codec test");
@@ -350,6 +407,38 @@ int main_impl(int argc, char* argv[])
     strEncName = "Daniel2_OCL (Pure GPU mode)";
     g_mem_type = MEM_GPU;
     g_bUseOpenCL = true;
+  }
+  
+  if(g_MetalEnabled && 0 == strcmp(argv[1], "D2METAL"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_MTL; 
+    strEncName = "Daniel2_Metal";
+    g_mem_type = MEM_PINNED;
+    g_bUseMetal = true;
+  }
+  if(g_MetalEnabled && 0 == strcmp(argv[1], "D2METALNP"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_MTL; 
+    strEncName = "Daniel2_Metal (NOT PINNED MEMORY!!)";
+    g_mem_type = MEM_SYSTEM;
+  }
+  if(g_MetalEnabled && 0 == strcmp(argv[1], "D2METALGPU"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_MTL; 
+    strEncName = "Daniel2_Metal (GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseMetal = true;
+  }
+  if(g_MetalEnabled && 0 == strcmp(argv[1], "D2METALPURE"))
+  {
+    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL; 
+    clsidDec = CLSID_CC_DanielVideoDecoder_MTL_PureGpuSpeedTest; 
+    strEncName = "Daniel2_Metal (Pure GPU mode)";
+    g_mem_type = MEM_GPU;
+    g_bUseMetal = true;
   }
   
   if(0 == strcmp(argv[1], "MPEG"))
@@ -482,7 +571,7 @@ int main_impl(int argc, char* argv[])
 
   long fileSize = ftell(profile);
 
-  std::vector<char> profile_vec(fileSize);
+  std::vector<char> profile_vec(fileSize + 1);
   char* profile_text = profile_vec.data();
 
   if (fseek(profile, 0, SEEK_SET) != 0)
@@ -490,6 +579,8 @@ int main_impl(int argc, char* argv[])
 
   if (fread(profile_text, 1, fileSize, profile) < 0)
     return fprintf(stderr, "Profile reading error"), -2;
+
+  profile_text[fileSize] = 0;
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
@@ -738,6 +829,23 @@ int main_impl(int argc, char* argv[])
       if(FAILED(hr = SetOpenCLContext((cl_context)ocl_ctx)))
         return fprintf(stderr, "SetOpenCLContext() failed (code %08x)", hr), hr;
     }
+#ifdef __APPLE__
+    else if(g_bUseMetal)
+    {
+      printf("Setting up current Metal device\n");
+
+      com_ptr<ICC_MetalDeviceProp> pMetalDeviceProp;
+      if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_MetalDeviceProp, (void**)&pMetalDeviceProp)))
+        return fprintf(stderr, "No ICC_MetalDeviceProp interface found"), hr;
+
+      void *mtl_dev;
+      if(FAILED(hr = pMetalDeviceProp->get_MetalDevice(&mtl_dev)))
+        return fprintf(stderr, "Failed getting Metal device context from the encoder (code %08x)", hr), hr;
+
+      if(FAILED(hr = SetMetalDevice((MTL::Device*)mtl_dev)))
+        return fprintf(stderr, "SetMetalDevice() failed (code %08x)", hr), hr;
+    }
+#endif
     else
     {
       return fprintf(stderr, "Unknown GPU acceleration type\n"), E_UNEXPECTED;
@@ -876,6 +984,14 @@ int main_impl(int argc, char* argv[])
 
       cc_mem_type = CC_MEMTYPE_OCL_BUFFER;
     }
+
+    if(g_bUseMetal)
+    {
+      if(!pEncAsync2)
+        return fprintf(stderr, "To use Metal encoder with GPU memory it should support ICC_VideoConsumerExtAsync2 interface"), E_NOINTERFACE;
+
+      cc_mem_type = CC_MEMTYPE_METAL_BUFFER;
+    }
   }
 
   CpuLoadMeter cpuLoadMeter;
@@ -1001,8 +1117,8 @@ int main_impl(int argc, char* argv[])
 	fprintf(json_stats_file, "\t\t\"encClassGUID\"         : \"%s\",\n", GetGuidStr(GetClassGUID(pEncoder)));
 	fprintf(json_stats_file, "\t\t\"encClassName\"         : \"%s\",\n", GetClassNameA(pEncoder));
 	fprintf(json_stats_file, "\t\t\"encDeviceID\"          : \"%d\",\n", EncDeviceID);
-	fprintf(json_stats_file, "\t\t\"encDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : "CPU");
-	fprintf(json_stats_file, "\t\t\"encDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : GetProcessorName());
+	fprintf(json_stats_file, "\t\t\"encDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : g_bUseMetal ? "Metal" : "CPU");
+	fprintf(json_stats_file, "\t\t\"encDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : g_bUseMetal ? g_metalDeviceName : GetProcessorName());
 	fprintf(json_stats_file, "\t\t\"encTestTimeStart\"     : \"%s\",\n", GetTimeStr(t00));
 	fprintf(json_stats_file, "\t\t\"encTestTimeStop\"      : \"%s\",\n", GetTimeStr(t1));
     fprintf(json_stats_file, "\t\t\"encTestDurationMs\"    : \"%.3f\",\n", dT*1000);
@@ -1132,6 +1248,23 @@ int main_impl(int argc, char* argv[])
       if(FAILED(hr = SetOpenCLContext((cl_context)ocl_ctx)))
         return fprintf(stderr, "SetOpenCLContext() failed (code %08x)", hr), hr;
     }
+#ifdef __APPLE__
+	if(g_bUseMetal)
+    {
+      printf("Setting up current Metal device\n");
+
+      com_ptr<ICC_MetalDeviceProp> pMetalDeviceProp;
+      if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_MetalDeviceProp, (void**)&pMetalDeviceProp)))
+        return fprintf(stderr, "No ICC_MetalDeviceProp interface found"), hr;
+
+      void *mtl_dev;
+      if(FAILED(hr = pMetalDeviceProp->get_MetalDevice(&mtl_dev)))
+        return fprintf(stderr, "Failed getting Metal device context from the encoder (code %08x)", hr), hr;
+
+      if(FAILED(hr = SetMetalDevice((MTL::Device*)mtl_dev)))
+        return fprintf(stderr, "SetMetalDevice() failed (code %08x)", hr), hr;
+    }
+#endif
     else
     {
       return fprintf(stderr, "Unknown GPU acceleration type\n"), E_UNEXPECTED;
@@ -1327,8 +1460,8 @@ int main_impl(int argc, char* argv[])
 	fprintf(json_stats_file, "\t\t\"decClassGUID\"         : \"%s\",\n", GetGuidStr(GetClassGUID(pDecoder)));
 	fprintf(json_stats_file, "\t\t\"decClassName\"         : \"%s\",\n", GetClassNameA(pDecoder));
 	fprintf(json_stats_file, "\t\t\"decDeviceID\"          : \"%d\",\n", DecDeviceID);
-	fprintf(json_stats_file, "\t\t\"decDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : "CPU");
-	fprintf(json_stats_file, "\t\t\"decDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : GetProcessorName());
+	fprintf(json_stats_file, "\t\t\"decDeviceType\"        : \"%s\",\n", g_bUseCUDA ? "CUDA" : g_bUseOpenCL ? "OpenCL" : g_bUseMetal ? "Metal" : "CPU");
+	fprintf(json_stats_file, "\t\t\"decDeviceName\"        : \"%s\",\n", g_bUseCUDA ? g_cudaDeviceName : g_bUseOpenCL ? g_clDeviceName : g_bUseMetal ? g_metalDeviceName : GetProcessorName());
 	fprintf(json_stats_file, "\t\t\"decTestTimeStart\"     : \"%s\",\n", GetTimeStr(t00));
 	fprintf(json_stats_file, "\t\t\"decTestTimeStop\"      : \"%s\",\n", GetTimeStr(t1));
     fprintf(json_stats_file, "\t\t\"decTestDurationMs\"    : \"%.3f\",\n", dT*1000);
