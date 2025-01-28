@@ -13,3 +13,6 @@
 [submodule "external/CUDART"]
 	path = external/CUDART
 	url = https://gitlab.com/nvidia/headers/cuda-individual/cudart.git
+[submodule "external/metal-cpp"]
+	path = external/metal-cpp
+	url = https://github.com/bkaradzic/metal-cpp.git
