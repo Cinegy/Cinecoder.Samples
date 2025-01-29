@@ -41,6 +41,10 @@ install:
       docker buildx create --use
       docker buildx inspect --bootstrap
     fi
+    if [[ $platform == "MAC" ]]; then
+      curl -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+      mono nuget.exe restore
+    fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
 - cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
