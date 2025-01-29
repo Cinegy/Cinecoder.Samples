@@ -42,8 +42,9 @@ install:
       docker buildx inspect --bootstrap
     fi
     if [[ $platform == "MAC" ]]; then
+      sw_vers
       curl -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-      mono nuget.exe restore
+      mv nuget.exe /usr/local/bin/nuget.exe
     fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
