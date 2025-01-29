@@ -8,21 +8,25 @@ branches:
     
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      platform: x64
-      job_name: Build on Windows x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: x64
-      job_name: Build on Ubuntu x64
-      LINUX_PLATFORM: Linux
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      platform: ARM
-      job_name: Build on Ubuntu ARM64
-      LINUX_PLATFORM: LinuxARM64
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+#      platform: x64
+#      job_name: Build on Windows x64
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#      platform: x64
+#      job_name: Build on Ubuntu x64
+#      LINUX_PLATFORM: Linux
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+#      platform: ARM
+#      job_name: Build on Ubuntu ARM64
+#      LINUX_PLATFORM: LinuxARM64
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       platform: MAC
-      job_name: Build on MacOS
+      job_name: Build on MacOS x64
       LINUX_PLATFORM: MacOS
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      platform: ARM
+      job_name: Build on MacOS ARM64
+      LINUX_PLATFORM: MacOSARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
@@ -41,8 +45,9 @@ install:
       docker buildx create --use
       docker buildx inspect --bootstrap
     fi
-    if [[ $platform == "MAC" ]]; then
+    if [[ $LINUX_PLATFORM == "MacOS" || $LINUX_PLATFORM == "MacOSARM64" ]]; then
       sw_vers
+      uname -a
       curl -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
       mv nuget.exe /usr/local/bin/nuget.exe
     fi
