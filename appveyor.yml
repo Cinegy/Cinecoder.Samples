@@ -15,10 +15,10 @@ environment:
       platform: x64
       job_name: Build on Ubuntu x64
       LINUX_PLATFORM: Linux
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      platform: ARM
-      job_name: Build on Ubuntu ARM64
-      LINUX_PLATFORM: LinuxARM64
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+#      platform: ARM
+#      job_name: Build on Ubuntu ARM64
+#      LINUX_PLATFORM: LinuxARM64
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       platform: MAC
       job_name: Build on MacOS x64
@@ -31,11 +31,22 @@ environment:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
 configuration: Release
-    
+
+cache:
+  - /tmp/cinegy-cinecodersamples.tar
+  - /tmp/cinegy-cinecodersamples-arm64.tar
+
 install:
 - cmd: git submodule update --init --recursive
 - sh: |
     git submodule update --init --recursive
+    if [[ $platform == "x64" ]]; then
+      if [[ -f /tmp/cinegy-cinecodersamples.tar ]]; then
+        docker load -i /tmp/cinegy-cinecodersamples.tar
+      fi
+      docker build --rm -t cinegy/cinegy-cinecodersamples .
+      docker save cinegy/cinegy-cinecodersamples -o /tmp/cinegy-cinecodersamples.tar
+    fi
     if [[ $platform == "ARM" ]]; then
       sudo apt-get update --allow-releaseinfo-change
       sudo dpkg --add-architecture amd64
@@ -44,6 +55,13 @@ install:
       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       docker buildx create --use
       docker buildx inspect --bootstrap
+    fi
+    if [[ $platform == "ARM" ]]; then
+      if [[ -f /tmp/cinegy-cinecodersamples-arm64.tar ]]; then
+        docker load -i /tmp/cinegy-cinecodersamples-arm64.tar
+      fi
+      docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .
+      docker save cinegy/cinegy-cinecodersamples-arm64 -o /tmp/cinegy-cinecodersamples-arm64.tar
     fi
     if [[ $LINUX_PLATFORM == "MacOS" || $LINUX_PLATFORM == "MacOSARM64" ]]; then
       sw_vers
@@ -61,9 +79,9 @@ before_build:
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
-- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
+#- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
 - sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
-- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
+#- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
 - sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 - sh: if [[ $platform == "MAC" ]]; then ./build_samples-linux.sh; fi
 - sh: if [[ $platform == "MACARM" ]]; then ./build_samples-mac-arm64.sh; fi
