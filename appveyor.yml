@@ -15,10 +15,10 @@ environment:
       platform: x64
       job_name: Build on Ubuntu x64
       LINUX_PLATFORM: Linux
-#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-#      platform: ARM
-#      job_name: Build on Ubuntu ARM64
-#      LINUX_PLATFORM: LinuxARM64
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+      platform: ARM
+      job_name: Build on Ubuntu ARM64
+      LINUX_PLATFORM: LinuxARM64
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       platform: MAC
       job_name: Build on MacOS x64
@@ -43,9 +43,10 @@ install:
     if [[ $platform == "x64" ]]; then
       if [[ -f /tmp/cinegy-cinecodersamples.tar ]]; then
         docker load -i /tmp/cinegy-cinecodersamples.tar
+      else
+        docker build --rm -t cinegy/cinegy-cinecodersamples .
+        docker save cinegy/cinegy-cinecodersamples -o /tmp/cinegy-cinecodersamples.tar
       fi
-      docker build --rm -t cinegy/cinegy-cinecodersamples .
-      docker save cinegy/cinegy-cinecodersamples -o /tmp/cinegy-cinecodersamples.tar
     fi
     if [[ $platform == "ARM" ]]; then
       sudo apt-get update --allow-releaseinfo-change
@@ -59,9 +60,10 @@ install:
     if [[ $platform == "ARM" ]]; then
       if [[ -f /tmp/cinegy-cinecodersamples-arm64.tar ]]; then
         docker load -i /tmp/cinegy-cinecodersamples-arm64.tar
+      else
+        docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .
+        docker save cinegy/cinegy-cinecodersamples-arm64 -o /tmp/cinegy-cinecodersamples-arm64.tar
       fi
-      docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .
-      docker save cinegy/cinegy-cinecodersamples-arm64 -o /tmp/cinegy-cinecodersamples-arm64.tar
     fi
     if [[ $LINUX_PLATFORM == "MacOS" || $LINUX_PLATFORM == "MacOSARM64" ]]; then
       sw_vers
