@@ -29,6 +29,11 @@ endfunction()
 GetNToolkitDir()
 GetNPackageVersion("Cinecoder")
 
+message(STATUS "System processor (CMAKE_SYSTEM_PROCESSOR): ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "Target architecture (CMAKE_OSX_ARCHITECTURES): ${CMAKE_OSX_ARCHITECTURES}")
+message(STATUS "AARCH64: ${AARCH64}")
+message(STATUS "ARM: ${ARM}")
+
 if(APPLE)
 	if (CMAKE_OSX_ARCHITECTURES MATCHES "^(arm64|aarch64)$")
 		set(AARCH64 1)
