@@ -8,25 +8,25 @@ branches:
     
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
-      platform: x64
-      job_name: Build on Windows x64
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
-      platform: x64
-      job_name: Build on Ubuntu x64
-      LINUX_PLATFORM: Linux
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      platform: ARM
-      job_name: Build on Ubuntu ARM64
-      LINUX_PLATFORM: LinuxARM64
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+#      platform: x64
+#      job_name: Build on Windows x64
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+#      platform: x64
+#      job_name: Build on Ubuntu x64
+#      LINUX_PLATFORM: Linux
+#    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
+#      platform: ARM
+#      job_name: Build on Ubuntu ARM64
+#      LINUX_PLATFORM: LinuxARM64
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       platform: MAC
       job_name: Build on MacOS x64
       LINUX_PLATFORM: MacOS
-#    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-#      platform: MACARM
-#      job_name: Build on MacOS ARM64
-#      LINUX_PLATFORM: MacOSARM64
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      platform: MACARM
+      job_name: Build on MacOS ARM64
+      LINUX_PLATFORM: MacOSARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
@@ -66,6 +66,7 @@ build_script:
 - sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
 - sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
 - sh: if [[ $platform == "MAC" ]]; then ./build_samples-linux.sh; fi
+- sh: if [[ $platform == "MACARM" ]]; then ./build_samples-mac-arm64.sh; fi
 test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-
