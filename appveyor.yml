@@ -10,24 +10,44 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
       platform: x64
-      job_name: Build on Windows x64
+      job_name: Build Windows x64/ARM64
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
       platform: x64
-      job_name: Build on Ubuntu x64
+      job_name: Build Linux x64
       LINUX_PLATFORM: Linux
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
       platform: ARM
-      job_name: Build on Ubuntu ARM64
+      job_name: Build Linux ARM64
       LINUX_PLATFORM: LinuxARM64
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      platform: MAC
+      job_name: Build MacOS x64
+      LINUX_PLATFORM: MacOS
+    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+      platform: MACARM
+      job_name: Build MacOS ARM64
+      LINUX_PLATFORM: MacOSARM64
   license_password:
     secure: Hk0iGo1OgnbNih0NWskajQ==
     
 configuration: Release
-    
+
+cache:
+  - /tmp/cinegy-cinecodersamples.tar
+  - /tmp/cinegy-cinecodersamples-arm64.tar
+
 install:
 - cmd: git submodule update --init --recursive
 - sh: |
     git submodule update --init --recursive
+    if [[ $platform == "x64" ]]; then
+      if [[ -f /tmp/cinegy-cinecodersamples.tar ]]; then
+        docker load -i /tmp/cinegy-cinecodersamples.tar
+      else
+        docker build --rm -t cinegy/cinegy-cinecodersamples .
+        docker save cinegy/cinegy-cinecodersamples -o /tmp/cinegy-cinecodersamples.tar
+      fi
+    fi
     if [[ $platform == "ARM" ]]; then
       sudo apt-get update --allow-releaseinfo-change
       sudo dpkg --add-architecture amd64
@@ -36,6 +56,20 @@ install:
       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       docker buildx create --use
       docker buildx inspect --bootstrap
+    fi
+    if [[ $platform == "ARM" ]]; then
+      if [[ -f /tmp/cinegy-cinecodersamples-arm64.tar ]]; then
+        docker load -i /tmp/cinegy-cinecodersamples-arm64.tar
+      else
+        docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .
+        docker save cinegy/cinegy-cinecodersamples-arm64 -o /tmp/cinegy-cinecodersamples-arm64.tar
+      fi
+    fi
+    if [[ $LINUX_PLATFORM == "MacOS" || $LINUX_PLATFORM == "MacOSARM64" ]]; then
+      sw_vers
+      uname -a
+      curl -o nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+      mv nuget.exe /usr/local/bin/nuget.exe
     fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
@@ -47,10 +81,12 @@ before_build:
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
-- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
+#- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
 - sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
-- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
+#- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
 - sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: if [[ $platform == "MAC" ]]; then ./build_samples-linux.sh; fi
+- sh: if [[ $platform == "MACARM" ]]; then ./build_samples-mac-arm64.sh; fi
 test_script:
 - cmd: nunit3-console _bin\Release.x64\Daniel2.Managed.Tests.dll --result=myresults.xml;format=AppVeyor
 - ps: >-

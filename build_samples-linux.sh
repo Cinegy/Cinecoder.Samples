@@ -5,7 +5,12 @@ set -o pipefail
 
 #temporarily remove nuget presence test while fighting docker
 #command -v nuget >/dev/null 2>&1 || { echo >&2 "NuGet isn't found. Please install it at first."; exit 1; }
-mono /usr/local/bin/nuget.exe restore
+
+if [ -f "/usr/local/bin/nuget.exe" ]; then
+	mono /usr/local/bin/nuget.exe restore
+else
+	echo "⚠️  NuGet not found, skipping dependency recovery"
+fi
 
 [ -d _build.tmp ] && rm -rf _build.tmp
 mkdir _build.tmp

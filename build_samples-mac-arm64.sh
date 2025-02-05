@@ -20,7 +20,7 @@ BUILDTYPE=${1:-Debug}
 
 echo "Building Cinecoder Samples in mode:" $BUILDTYPE
 
-cmake -DCMAKE_BUILD_TYPE=$BUILDTYPE ..
+cmake -DCMAKE_BUILD_TYPE=$BUILDTYPE -DCMAKE_OSX_ARCHITECTURES=arm64 ..
 
 make -j8
 
