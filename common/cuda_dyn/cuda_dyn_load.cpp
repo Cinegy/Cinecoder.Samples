@@ -51,6 +51,7 @@ typedef void* HMODULE;
 static const std::vector<std::string> cudart_paths = {
 	"libcudart.so",
 	"/usr/local/cuda/lib64/libcudart.so",
+	"/usr/local/cuda-11.4/targets/aarch64-linux/lib/libcudart.so",
 	"/usr/local/cuda-10.0/targets/aarch64-linux/lib/libcudart.so"
 };
 #endif

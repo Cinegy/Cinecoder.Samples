@@ -209,7 +209,17 @@ int main(int argc, char **argv)
 	{
 		if (__InitCUDA() != 0) // init CUDA SDK
 		{
-			printf("Error: cannot initialize CUDA! Please check if the <cudart> file exists!\n");
+#if defined(_WIN32)
+	#if _WIN64
+			printf("Error: cannot initialize CUDA! Please check if the <cudart64_XX.dll> file exists!\n");
+	#else
+			printf("Error: cannot initialize CUDA! Please check if the <cudart32_XX.dll> file exists!\n");
+	#endif
+#else
+			printf("Error: cannot initialize CUDA! Please check if the <libcudart.so> file exists!\n");
+#endif
+			printf("(The NVIDIA driver from CUDA 12 not contain cudart files, need install CUDA-Runtime or copy so/dll files in execute folder.)\n");
+
 			return 0;
 		}
 	}
