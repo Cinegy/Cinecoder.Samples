@@ -14,6 +14,7 @@
 #if defined(_WIN32)
 #if _WIN64
 static const std::vector<std::string> cudart_paths = {
+	"cudart64_12.dll",
 	"cudart64_110.dll",
 	"cudart64_102.dll",
 	"cudart64_101.dll",
