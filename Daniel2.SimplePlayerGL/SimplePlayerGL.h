@@ -1813,25 +1813,25 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	{
 		if (decodeAudio && decodeAudio->IsInitialize())
 		{
-			audio_volume = m_decodeAudio->GetVolume() + (wParam == 107 ? 0.1f : -0.1f);
+			audio_volume = decodeAudio->GetVolume() + (key == '+' ? 0.1f : -0.1f);
 			if (audio_volume > 1.f) audio_volume = 1.f;
 			else if (audio_volume < 0.f) audio_volume = 0;
-			m_decodeAudio->SetVolume(audio_volume);
-			printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
+			decodeAudio->SetVolume(audio_volume);
+			printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
 		}
 		break;
 	}
 
 	case 'm':
 	{
-		if (m_decodeAudio && m_decodeAudio->IsInitialize())
+		if (decodeAudio && decodeAudio->IsInitialize())
 		{
 			g_bMute = !g_bMute;
 			if (g_bMute)
-				m_decodeAudio->SetVolume(0.f);
+				decodeAudio->SetVolume(0.f);
 			else
-				m_decodeAudio->SetVolume(audio_volume);
-			printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
+				decodeAudio->SetVolume(audio_volume);
+			printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
 		}
 		break;
 	}
