@@ -164,6 +164,9 @@ int textdib[textdib_size*16*2];
 int text_size_x = 0, text_size_y = 0;
 char textbuf[1024];
 
+bool g_bMute = false;
+float audio_volume = 1.f;
+
 //char g_FpsText[256] = {};
 CpuLoadMeter cpuLoadMeter;
 
@@ -1810,11 +1813,25 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 	{
 		if (decodeAudio && decodeAudio->IsInitialize())
 		{
-			float volume = decodeAudio->GetVolume() + (key == '+' ? 0.1f : -0.1f);
-			if (volume > 1.f) volume = 1.f;
-			else if (volume < 0.f) volume = 0;
-			decodeAudio->SetVolume(volume);
-			printf("audio volume = %.0f %%\n", decodeAudio->GetVolume() * 100.f);
+			audio_volume = m_decodeAudio->GetVolume() + (wParam == 107 ? 0.1f : -0.1f);
+			if (audio_volume > 1.f) audio_volume = 1.f;
+			else if (audio_volume < 0.f) audio_volume = 0;
+			m_decodeAudio->SetVolume(audio_volume);
+			printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
+		}
+		break;
+	}
+
+	case 'm':
+	{
+		if (m_decodeAudio && m_decodeAudio->IsInitialize())
+		{
+			g_bMute = !g_bMute;
+			if (g_bMute)
+				m_decodeAudio->SetVolume(0.f);
+			else
+				m_decodeAudio->SetVolume(audio_volume);
+			printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
 		}
 		break;
 	}
@@ -1913,7 +1930,7 @@ void Keyboard(unsigned char key, int /*x*/, int /*y*/)
 		break;
 	}
 
-	case 'm':
+	case 'y':
 	{
 		g_bMaxFPS = !g_bMaxFPS;
 

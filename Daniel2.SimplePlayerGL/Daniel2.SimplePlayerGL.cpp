@@ -133,13 +133,14 @@ void printHelp(void)
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
 	printf("'v':                on/off vertical synchronisation\n");
-	printf("'m':                on/off maximum playing fps\n");
+	printf("'y':                on/off maximum playing fps\n");
 	printf("'r':                on/off rotate image\n");
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'o':                on/off show texture\n");
 	printf("'d':                on/off decoder\n");
 	printf("'n':                on/off read file\n");
+	printf("'m':                on/off audio\n");
 	printf("'+'/'-':            change audio volume (+/- 10%%)\n");
 	printf("'J'/'K'/'L':        change direction video or pause\n");
 	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");

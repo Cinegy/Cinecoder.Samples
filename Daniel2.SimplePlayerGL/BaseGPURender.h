@@ -45,6 +45,9 @@ protected:
 	bool m_bMaxFPS;
 	bool m_bVSyncHand;
 
+	bool m_bMute;
+	float audio_volume;
+
 protected:
 	// Window
 	WNDCLASSEX	m_wndClass;
