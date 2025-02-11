@@ -84,8 +84,8 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	{
 		HRESULT hr = S_OK;
 
-		IDXGIFactory* pDXGIFactory;
-		CreateDXGIFactory(IID_IDXGIFactory, (void**)&pDXGIFactory);
+		IDXGIFactory1* pDXGIFactory;
+		CreateDXGIFactory(IID_IDXGIFactory1, (void**)&pDXGIFactory);
 
 		m_pCapableAdapter = nullptr;
 
