@@ -31,6 +31,7 @@ public:
 #if defined(__WIN32__)
 private:
 	ID3D11Resource*		m_pResource;
+	com_ptr<IDXGIKeyedMutex> m_pKeyedMutex;
 public:
 	ID3D11Resource* GetD3DX11ResourcePtr() { return m_pResource; }
 	void InitD3DResource(ID3D11Resource* pResource, size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize)
@@ -43,8 +44,24 @@ public:
 		iPitch = _iStride;
 		iSizeFrame = iPitch * iHeight;
 
-		m_pResource = pResource;
+		m_pKeyedMutex = nullptr;
+
+		HRESULT  hr = S_OK;
+
+		com_ptr<ID3D11Buffer> pBuffer;
+		hr = pResource->QueryInterface(__uuidof(ID3D11Buffer), reinterpret_cast<void**>(&pBuffer));
+
+		D3D11_BUFFER_DESC bufDesc = {};
+		if (SUCCEEDED(hr) && pBuffer) pBuffer->GetDesc(&bufDesc);
+		if (SUCCEEDED(hr) && (bufDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX))
+		{
+			hr = pResource->QueryInterface(__uuidof(IDXGIKeyedMutex), reinterpret_cast<void**>(&m_pKeyedMutex));
+		}
+
+		m_pResource = pResource;		
 	}
+	HRESULT D3DX11ResourceLock() { if (m_pKeyedMutex) return m_pKeyedMutex->AcquireSync(0, INFINITE); else return S_OK; }
+	HRESULT D3DX11ResourceUnLock() { if (m_pKeyedMutex) return m_pKeyedMutex->ReleaseSync(0); else return S_OK; }
 #endif
 
 private:

@@ -895,6 +895,8 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 
 		MultithreadSyncBegin();
 
+		pBlock->D3DX11ResourceLock();
+
 		if (resDim == D3D11_RESOURCE_DIMENSION_BUFFER)
 		{
 			// We want to copy image data to the texture
@@ -1078,6 +1080,8 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 			// Unregister the resources of buffer
 			err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
 		}
+
+		pBlock->D3DX11ResourceUnLock();
 
 		MultithreadSyncEnd();
 	}
