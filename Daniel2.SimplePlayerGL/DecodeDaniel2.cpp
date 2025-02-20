@@ -893,7 +893,17 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 						m_dec_params.type == VD_TYPE_NVDEC)
 						return 0;
 
-					//if (m_bUseCuda) m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+					if (m_bUseCuda)
+					{
+#if defined(__WIN32__)
+						if (m_pRender || m_pCapableAdapter)
+						{
+							printf("Error: cannot switch to CPU, please disable option <cinecoderD3D11>!\n");
+							return 0;
+						}
+#endif
+						m_bUseCudaHost = true; // use CUDA-pipeline with host memory
+					}
 					if (m_bUseCuda && !m_bUseCudaHost) return 0; // Init GPU-decoder failed -> exit
 				}
 			}
@@ -993,12 +1003,14 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				DWORD iStride = 0;
 				pVideoProducer->GetStride(list_fmt[i], &iStride); // get stride
 
+				bool bUseCuda = m_bUseCuda && !m_bUseCudaHost;
+
 				C_Block block;
-				long lres = block.Init(m_width, m_height, iStride, 0, m_bUseCuda);
+				long lres = block.Init(m_width, m_height, iStride, 0, bUseCuda);
 				if (lres == 0)
 				{
 					DWORD cb = 0;
-					hr = pVideoProducer->GetFrame(list_fmt[i], m_bUseCuda ? block.DataGPUPtr() : block.DataPtr(), (DWORD)block.Size(), (INT)block.Pitch(), &cb);
+					hr = pVideoProducer->GetFrame(list_fmt[i], bUseCuda ? block.DataGPUPtr() : block.DataPtr(), (DWORD)block.Size(), (INT)block.Pitch(), &cb);
 					if (SUCCEEDED(hr))
 					{
 						fmt = list_fmt[i]; break;
