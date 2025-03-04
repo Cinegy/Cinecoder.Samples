@@ -220,6 +220,7 @@ CC_COLOR_FMT ParseColorFmt(const char *s)
 //-----------------------------------------------------------------------------
 {
   if(0 == strcmp(s, "YUY2")) return CCF_YUY2;
+  if(0 == strcmp(s, "UYVY")) return CCF_UYVY;
   if(0 == strcmp(s, "V210")) return CCF_V210;
   if(0 == strcmp(s, "Y216")) return CCF_Y216;
   if(0 == strcmp(s, "RGBA")) return CCF_RGBA;
