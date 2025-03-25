@@ -52,6 +52,8 @@ practical:
 - to show the maximal potential performance of a particular Cinecoder codec on a particular platform
 - to discover any hidden pitfalls in pipelines - for example, why the processing is slow if you use not-pinned memory with CUDA codecs
 
+Sample profiles and footages you can download from our cloud: https://files.cinegy.com/index.php/s/HSX48LBe8KwzNYb
+
 ### Dependencies
 
 We rely on a few packages we publish on NuGet for these samples:
