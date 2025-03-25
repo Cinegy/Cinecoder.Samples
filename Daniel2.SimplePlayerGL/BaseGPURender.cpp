@@ -8,6 +8,7 @@ BaseGPURender::BaseGPURender() :
 	m_bFullScreen(false),
 	m_bFullCurScreen(false),
 	m_bUseGPU(false),
+	m_bMute(false),
 	m_windowCaption(L"TestApp (Decode Daniel2)")
 {
 	// Init window size
@@ -48,6 +49,8 @@ BaseGPURender::BaseGPURender() :
 	m_bMaxFPS = false;
 	m_bVSyncHand = true;
 
+	audio_volume = 1.f;
+
 	gpu_render_type = GPU_RENDER_UNKNOWN;
 }
 
@@ -84,8 +87,8 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	{
 		HRESULT hr = S_OK;
 
-		IDXGIFactory* pDXGIFactory;
-		CreateDXGIFactory(IID_IDXGIFactory, (void**)&pDXGIFactory);
+		IDXGIFactory1* pDXGIFactory;
+		CreateDXGIFactory(IID_IDXGIFactory1, (void**)&pDXGIFactory);
 
 		m_pCapableAdapter = nullptr;
 
@@ -235,15 +238,28 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 		{
 			if (m_decodeAudio && m_decodeAudio->IsInitialize())
 			{
-				float volume = m_decodeAudio->GetVolume() + (wParam == 107 ? 0.1f : -0.1f);
-				if (volume > 1.f) volume = 1.f;
-				else if (volume < 0.f) volume = 0;
-				m_decodeAudio->SetVolume(volume);
+				audio_volume = m_decodeAudio->GetVolume() + (wParam == 107 ? 0.1f : -0.1f);
+				if (audio_volume > 1.f) audio_volume = 1.f;
+				else if (audio_volume < 0.f) audio_volume = 0;
+				m_decodeAudio->SetVolume(audio_volume);
 				printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
 			}
 			break;
 		}
-		else if (wParam == 80 || wParam == VK_SPACE) // "p"
+		else if (wParam == 'M') // "m"
+		{
+			if (m_decodeAudio && m_decodeAudio->IsInitialize())
+			{
+				m_bMute = !m_bMute;
+				if (m_bMute)
+					m_decodeAudio->SetVolume(0.f);
+				else
+					m_decodeAudio->SetVolume(audio_volume);
+				printf("audio volume = %.0f %%\n", m_decodeAudio->GetVolume() * 100.f);
+			}
+			break;
+		}
+		else if (wParam == 'P' || wParam == VK_SPACE) // "p"
 		{
 			if (m_bPause)
 				SeekToFrame(iCurPlayFrameNumber);
@@ -251,7 +267,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			SetPause(!m_bPause);
 			break;
 		}
-		else if (wParam == 74) // "j"
+		else if (wParam == 'J') // "j"
 		{
 			int iSpeed = m_decodeD2->GetSpeed();
 
@@ -272,7 +288,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			printf("press J (speed: %dx)\n", m_decodeD2->GetSpeed());
 			break;
 		}
-		else if (wParam == 75) // "k"
+		else if (wParam == 'K') // "k"
 		{
 			int iSpeed = m_decodeD2->GetSpeed();
 
@@ -292,7 +308,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			printf("press K (speed: %dx)\n", m_decodeD2->GetSpeed());
 			break;
 		}
-		else if (wParam == 76) // "l"
+		else if (wParam == 'L') // "l"
 		{
 			int iSpeed = m_decodeD2->GetSpeed();
 
@@ -313,7 +329,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			printf("press L (speed: %dx)\n", m_decodeD2->GetSpeed());
 			break;
 		}
-		else if (wParam == 86) // "v"
+		else if (wParam == 'V') // "v"
 		{
 			m_bVSync = !m_bVSync;
 			SetVerticalSync(m_bVSync);
@@ -325,7 +341,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 77) // "m"
+		else if (wParam == 'Y') // "y"
 		{
 			m_bMaxFPS = !m_bMaxFPS;
 
@@ -336,7 +352,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 82) // "r"
+		else if (wParam == 'R') // "r"
 		{
 			m_bRotate = !m_bRotate;
 
@@ -347,7 +363,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 70) // "f"
+		else if (wParam == 'F') // "f"
 		{
 			m_bFullScreen = !m_bFullScreen;
 			UpdateWindow();
@@ -359,7 +375,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 67) // "c"
+		else if (wParam == 'C') // "c"
 		{
 			if (!m_bFullScreen)
 			{
@@ -374,7 +390,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 84) // "t"
+		else if (wParam == 'T') // "t"
 		{
 			m_bCopyToTexture = !m_bCopyToTexture;
 
@@ -385,7 +401,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 79) // "o"
+		else if (wParam == 'O') // "o"
 		{
 			m_bShowTexture = !m_bShowTexture;
 
@@ -396,7 +412,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 68) // "d"
+		else if (wParam == 'D') // "d"
 		{
 			m_bDecoder = !m_bDecoder;
 			m_decodeD2->SetDecode(m_bDecoder);
@@ -411,7 +427,7 @@ LRESULT BaseGPURender::ProcessWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			break;
 		}
-		else if (wParam == 78) // "n"
+		else if (wParam == 'N') // "n"
 		{
 			bool bReadFile = m_decodeD2->GetReadFile();
 			m_decodeD2->SetReadFile(!bReadFile);

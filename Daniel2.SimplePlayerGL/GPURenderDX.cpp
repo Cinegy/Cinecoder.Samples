@@ -864,7 +864,10 @@ HRESULT GPURenderDX::CreateD3DXBuffer(ID3D11Buffer** pBuffer, size_t iSizeBuffer
 
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+	//desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
+
+	// From Cinecoder 4.21.6.25432-alpha need use D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX
+	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
 
 	desc.ByteWidth = static_cast<UINT>(iSizeBuffer);
 
@@ -891,6 +894,8 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 		pResourceDXD11->GetType(&resDim);
 
 		MultithreadSyncBegin();
+
+		pBlock->D3DX11ResourceLock();
 
 		if (resDim == D3D11_RESOURCE_DIMENSION_BUFFER)
 		{
@@ -1075,6 +1080,8 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 			// Unregister the resources of buffer
 			err = cudaGraphicsUnregisterResource(cuda_tex_result_resource_buff); __vrcu
 		}
+
+		pBlock->D3DX11ResourceUnLock();
 
 		MultithreadSyncEnd();
 	}
