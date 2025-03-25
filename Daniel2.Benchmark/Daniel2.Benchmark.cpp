@@ -296,10 +296,6 @@ int main_impl(int argc, char* argv[])
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
     puts("\t'H264_AMF'     -- H264 AMD GPU codec test (requires GPU codec plugin)");
     puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test (requires GPU codec plugin)");
-    puts("\t'H264_IMDK'    -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
-    puts("\t'HEVC_IMDK'    -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
-    puts("\t'H264_IMDK_SW' -- H264 Intel QuickSync codec test (requires GPU codec plugin)");
-    puts("\t'HEVC_IMDK_SW' -- HEVC Intel QuickSync codec test (requires GPU codec plugin)");
     puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
     puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
 //#endif
@@ -500,34 +496,6 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_HEVCVideoEncoder_AMF; 
     clsidDec = CLSID_CC_HEVCVideoDecoder_AMF; 
     strEncName = "AMD HEVC"; 
-    bLoadGpuCodecsPlugin = true;
-  }
-  if(0 == strcmp(argv[1], "H264_IMDK"))
-  { 
-    clsidEnc = CLSID_CC_H264VideoEncoder_IMDK; 
-    clsidDec = CLSID_CC_H264VideoDecoder_IMDK; 
-    strEncName = "Intel QuickSync H264"; 
-    bLoadGpuCodecsPlugin = true;
-  }
-  if(0 == strcmp(argv[1], "HEVC_IMDK"))
-  { 
-    clsidEnc = CLSID_CC_HEVCVideoEncoder_IMDK; 
-    clsidDec = CLSID_CC_HEVCVideoDecoder_IMDK; 
-    strEncName = "Intel QuickSync HEVC"; 
-    bLoadGpuCodecsPlugin = true;
-  }
-  if(0 == strcmp(argv[1], "H264_IMDK_SW"))
-  { 
-    clsidEnc = CLSID_CC_H264VideoEncoder_IMDK_SW;
-    clsidDec = CLSID_CC_H264VideoDecoder_IMDK_SW;
-    strEncName = "Intel QuickSync H264 (SOFTWARE)"; 
-    bLoadGpuCodecsPlugin = true;
-  }
-  if(0 == strcmp(argv[1], "HEVC_IMDK_SW"))
-  { 
-    clsidEnc = CLSID_CC_HEVCVideoEncoder_IMDK_SW;
-    clsidDec = CLSID_CC_HEVCVideoDecoder_IMDK_SW;
-    strEncName = "Intel QuickSync HEVC (SOFTWARE)";
     bLoadGpuCodecsPlugin = true;
   }
   if(0 == strcmp(argv[1], "H264_IVPL"))
