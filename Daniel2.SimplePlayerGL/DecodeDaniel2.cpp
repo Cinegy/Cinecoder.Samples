@@ -638,12 +638,12 @@ int DecodeDaniel2::InitValues()
 		//	strcmp(m_strStreamType, "AVC1") == 0)
 		//	size = m_stride * m_height * 3 / 2;
 
-		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
-		
 		if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
 		{
 			size = (m_stride * m_height) + (m_stride * (m_height / 2));
 		}
+
+		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 
 		if (res != 0)
 		{
@@ -1124,9 +1124,16 @@ long DecodeDaniel2::ThreadProc()
 			ID3D11Buffer* pResourceDXD11 = nullptr;
 			//ID3D11Texture2D* pResourceDXD11 = nullptr;
 
+			size_t size = m_stride * m_height;
+
+			if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
+			{
+				size = (m_stride * m_height) + (m_stride * (m_height / 2));
+			}
+
 			if (true)
 			{
-				hr = m_pRender->CreateD3DXBuffer(&pResourceDXD11, m_stride * m_width); __check_hr
+				hr = m_pRender->CreateD3DXBuffer(&pResourceDXD11, size); __check_hr
 			}
 			//else
 			//{
@@ -1144,7 +1151,7 @@ long DecodeDaniel2::ThreadProc()
 			//	hr = m_pRender->CreateD3DXTexture(format, Usage, m_width, m_height, &pResourceDXD11, &pTexture_Srv); __check_hr
 			//}
 
-			size_t buffer_size = m_stride * m_width;
+			size_t buffer_size = size;
 			it->InitD3DResource(pResourceDXD11, m_width, m_height, m_stride, buffer_size);
 		}
 #endif
