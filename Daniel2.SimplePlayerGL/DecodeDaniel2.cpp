@@ -481,6 +481,21 @@ int DecodeDaniel2::CreateDecoder()
 			bIntraFormat = false;
 			break;
 #endif
+
+#if	(CINECODER_VERSION >= 42403)
+		case CC_ES_TYPE_VIDEO_AV1:
+			//clsidDecoder = useCuda ? CLSID_CC_AV1_VideoDecoder_NV : CLSID_CC_AV1_VideoDecoder; // AV1 Decoder has no CPU implementation, use substitutions.
+			clsidDecoder = CLSID_CC_AV1_VideoDecoder_NV;
+
+			if (useIVPL) clsidDecoder = CLSID_CC_AV1_VideoDecoder_IVPL;
+			if (useAMF) clsidDecoder = CLSID_CC_AV1_VideoDecoder_AMF;
+			if (useNVDEC) clsidDecoder = CLSID_CC_AV1_VideoDecoder_NV;
+
+			m_strStreamType = "AV1";
+			bIntraFormat = false;
+			break;
+#endif
+
 		case CC_ES_TYPE_VIDEO_DANIEL:
 #if	(CINECODER_VERSION < 42003)
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
@@ -913,7 +928,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		if (strcmp(m_strStreamType, "HEVC") == 0 ||
 			strcmp(m_strStreamType, "H264") == 0 ||
 			strcmp(m_strStreamType, "HVC1") == 0 ||
-			strcmp(m_strStreamType, "AVC1") == 0)
+			strcmp(m_strStreamType, "AVC1") == 0 ||
+			strcmp(m_strStreamType, "AV1") == 0)
 		{
 			com_ptr<ICC_D3D11VideoObject> d3d11VideoObject;
 			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoObject**)&d3d11VideoObject)))
