@@ -481,6 +481,21 @@ int DecodeDaniel2::CreateDecoder()
 			bIntraFormat = false;
 			break;
 #endif
+
+#if	(CINECODER_VERSION >= 42403)
+		case CC_ES_TYPE_VIDEO_AV1:
+			//clsidDecoder = useCuda ? CLSID_CC_AV1_VideoDecoder_NV : CLSID_CC_AV1_VideoDecoder; // AV1 Decoder has no CPU implementation, use substitutions.
+			clsidDecoder = CLSID_CC_AV1_VideoDecoder_NV;
+
+			if (useIVPL) clsidDecoder = CLSID_CC_AV1_VideoDecoder_IVPL;
+			if (useAMF) clsidDecoder = CLSID_CC_AV1_VideoDecoder_AMF;
+			if (useNVDEC) clsidDecoder = CLSID_CC_AV1_VideoDecoder_NV;
+
+			m_strStreamType = "AV1";
+			bIntraFormat = false;
+			break;
+#endif
+
 		case CC_ES_TYPE_VIDEO_DANIEL:
 #if	(CINECODER_VERSION < 42003)
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
@@ -623,12 +638,12 @@ int DecodeDaniel2::InitValues()
 		//	strcmp(m_strStreamType, "AVC1") == 0)
 		//	size = m_stride * m_height * 3 / 2;
 
-		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
-		
 		if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
 		{
 			size = (m_stride * m_height) + (m_stride * (m_height / 2));
 		}
+
+		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 
 		if (res != 0)
 		{
@@ -913,7 +928,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 		if (strcmp(m_strStreamType, "HEVC") == 0 ||
 			strcmp(m_strStreamType, "H264") == 0 ||
 			strcmp(m_strStreamType, "HVC1") == 0 ||
-			strcmp(m_strStreamType, "AVC1") == 0)
+			strcmp(m_strStreamType, "AVC1") == 0 ||
+			strcmp(m_strStreamType, "AV1") == 0)
 		{
 			com_ptr<ICC_D3D11VideoObject> d3d11VideoObject;
 			if (SUCCEEDED(m_pVideoDec->QueryInterface((ICC_D3D11VideoObject**)&d3d11VideoObject)))
@@ -1108,9 +1124,16 @@ long DecodeDaniel2::ThreadProc()
 			ID3D11Buffer* pResourceDXD11 = nullptr;
 			//ID3D11Texture2D* pResourceDXD11 = nullptr;
 
+			size_t size = m_stride * m_height;
+
+			if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
+			{
+				size = (m_stride * m_height) + (m_stride * (m_height / 2));
+			}
+
 			if (true)
 			{
-				hr = m_pRender->CreateD3DXBuffer(&pResourceDXD11, m_stride * m_width); __check_hr
+				hr = m_pRender->CreateD3DXBuffer(&pResourceDXD11, size); __check_hr
 			}
 			//else
 			//{
@@ -1128,7 +1151,7 @@ long DecodeDaniel2::ThreadProc()
 			//	hr = m_pRender->CreateD3DXTexture(format, Usage, m_width, m_height, &pResourceDXD11, &pTexture_Srv); __check_hr
 			//}
 
-			size_t buffer_size = m_stride * m_width;
+			size_t buffer_size = size;
 			it->InitD3DResource(pResourceDXD11, m_width, m_height, m_stride, buffer_size);
 		}
 #endif

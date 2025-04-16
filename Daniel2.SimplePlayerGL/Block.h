@@ -44,6 +44,9 @@ public:
 		iPitch = _iStride;
 		iSizeFrame = iPitch * iHeight;
 
+		if (_iSize > iSizeFrame)
+			iSizeFrame = _iSize;
+
 		m_pKeyedMutex = nullptr;
 
 		HRESULT  hr = S_OK;
