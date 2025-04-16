@@ -292,12 +292,15 @@ int main_impl(int argc, char* argv[])
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
-    puts("\t'H264_NV'      -- H264 NVidia GPU codec test (requires GPU codec plugin)");
-    puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test (requires GPU codec plugin)");
-    puts("\t'H264_AMF'     -- H264 AMD GPU codec test (requires GPU codec plugin)");
-    puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test (requires GPU codec plugin)");
-    puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test (requires GPU codec plugin)");
-    puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test (requires GPU codec plugin)");
+    puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
+    puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test");
+    puts("\t'AV1_NV'       -- AV1  NVidia GPU codec test");
+    puts("\t'H264_AMF'     -- H264 AMD GPU codec test");
+    puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test");
+    puts("\t'AV1_AMF'      -- AV1  AMD GPU codec test");
+    puts("\t'H264_IVPL'    -- H264 Intel OneVPL codec test");
+    puts("\t'HEVC_IVPL'    -- HEVC Intel OneVPL codec test");
+    puts("\t'AV1_IVPL'     -- AV1  Intel OneVPL codec test");
 //#endif
     puts("\n<rawtype> can be 'YUY2','V210','V216','RGBA','RGBX','NV12','NV16','P016','P216','YUV444','YUV444_16' or 'NULL'");
     puts("\n");
@@ -484,6 +487,22 @@ int main_impl(int argc, char* argv[])
     g_mem_type = MEM_GPU;
     g_bUseCUDA = true;
   }
+  if(0 == strcmp(argv[1], "AV1_NV"))
+  { 
+    clsidEnc = CLSID_CC_AV1_VideoEncoder_NV; 
+    clsidDec = CLSID_CC_AV1_VideoDecoder_NV; 
+    strEncName = "NVidia AV1"; 
+    bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "AV1_NV_GPU"))
+  { 
+    clsidEnc = CLSID_CC_AV1_VideoEncoder_NV; 
+    clsidDec = CLSID_CC_AV1_VideoDecoder_NV; 
+    strEncName = "NVidia AV1"; 
+    bLoadGpuCodecsPlugin = true;
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
+  }
   if(0 == strcmp(argv[1], "H264_AMF"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_AMF; 
@@ -498,6 +517,13 @@ int main_impl(int argc, char* argv[])
     strEncName = "AMD HEVC"; 
     bLoadGpuCodecsPlugin = true;
   }
+  if(0 == strcmp(argv[1], "AV1_AMF"))
+  { 
+    clsidEnc = CLSID_CC_AV1_VideoEncoder_AMF; 
+    clsidDec = CLSID_CC_AV1_VideoDecoder_AMF; 
+    strEncName = "AMD AV1"; 
+    bLoadGpuCodecsPlugin = true;
+  }
   if(0 == strcmp(argv[1], "H264_IVPL"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_IVPL; 
@@ -510,6 +536,13 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_HEVCVideoEncoder_IVPL; 
     clsidDec = CLSID_CC_HEVCVideoDecoder_IVPL; 
     strEncName = "Intel OneVPL HEVC"; 
+    bLoadGpuCodecsPlugin = true;
+  }
+  if(0 == strcmp(argv[1], "AV1_IVPL"))
+  { 
+    clsidEnc = CLSID_CC_AV1_VideoEncoder_IVPL; 
+    clsidDec = CLSID_CC_AV1_VideoDecoder_IVPL; 
+    strEncName = "Intel OneVPL AV1"; 
     bLoadGpuCodecsPlugin = true;
   }
   if(0 == strcmp(argv[1], "H264"))
