@@ -94,6 +94,8 @@ private:
 
 	LONGLONG m_iNegativePTS;
 
+	int m_iCudaDevice;
+
 public:
 	DecodeDaniel2();
 	~DecodeDaniel2();

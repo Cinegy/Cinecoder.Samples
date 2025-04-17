@@ -447,7 +447,7 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = CLSID_CC_AVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "AVC1";
 
-#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
+#if 0		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
 #endif
 			clsidDecoder = useCuda ? CLSID_CC_H264VideoDecoder_NV : CLSID_CC_H264VideoDecoder;
@@ -466,7 +466,7 @@ int DecodeDaniel2::CreateDecoder()
 			//clsidDecoder = CLSID_CC_HVC1VideoDecoder_NV; // work without UnwrapFrame()
 			//m_strStreamType = "HVC1";
 
-#if 1		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
+#if 0		// For H264/AVC1/HEVC/HVC1 - support only CPU pipeline or GPU pipeline with D3DX11 (use: -cuda -d3d11 -cinecoderD3D11) / GetFrame failed for only GPU
 			useCuda = m_pRender && useCuda ? true : false;
 #endif
 			//clsidDecoder = useCuda ? CLSID_CC_HEVCVideoDecoder_NV : CLSID_CC_HEVCVideoDecoder;
@@ -515,7 +515,7 @@ int DecodeDaniel2::CreateDecoder()
 	if (m_bUseCuda && !useCuda)
 	{
 		//m_bUseCudaHost = true; // use CUDA-pipeline with host memory
-		printf("Error: cannot support GPU-decoding for this format or pipe!\n");
+		printf("Error: cannot support GPU-decoding for this format(%s) or pipe(use: -cuda -d3d11 -cinecoderD3D11)!\n", m_strStreamType);
 		return -1; // if not GPU-decoder -> exit
 	}
 
@@ -575,6 +575,32 @@ int DecodeDaniel2::CreateDecoder()
 			hr = pVDecFixedScaleFactorProp->put_FixedScaleFactor(v);
 		}
 	}
+
+#ifdef USE_CUDA_SDK
+	if (m_bUseCuda)
+	{
+		cudaError_t err;
+
+		m_iCudaDevice = 0;
+		err = cudaGetDevice(&m_iCudaDevice); __vrcu
+
+		//CUresult cuRes = CUDA_SUCCESS;
+
+		//cuRes = cuInit(0);
+
+		//CUdevice cuDevice;
+		//CUcontext cuContext;
+
+		//cuRes = cuDeviceGet(&cuDevice, i_cuda_device);
+		//cuRes = cuDevicePrimaryCtxRetain(&cuContext, cuDevice);
+
+		//com_ptr<ICC_CudaContextProp> pCudaCtxProp = nullptr;
+		//if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_CudaContextProp, (void**)&pCudaCtxProp)))
+		//{
+		//	hr = pCudaCtxProp->put_CudaContext(cuContext);
+		//}
+	}
+#endif
 
 	// init decoder
 	if (FAILED(hr = m_pVideoDec->Init()))
@@ -759,6 +785,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #ifdef USE_CUDA_SDK
 			if (m_bUseCuda)
 			{
+				cudaSetDevice(m_iCudaDevice); // set context or need use cuCtxPushCurrent(cuContext)/cuCtxPopCurrent(nullptr)
+
 				if (m_bUseCudaHost) // use CUDA-pipeline with host memory
 				{
 					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
