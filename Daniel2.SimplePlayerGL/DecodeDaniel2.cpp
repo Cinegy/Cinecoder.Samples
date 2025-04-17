@@ -40,7 +40,8 @@ DecodeDaniel2::DecodeDaniel2() :
 	bCalculatePTS(false),
 	m_llDuration(1),
 	m_llTimeBase(1),
-	m_iNegativePTS(0)
+	m_iNegativePTS(0),
+	m_iGpuDevice(0)
 {
 	m_FrameRate.num = 0;
 	m_FrameRate.denom = 1;
@@ -581,8 +582,7 @@ int DecodeDaniel2::CreateDecoder()
 	{
 		cudaError_t err;
 
-		m_iCudaDevice = 0;
-		err = cudaGetDevice(&m_iCudaDevice); __vrcu
+		err = cudaGetDevice(&m_iGpuDevice); __vrcu
 
 		//CUresult cuRes = CUDA_SUCCESS;
 
@@ -601,6 +601,14 @@ int DecodeDaniel2::CreateDecoder()
 		//}
 	}
 #endif
+
+	// set device id
+	com_ptr<ICC_DeviceIDProp> pDeviceIDProp = nullptr;
+	if (SUCCEEDED(hr = m_pVideoDec->QueryInterface(IID_ICC_CudaContextProp, (void**)&pDeviceIDProp)))
+	{
+		if (FAILED(hr = pDeviceIDProp->put_DeviceID(m_iGpuDevice)))
+			return printf("DecodeDaniel2: put_DeviceID failed!\n"), hr;
+	}
 
 	// init decoder
 	if (FAILED(hr = m_pVideoDec->Init()))
@@ -785,7 +793,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #ifdef USE_CUDA_SDK
 			if (m_bUseCuda)
 			{
-				cudaSetDevice(m_iCudaDevice); // set context or need use cuCtxPushCurrent(cuContext)/cuCtxPopCurrent(nullptr)
+				cudaSetDevice(m_iGpuDevice); // set context or need use cuCtxPushCurrent(cuContext)/cuCtxPopCurrent(nullptr)
 
 				if (m_bUseCudaHost) // use CUDA-pipeline with host memory
 				{
