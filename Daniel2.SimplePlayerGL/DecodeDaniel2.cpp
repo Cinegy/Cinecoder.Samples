@@ -373,6 +373,7 @@ int DecodeDaniel2::CreateDecoder()
 
 	bool useCuda = m_dec_params.type == VD_TYPE_CUDA ? true : false;
 	bool useOpenCL = m_dec_params.type == VD_TYPE_OpenCL ? true : false;
+	bool useMetal = m_dec_params.type == VD_TYPE_Metal ? true : false;
 	bool useQuickSync = m_dec_params.type == VD_TYPE_QuickSync ? true : false;
 	bool useIVPL = m_dec_params.type == VD_TYPE_IVPL ? true : false;
 	bool useAMF = m_dec_params.type == VD_TYPE_AMF ? true : false;
@@ -498,10 +499,12 @@ int DecodeDaniel2::CreateDecoder()
 #endif
 
 		case CC_ES_TYPE_VIDEO_DANIEL:
-#if	(CINECODER_VERSION < 42003)
 			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : CLSID_CC_DanielVideoDecoder;
-#else
-			clsidDecoder = useCuda ? CLSID_CC_DanielVideoDecoder_CUDA : (useOpenCL ? CLSID_CC_DanielVideoDecoder_OCL : CLSID_CC_DanielVideoDecoder);
+#if (CINECODER_VERSION >= 42003)
+			if (useOpenCL) clsidDecoder = CLSID_CC_DanielVideoDecoder_OCL;
+#endif
+#if (CINECODER_VERSION >= 42211)
+			if (useMetal) clsidDecoder = CLSID_CC_DanielVideoDecoder_MTL;
 #endif
 			m_strStreamType = "Daniel";
 			bIntraFormat = true;

@@ -13,6 +13,7 @@ bool g_useIVPL = false;
 bool g_useAMF = false;
 bool g_useNVDEC = false;
 bool g_useOpenCL = false;
+bool g_useMetal = false;
 bool g_useDirectX11 = false;
 bool g_useModernOGL = false;
 bool g_useCinecoderD3D11 = false;
@@ -104,7 +105,10 @@ void printHelp(void)
 #endif
 //#if defined(__USE_GLUT_RENDER__)
 #ifdef USE_OPENCL_SDK
-	printf("-opencl             enable OpenCL decoding (default: disable)\n");
+	printf("-opencl             enable Daniel2 OpenCL decoding (default: disable)\n");
+#endif
+#if defined(__APPLE__) && (CINECODER_VERSION >= 42211)
+	printf("-metal              enable Daniel2 Metal decoding (default: disable)\n");
 #endif
 //#endif
 	printf("-quicksync          enable QuickSync H264/HEVC GPU decoding (default: disable)\n");
@@ -133,14 +137,13 @@ void printHelp(void)
 	printf("'ESC':              exit\n");
 	printf("'p' or 'SPACE':     on/off pause\n");
 	printf("'v':                on/off vertical synchronisation\n");
-	printf("'y':                on/off maximum playing fps\n");
+	printf("'m':                on/off maximum playing fps\n");
 	printf("'r':                on/off rotate image\n");
 	printf("'f':                on/off fullscreen mode\n");
 	printf("'t':                on/off copy result to texture\n");
 	printf("'o':                on/off show texture\n");
 	printf("'d':                on/off decoder\n");
 	printf("'n':                on/off read file\n");
-	printf("'m':                on/off audio\n");
 	printf("'+'/'-':            change audio volume (+/- 10%%)\n");
 	printf("'J'/'K'/'L':        change direction video or pause\n");
 	printf("'right'/'left':     show next/prev (+/- 1 frame)\n");
@@ -251,6 +254,19 @@ int main(int argc, char **argv)
 #endif
 #endif
 
+#if defined(__APPLE__) && (CINECODER_VERSION >= 42211)
+	if (checkCmdLineArg(argc, (const char**)argv, "metal"))
+	{
+		g_useMetal = true; // use Daniel2 Metal decoder
+	}
+
+	if (g_useMetal && (g_useCuda || g_useOpenCL))
+	{
+		g_useMetal = false;
+		printf("Info: Metal and CUDA/OpenCL are not uses at the same time! (parameter <metal> was ignored)\n");
+	}
+#endif
+	
 	if (checkCmdLineArg(argc, (const char **)argv, "quicksync"))
 	{
 		g_useQuickSync = true; // use QuickSync decoder
@@ -359,6 +375,9 @@ int main(int argc, char **argv)
 
 	if (g_useOpenCL)
 		dec_params.type = VD_TYPE_OpenCL;
+
+	if (g_useMetal)
+		dec_params.type = VD_TYPE_Metal;
 
 	if (g_useQuickSync)
 		dec_params.type = VD_TYPE_QuickSync;

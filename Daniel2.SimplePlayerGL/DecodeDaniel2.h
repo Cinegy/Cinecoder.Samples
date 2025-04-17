@@ -16,7 +16,8 @@ enum VIDEO_DECODER_TYPE
 	VD_TYPE_QuickSync,		// Intel GPU(QuickSync)
 	VD_TYPE_IVPL,			// Intel GPU(OneVPL)
 	VD_TYPE_AMF,			// AMD GPU(AMF)
-	VD_TYPE_OpenCL			// OpenCL
+	VD_TYPE_OpenCL,			// OpenCL
+	VD_TYPE_Metal			// Metal
 };
 
 struct ST_VIDEO_DECODER_PARAMS
