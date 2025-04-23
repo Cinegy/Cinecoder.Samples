@@ -877,7 +877,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 #elif defined(__APPLE__) || defined(__LINUX__)
 				CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
-				hr = m_pMediaReader->Open(file_name_str);
+				hr = m_pMediaReader->Open(file_name_str, CC_ROF_DISABLE_VIDEO_DECODER);
 				if (FAILED(hr)) return hr;
 
 				CC_FRAME_RATE FrameRateMR;
