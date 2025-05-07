@@ -942,9 +942,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			{
 				if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 				{
+					// check for GPU pipeline initialization, if we expected GPU and switched to the CPU -> exit
 					if (m_dec_params.type == VD_TYPE_QuickSync ||
 						m_dec_params.type == VD_TYPE_AMF ||
-						m_dec_params.type == VD_TYPE_NVDEC)
+						m_dec_params.type == VD_TYPE_NVDEC ||
+						m_dec_params.type == VD_TYPE_IVPL)
 						return 0;
 
 					if (m_bUseCuda)
@@ -988,7 +990,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					CC_VIDEO_FRAME_DESCR vid_frame_desc;
 					if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
 					{
-						m_fmt = vid_frame_desc.cFormat;
+						m_fmt = vid_frame_desc.cFormat; // get native format
 						m_stride = vid_frame_desc.iStride;
 						m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 						m_outputBufferFormat = BUFFER_FORMAT_NV12;
