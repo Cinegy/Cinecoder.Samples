@@ -90,6 +90,7 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSi
 
 long C_Block::InitTmp(size_t _iSize, bool bUseCuda)
 {
+#ifdef USE_CUDA_SDK
 	if (bUseCuda)
 	{
 		cudaError_t res = cudaSuccess;
@@ -100,6 +101,7 @@ long C_Block::InitTmp(size_t _iSize, bool bUseCuda)
 			return -1;
 	}
 	else
+#endif
 	{
 		MemoryAlloc((void**)&frame_buffer_tmp, _iSize);
 
