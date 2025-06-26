@@ -41,12 +41,14 @@ C_Block::~C_Block()
 void C_Block::Initialize()
 {
 	frame_buffer = nullptr;
+	frame_buffer_tmp = nullptr;
 
 	iWidth = iHeight = iPitch = iSizeFrame = 0;
 	
 	bRotateFrame = false;
 
 	pKernelDataOut = nullptr;
+	pKernelDataTmp = nullptr;
 
 #if defined(__WIN32__)
 	m_pResource = nullptr;
@@ -86,14 +88,41 @@ long C_Block::Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSi
 	return 0;
 }
 
+long C_Block::InitTmp(size_t _iSize, bool bUseCuda)
+{
+	if (bUseCuda)
+	{
+		cudaError_t res = cudaSuccess;
+
+		res = cudaMalloc(&pKernelDataTmp, iSizeFrame); __vrcu
+
+		if (res != cudaSuccess)
+			return -1;
+	}
+	else
+	{
+		MemoryAlloc((void**)&frame_buffer_tmp, _iSize);
+
+		if (!frame_buffer_tmp)
+			return -1;
+	}
+
+	return 0;
+}
+
 void C_Block::Destroy()
 {
 	MemoryFree(frame_buffer);
+	MemoryFree(frame_buffer_tmp);
 
 #ifdef USE_CUDA_SDK
 	if (pKernelDataOut)
 	{
 		cudaFree(pKernelDataOut); __vrcu
+	}
+	if (pKernelDataTmp)
+	{
+		cudaFree(pKernelDataTmp); __vrcu
 	}
 #endif
 

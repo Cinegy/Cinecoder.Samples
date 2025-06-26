@@ -977,6 +977,25 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 					h_convert_P016_to_BGRA64_BtT(buffer_ptr, texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), NULL, iMatrixCoeff_YUYtoRGBA); __vrcu
 				}
 			}
+			else if (buffer_format == BUFFER_FORMAT_P216)
+			{
+				if (!pBlock->DataGPUTmpPtr())
+					pBlock->InitTmp(pBlock->Width() * pBlock->Height() * 4, true); // for Y216 
+
+				if (pBlock->DataGPUTmpPtr())
+				{
+					h_convert_P210_to_Y216_BtB(pBlock->DataGPUPtr(), pBlock->DataGPUTmpPtr(), pBlock->Width(), pBlock->Height(), pBlock->Pitch(), pBlock->Width() * 4, NULL);
+
+					if (output_format == IMAGE_FORMAT_RGBA16BIT)
+					{
+						h_convert_Y216_to_RGBA64_BtT(pBlock->DataGPUTmpPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Width() * 4, NULL, iMatrixCoeff_YUYtoRGBA);
+					}
+					else if (output_format == IMAGE_FORMAT_BGRA16BIT)
+					{
+						h_convert_Y216_to_BGRA64_BtT(pBlock->DataGPUTmpPtr(), texture_ptr, (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Width() * 4, NULL, iMatrixCoeff_YUYtoRGBA);
+					}
+				}
+			}
 #else
 			cudaMemcpy2DToArray(texture_ptr, 0, 0, buffer_ptr, pBlock->Pitch(), pBlock->Pitch(), pBlock->Height(), cudaMemcpyDeviceToDevice); __vrcu
 #endif
