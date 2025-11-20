@@ -370,7 +370,7 @@ int main_impl(int argc, char* argv[])
   }
   if(g_CudaEnabled && 0 == strcmp(argv[1], "D2CUDAPURE"))
   {
-    clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA; 
+    clsidEnc = CLSID_CC_DanielVideoEncoder_CUDA_PureGpuSpeedTest; 
     clsidDec = CLSID_CC_DanielVideoDecoder_CUDA_PureGpuSpeedTest; 
     strEncName = "Daniel2_CUDA (Pure GPU mode)";
     g_mem_type = MEM_GPU;
@@ -402,7 +402,7 @@ int main_impl(int argc, char* argv[])
   }
   if(g_OpenclEnabled && 0 == strcmp(argv[1], "D2OCLPURE"))
   {
-    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL; 
+    clsidEnc = CLSID_CC_DanielVideoEncoder_OCL_PureGpuSpeedTest; 
     clsidDec = CLSID_CC_DanielVideoDecoder_OCL_PureGpuSpeedTest; 
     strEncName = "Daniel2_OCL (Pure GPU mode)";
     g_mem_type = MEM_GPU;
@@ -434,7 +434,7 @@ int main_impl(int argc, char* argv[])
   }
   if(g_MetalEnabled && 0 == strcmp(argv[1], "D2METALPURE"))
   {
-    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL; 
+    clsidEnc = CLSID_CC_DanielVideoEncoder_MTL_PureGpuSpeedTest; 
     clsidDec = CLSID_CC_DanielVideoDecoder_MTL_PureGpuSpeedTest; 
     strEncName = "Daniel2_Metal (Pure GPU mode)";
     g_mem_type = MEM_GPU;
