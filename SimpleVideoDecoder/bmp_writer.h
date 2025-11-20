@@ -40,9 +40,10 @@ public:
 			if(spVideoInfo->get_FrameSize(&m_szFrameSize) != S_OK)
 				return E_UNEXPECTED;
 
-			m_iFramePitch = m_szFrameSize.cx * 4;
+			//m_iFramePitch = m_szFrameSize.cx * 4;
+			spProducer->GetStride(m_imgFormat, (DWORD*)&m_iFramePitch);
 
-			printf("Frame size = %d x %d, Frame rate = ", m_szFrameSize.cx, m_szFrameSize.cy);
+			printf("Frame size = %d x %d, pitch= %d, Frame rate = ", m_szFrameSize.cx, m_szFrameSize.cy, m_iFramePitch);
 
 			CC_FRAME_RATE rFrameRate;
 			if(S_OK == spVideoInfo->get_FrameRate(&rFrameRate))

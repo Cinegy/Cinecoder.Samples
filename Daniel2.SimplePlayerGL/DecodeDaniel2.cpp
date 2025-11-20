@@ -679,6 +679,10 @@ int DecodeDaniel2::InitValues()
 		{
 			size = (m_stride * m_height) + (m_stride * (m_height / 2));
 		}
+		else if (m_outputBufferFormat == BUFFER_FORMAT_P216)
+		{
+			size = (m_stride * m_height) * 2;
+		}
 
 		res = m_listBlocks.back().Init(m_width, m_height, m_stride, size, m_bUseCuda);
 
@@ -942,9 +946,11 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			{
 				if (!(vaStatus == CC_VA_STATUS_ON || vaStatus == CC_VA_STATUS_PARTIAL))
 				{
+					// check for GPU pipeline initialization, if we expected GPU and switched to the CPU -> exit
 					if (m_dec_params.type == VD_TYPE_QuickSync ||
 						m_dec_params.type == VD_TYPE_AMF ||
-						m_dec_params.type == VD_TYPE_NVDEC)
+						m_dec_params.type == VD_TYPE_NVDEC ||
+						m_dec_params.type == VD_TYPE_IVPL)
 						return 0;
 
 					if (m_bUseCuda)
@@ -988,7 +994,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 					CC_VIDEO_FRAME_DESCR vid_frame_desc;
 					if (SUCCEEDED(d3d11VideoObject->GetVideoFrameDescr(&vid_frame_desc)))
 					{
-						m_fmt = vid_frame_desc.cFormat;
+						m_fmt = vid_frame_desc.cFormat; // get native format
 						m_stride = vid_frame_desc.iStride;
 						m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 						m_outputBufferFormat = BUFFER_FORMAT_NV12;
@@ -1003,7 +1009,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 							m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
 							m_outputBufferFormat = BUFFER_FORMAT_P016;
 						}
-						else 
+						else if (m_fmt == CCF_P216) // CCF_NV16_16BIT
+						{
+							m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+							m_outputBufferFormat = BUFFER_FORMAT_P216;
+						}
+						else
 							return E_FAIL;
 
 						m_bInitDecoder = true; // set init decoder value
@@ -1105,10 +1116,15 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				m_outputImageFormat = IMAGE_FORMAT_RGBA8BIT;
 				m_outputBufferFormat = BUFFER_FORMAT_NV12;
 			}
-			else if (m_fmt == CCF_P016)
+			else if (m_fmt == CCF_P016) // CCF_NV12_16BIT
 			{
 				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
 				m_outputBufferFormat = BUFFER_FORMAT_P016;
+			}
+			else if (m_fmt == CCF_P216) // CCF_NV16_16BIT
+			{
+				m_outputImageFormat = IMAGE_FORMAT_RGBA16BIT;
+				m_outputBufferFormat = BUFFER_FORMAT_P216;
 			}
 
 			m_outputBufferFormat = BitDepth == 8 ? BUFFER_FORMAT_RGBA32 : BUFFER_FORMAT_RGBA64;
@@ -1168,6 +1184,10 @@ long DecodeDaniel2::ThreadProc()
 			if (m_outputBufferFormat == BUFFER_FORMAT_NV12 || m_outputBufferFormat == BUFFER_FORMAT_P016)
 			{
 				size = (m_stride * m_height) + (m_stride * (m_height / 2));
+			}
+			else if (m_outputBufferFormat == BUFFER_FORMAT_P216)
+			{
+				size = (m_stride * m_height);
 			}
 
 			if (true)
