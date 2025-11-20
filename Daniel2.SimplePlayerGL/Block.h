@@ -69,8 +69,10 @@ public:
 
 private:
 	unsigned char* frame_buffer;
+	unsigned char* frame_buffer_tmp;
 
 	cudaPtr	pKernelDataOut;
+	cudaPtr	pKernelDataTmp;
 
 private:
 	void Initialize();
@@ -90,6 +92,16 @@ public:
 		return (unsigned char*)pKernelDataOut;
 	}
 
+	unsigned char* DataTmpPtr()
+	{
+		return frame_buffer_tmp;
+	}
+
+	unsigned char* DataGPUTmpPtr()
+	{
+		return (unsigned char*)pKernelDataTmp;
+	}
+
 	size_t Width() { return iWidth; }
 	size_t Height() { return iHeight; }
 	size_t Pitch() { return iPitch; }
@@ -99,6 +111,7 @@ public:
 	bool GetRotate() { return bRotateFrame; }
 
 	long Init(size_t _iWidth, size_t _iHeight, size_t _iStride, size_t _iSize, bool bUseCuda = false);
+	long InitTmp(size_t _iSize, bool bUseCuda = false);
 
 	int CopyToGPU();
 	int CopyToCPU();
