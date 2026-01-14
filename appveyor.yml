@@ -28,7 +28,7 @@ environment:
       job_name: Build MacOS ARM64
       LINUX_PLATFORM: MacOSARM64
   license_password:
-    secure: Hk0iGo1OgnbNih0NWskajQ==
+    secure: AQDGiaXHOptOkZHae90LAGvUuOuwXB36hWtrfqATOVg=
     
 configuration: Release
 
