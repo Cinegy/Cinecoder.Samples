@@ -73,10 +73,10 @@ install:
     fi
 before_build:
 - ps: iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "D+rTP7tXYCvhvcV/eYhrkMc/YbKKqeza6QhfcLXNu1JyrRKAVF8="
-- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
-- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "V5mw3xZVMOQVpEUG/94X7oBXS3lcZvih7l6miFe8aimAD7/dWAc="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret %license_password% -salt "hbS1JNgQ/HPgxzuH8NuhxjFOOUusZ2xQEqWf9BVJSXkn1+OAoaU="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.cs.enc -secret $license_password -salt "hbS1JNgQ/HPgxzuH8NuhxjFOOUusZ2xQEqWf9BVJSXkn1+OAoaU="
+- cmd: appveyor-tools\secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret %license_password% -salt "c/JvD7c6AcMqWSX+tNCWpja2W/Xeyzeb2lRxqV6GFNXchHAjgXY="
+- sh: ./appveyor-tools/secure-file -decrypt ./common/cinecoder_license_string.h.enc -secret $license_password -salt "c/JvD7c6AcMqWSX+tNCWpja2W/Xeyzeb2lRxqV6GFNXchHAjgXY="
 - cmd: nuget restore
 build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
