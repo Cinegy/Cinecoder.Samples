@@ -984,7 +984,7 @@ int GPURenderDX::CopyCUDAImage(C_Block *pBlock)
 
 				if (pBlock->DataGPUTmpPtr())
 				{
-					h_convert_P210_to_Y216_BtB(pBlock->DataGPUPtr(), pBlock->DataGPUTmpPtr(), pBlock->Width(), pBlock->Height(), pBlock->Pitch(), pBlock->Width() * 4, NULL);
+					h_convert_P210_to_Y216_BtB(pBlock->DataGPUPtr(), pBlock->DataGPUTmpPtr(), (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), (int)pBlock->Width() * 4, NULL);
 
 					if (output_format == IMAGE_FORMAT_RGBA16BIT)
 					{

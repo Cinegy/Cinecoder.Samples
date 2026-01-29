@@ -136,6 +136,8 @@ public:
 	double GetFrameRate() { return ((double)m_FrameRate.num / (double)m_FrameRate.denom); }
 	CC_FRAME_RATE GetFrameRateValue() { return m_FrameRate; }
 
+	void SkipFrame(size_t frame_number);
+
 #if defined(__WIN32__)
 private:
 	GPURenderDX* m_pRender;
