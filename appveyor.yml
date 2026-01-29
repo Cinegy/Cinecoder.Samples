@@ -82,9 +82,9 @@ build_script:
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=x64
 - cmd: MSBuild Cinecoder.Samples.sln /p:Configuration=Release /p:Platform=ARM64
 #- sh: if [[ $platform == "x64" ]]; then docker build --rm -t cinegy/cinegy-cinecodersamples .; fi
-- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: if [[ $platform == "x64" ]]; then docker run --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh Release 1"; fi
 #- sh: if [[ $platform == "ARM" ]]; then docker build --platform linux/arm64 --rm -t cinegy/cinegy-cinecodersamples-arm64 -f dockerfile.arm64 .; fi
-- sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh"; fi
+- sh: if [[ $platform == "ARM" ]]; then docker run --platform linux/arm64 --rm -v /home/appveyor/projects/:/data/dev cinegy/cinegy-cinecodersamples-arm64:latest sh -c "cd /data/dev/cinecoder-samples && ./build_samples-linux.sh Release 1"; fi
 - sh: if [[ $platform == "MAC" ]]; then ./build_samples-linux.sh; fi
 - sh: if [[ $platform == "MACARM" ]]; then ./build_samples-mac-arm64.sh; fi
 test_script:
