@@ -242,6 +242,9 @@ int main(int argc, char* argv[])
 {
 	auto result = main_impl(argc, argv);
 
+	if(result != 0)
+		printf("\n>>> Benchmark process exited with code %d\n", result);
+
 	if (g_bWaitAtExit)
 	{
 		printf("Press any key to exit...");
@@ -1028,7 +1031,7 @@ int main_impl(int argc, char* argv[])
     if(FAILED(hr))
     {
       pEncoder = NULL;
-      return hr;
+      return fprintf(stderr, "\npEncoder->AddFrame() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
     }
 
     if(TargetFps > 0)
@@ -1096,7 +1099,8 @@ int main_impl(int argc, char* argv[])
   }
 
   hr = pEncoder->Done(CC_TRUE);
-  if(FAILED(hr)) return hr;
+  if(FAILED(hr))
+    return fprintf(stderr, "\npEncoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   auto t1 = system_clock::now();
 
@@ -1363,7 +1367,7 @@ int main_impl(int argc, char* argv[])
     if(FAILED(hr))
     {
       pDecoder = NULL;
-      return hr;
+      return fprintf(stderr, "\npDecoder->ProcessData() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
     }
 
     coded_size += codedFrame.second;
@@ -1439,7 +1443,8 @@ int main_impl(int argc, char* argv[])
   }
 
   hr = pDecoder->Done(CC_TRUE);
-  if(FAILED(hr)) return hr;
+  if(FAILED(hr))
+    return fprintf(stderr, "\npDecoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   t1 = system_clock::now();
 
