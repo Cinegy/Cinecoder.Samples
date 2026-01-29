@@ -491,7 +491,7 @@ HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* siz
 	{
 		_assert(0);
 
-		printf("GetAudioSamples failed hr=0x%x startSample=%zu numSamples=%zu pbData = %p cbSize = %lu\n", hr, (iFrame * m_iSampleCount), m_iSampleCount, pb, cb);
+		printf("GetAudioSamples failed hr=0x%x startSample=%zu numSamples=%zu pbData = %p cbSize = %u\n", hr, (iFrame * m_iSampleCount), m_iSampleCount, pb, cb);
 	}
 
 	return hr;
