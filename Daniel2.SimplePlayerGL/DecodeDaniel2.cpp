@@ -276,10 +276,14 @@ void DecodeDaniel2::SkipFrame(size_t frame_number)
 
 	if (pBlock)
 	{
+#ifdef USE_CUDA_SDK
 		if (m_bUseCuda)
 			cudaMemset(pBlock->DataGPUPtr(), 0x00, pBlock->Size());
 		else 
 			memset(pBlock->DataPtr(), 0x00, pBlock->Size());
+#else
+		memset(pBlock->DataPtr(), 0x00, pBlock->Size());
+#endif // #ifdef USE_CUDA_SDK
 
 		pBlock->iFrameNumber = frame_number; // save frame number
 		m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
@@ -1263,7 +1267,7 @@ long DecodeDaniel2::ThreadProc()
 				if (coding_number == 0 || frame->flags == 1) // seek
 				{
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
-					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
+						if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 				}
 				else
 				{
