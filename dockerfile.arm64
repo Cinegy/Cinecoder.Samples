@@ -12,11 +12,8 @@ ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 RUN export TZ=Europe/Berlin && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Base dev packages and OS tools, including mono and boost other library dependencies
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository ppa:ubuntu-toolchain-r/test && \
-    apt-get update && \
-    apt-get install -y \
+RUN apt-get update && apt-get install -y \
+    software-properties-common && \
 	build-essential \
 	gcc-11 g++-11 \
 	git nano gnupg apt-utils unzip sudo bzip2 \
