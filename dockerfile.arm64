@@ -13,7 +13,7 @@ RUN export TZ=Europe/Berlin && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime &&
 
 # Base dev packages and OS tools, including mono and boost other library dependencies
 RUN apt-get update && apt-get install -y \
-    software-properties-common && \
+	software-properties-common && \
 	build-essential \
 	gcc-11 g++-11 \
 	git nano gnupg apt-utils unzip sudo bzip2 \
