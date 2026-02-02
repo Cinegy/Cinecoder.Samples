@@ -34,7 +34,7 @@ configuration: Release
 
 cache:
   - /tmp/cinegy-cinecodersamples.tar
-  - /tmp/cinegy-cinecodersamples-arm64.tar
+#  - /tmp/cinegy-cinecodersamples-arm64.tar
 
 install:
 - cmd: git submodule update --init --recursive
