@@ -15,7 +15,7 @@ RUN export TZ=Europe/Berlin && ln -snf /usr/share/zoneinfo/$TZ /etc/localtime &&
 RUN apt-get update && apt-get install -y \
 	software-properties-common \
 	build-essential \
-	gcc-11 g++-11 \
+	gcc-10 g++-10 \
 	git nano gnupg apt-utils unzip sudo bzip2 \
 	apt-transport-https curl wget ca-certificates cpio \
 	mono-complete libboost-dev uuid-dev libssl-dev software-properties-common \
@@ -23,10 +23,10 @@ RUN apt-get update && apt-get install -y \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/*
 
-# Make gcc-11 default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && \
-    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100 && \
-    gcc --version && g++ --version
+# Make gcc-10 default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 && \	
+	update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100 && \
+	gcc --version && g++ --version
 
 # Download the latest `nuget.exe` to `/usr/local/bin` and alias
 RUN curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && \
