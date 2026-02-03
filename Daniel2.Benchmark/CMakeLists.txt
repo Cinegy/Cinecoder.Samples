@@ -24,6 +24,7 @@ include_directories("${Cinecoder_INCLUDE_DIRS}")
 link_directories("${Cinecoder_LIBRARY_DIRS}")
 
 add_compile_options("-D__CINECODER_DISABLE_PRINT_VERSION__")
+add_compile_options(-Wno-deprecated-declarations)
 
 if(APPLE)
     set(CMAKE_INSTALL_RPATH "@executable_path")

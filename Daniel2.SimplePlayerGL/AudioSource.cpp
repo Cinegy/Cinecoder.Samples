@@ -424,13 +424,25 @@ long AudioSource::ThreadProc()
 					queueFrames.pop();
 				}
 
+				ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
+				ALenum  format = ALformat;
+				ALuint  buffer;
+
 				ALvoid* data = nullptr;
 				ALsizei size = 0;
+
 				if (UpdateAudioChunk(iCurFrame, &data, &size) == S_OK && data && size > 0)
 				{
-					ALsizei frequency = static_cast<ALsizei>(m_iSampleRate);
-					ALenum  format = ALformat;
-					ALuint buffer;
+					alSourceUnqueueBuffers(source, 1, &buffer); __al
+					alBufferData(buffer, format, data, size, frequency); __al
+					alSourceQueueBuffers(source, 1, &buffer); __al
+				}
+				else
+				{
+					data = audioChunk.data();
+					size = static_cast<ALsizei>(audioChunk.size());
+					
+					memset(data, 0x00, size);
 
 					alSourceUnqueueBuffers(source, 1, &buffer); __al
 					alBufferData(buffer, format, data, size, frequency); __al
@@ -474,6 +486,12 @@ HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* siz
 
 		*data = pb;
 		*size = static_cast<ALsizei>(cbRetSize);
+	}
+	else if (!SUCCEEDED(hr))
+	{
+		_assert(0);
+
+		printf("GetAudioSamples failed hr=0x%x startSample=%zu numSamples=%zu pbData = %p cbSize = %u\n", hr, (iFrame * m_iSampleCount), m_iSampleCount, pb, cb);
 	}
 
 	return hr;

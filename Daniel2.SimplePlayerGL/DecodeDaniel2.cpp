@@ -117,7 +117,7 @@ int DecodeDaniel2::OpenFile(const char* const filename, ST_VIDEO_DECODER_PARAMS 
 			{
 				_assert(0);
 
-				printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
+				printf("ProcessData failed hr=0x%x coded_frame_size=%zu coded_frame=%p\n", hr, coded_frame_size, coded_frame);
 
 				hr = m_pVideoDec->Break(CC_FALSE); // break decoder 
 
@@ -262,6 +262,31 @@ void DecodeDaniel2::UnmapFrame(C_Block* pBlock)
 	if (pBlock)
 	{
 		m_queueFrames_free.Queue(pBlock); // adding a block (C_Block) to the queue for processing (free frame queue)
+	}
+}
+
+void DecodeDaniel2::SkipFrame(size_t frame_number)
+{
+	C_Block* pBlock = nullptr;
+#ifdef USE_SIMPL_QUEUE
+	m_queueFrames_free.Get(&pBlock); // get free pointer to object of C_Block form queue
+#else
+	m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
+#endif
+
+	if (pBlock)
+	{
+#ifdef USE_CUDA_SDK
+		if (m_bUseCuda)
+			cudaMemset(pBlock->DataGPUPtr(), 0x00, pBlock->Size());
+		else 
+			memset(pBlock->DataPtr(), 0x00, pBlock->Size());
+#else
+		memset(pBlock->DataPtr(), 0x00, pBlock->Size());
+#endif // #ifdef USE_CUDA_SDK
+
+		pBlock->iFrameNumber = frame_number; // save frame number
+		m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
 	}
 }
 
@@ -1242,7 +1267,7 @@ long DecodeDaniel2::ThreadProc()
 				if (coding_number == 0 || frame->flags == 1) // seek
 				{
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
-					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
+						if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 				}
 				else
 				{
@@ -1256,27 +1281,18 @@ long DecodeDaniel2::ThreadProc()
 				{
 					_assert(0);
 
-					printf("ProcessData failed hr=%d coded_frame_size=%zu coded_frame=%p frame_number = %zd\n", hr, coded_frame_size, coded_frame, frame_number);
+					printf("ProcessData failed hr=0x%x coded_frame_size=%zu coded_frame=%p frame_number = %zd\n", hr, coded_frame_size, coded_frame, frame_number);
 
 					hr = m_pVideoDec->Break(CC_FALSE); // break decoder with param CC_FALSE (without flush data to DataReady)
 
 					__check_hr
+
+					SkipFrame(coding_number);
 				}
 			}
 			else
 			{
-				C_Block *pBlock = nullptr;
-			#ifdef USE_SIMPL_QUEUE
-				m_queueFrames_free.Get(&pBlock); // get free pointer to object of C_Block form queue
-			#else
-				m_queueFrames_free.Get(&pBlock, m_evExit); // get free pointer to object of C_Block form queue
-			#endif
-
-				if (pBlock)
-				{
-					pBlock->iFrameNumber = frame_number; // save frame number
-					m_queueFrames.Queue(pBlock); // add pointer to object of C_Block with final picture to queue
-				}
+				SkipFrame(coding_number);
 			}
 
 			m_file.UnmapFrame(frame); // add to queue free pointer for reading coded frame
