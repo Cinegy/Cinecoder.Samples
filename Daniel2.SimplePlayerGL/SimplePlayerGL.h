@@ -834,6 +834,16 @@ int ocl_InitContextGL()
 
 	cl_platform_id platform = firstPlatformId;
 
+	char ext[4096] = {};
+	clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS, sizeof(ext), ext, NULL);
+	//printf("CL_PLATFORM_EXTENSIONS:\n%s\n", ext);
+
+	if (!strstr(ext, "cl_khr_gl_sharing")) 
+	{
+		printf("ERROR: cl_khr_gl_sharing NOT supported\n");
+		return -1;
+	}
+
 	// Load extension function call
 	clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = NULL;
 
