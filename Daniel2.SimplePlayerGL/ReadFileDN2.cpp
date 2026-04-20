@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "ReadFileDN2.h"
 
 ReadFileDN2::ReadFileDN2() :
@@ -64,7 +64,8 @@ int ReadFileDN2::OpenFile(const char* filename)
 	if (SUCCEEDED(hr)) hr = piFactory->CreateInstance(CLSID_CC_MvxFile, IID_ICC_MvxFile, (IUnknown**)&m_fileMvx);
 
 #if defined(__WIN32__)
-	CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	//CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	_bstr_t file_name_str(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
 	CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
@@ -281,13 +282,15 @@ long ReadFileDN2::ThreadProc()
 			//frame->frame_number = iCurEncodedFrame;
 			frame->frame_number = frameNum;
 			frame->coding_number = iCurEncodedFrame;
-			m_queueFrames.Queue(frame);
 
 			if (res != 0)
 			{
 				_assert(0);
+				frame->flags = 2;
 				printf("ReadFrame failed res=%d coded_frame_size=%zu coded_frame=0x%p\n", res, frame->coded_frame_size, frame->coded_frame.GetPtr());
 			}
+
+			m_queueFrames.Queue(frame);
 		}
 
 		iCurEncodedFrame += m_iSpeed;
@@ -299,6 +302,7 @@ long ReadFileDN2::ThreadProc()
 
 		if (m_bSeek)
 		{
+			if (m_queueFrames.GetCount())
 			{
 				C_AutoLock lock(&m_critical_queue);
 				for (size_t i = 0; i < m_queueFrames.GetCount(); ++i)

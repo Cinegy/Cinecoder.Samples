@@ -134,6 +134,9 @@ int BaseGPURender::Init(std::string filename, ST_VIDEO_DECODER_PARAMS dec_params
 	image_width = (unsigned int)m_decodeD2->GetImageWidth();
 	image_height = (unsigned int)m_decodeD2->GetImageHeight();
 
+	if (image_width > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION || image_height > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION)
+		printf("Problem: size of image > maximal size of D3D Texture!\n");
+
 	CC_RATIONAL AspectRatio = m_decodeD2->GetAspectRatio();
 
 	unsigned int image_width_ = image_width;

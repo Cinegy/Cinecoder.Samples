@@ -383,7 +383,8 @@ HRESULT DecodeDaniel2::LoadPlugin(const char* pluginDLL)
 	//	}
 	//}
 
-	CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR(strPluginDLL.c_str());
+	//CC_STRING plugin_filename_str = _com_util::ConvertStringToBSTR(strPluginDLL.c_str());
+	_bstr_t plugin_filename_str(strPluginDLL.c_str());
 	return m_piFactory->LoadPlugin(plugin_filename_str); // no error here
 }
 #endif
@@ -436,8 +437,17 @@ int DecodeDaniel2::CreateDecoder()
 		printf("Error: call Cinecoder_SetErrorHandler() return 0x%x\n", hr);
 //#endif
 
+	CC_ELEMENTARY_STREAM_TYPE stream_type = m_file.GetStreamType();
+	CC_MULTIPLEXED_STREAM_TYPE container_type = m_file.GetContainerType();
+
+	if (stream_type == CC_ES_TYPE_UNKNOWN)
+	{
+		printf("TYPE = CC_ES_TYPE_UNKNOWN!\n");
+		return -1;
+	}
+
 	CLSID clsidDecoder;
-	switch(m_file.GetStreamType())
+	switch(stream_type)
 	{
 		case CC_ES_TYPE_VIDEO_AVC_INTRA:
 			clsidDecoder = CLSID_CC_AVCIntraDecoder2;
@@ -764,6 +774,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 	CC_PICTURE_ORIENTATION		PictureOrientation = CC_PO_DEFAULT;
 	CC_FLOAT					QuantScale = 0;
 	CC_UINT						CodingNumber = 0;
+	CC_INTERLACE_TYPE			InterlaceType = CC_UNKNOWN_INTERLACE_TYPE;
 	CC_TIME						PTS = 0;
 	CC_TIME						DTS = 0;
 
@@ -796,6 +807,7 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 
 	hr = pVideoFrameInfo->get_PTS(&PTS); __check_hr
 	hr = pVideoFrameInfo->get_CodingNumber(&CodingNumber); __check_hr
+	hr = pVideoFrameInfo->get_InterlaceType(&InterlaceType); __check_hr
 
 	if (PTS < m_iNegativePTS)
 	{
@@ -827,6 +839,12 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 			{
 				cudaSetDevice(m_iGpuDevice); // set context or need use cuCtxPushCurrent(cuContext)/cuCtxPopCurrent(nullptr)
 
+#if defined(__CUDAConvertLib__)
+				pBlock->iMatrixCoeff_YUYtoRGBA = ConvertMatrixCoeff_Default;
+#endif
+				if (ChromaFormat == CC_CHROMA_422)
+					pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
+
 				if (m_bUseCudaHost) // use CUDA-pipeline with host memory
 				{
 					hr = pVideoProducer->GetFrame(m_fmt, pBlock->DataPtr(), (DWORD)pBlock->Size(), (INT)pBlock->Pitch(), &cb); // get decoded frame from Cinecoder
@@ -835,12 +853,6 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				}
 				else
 				{
-#if defined(__CUDAConvertLib__)
-					pBlock->iMatrixCoeff_YUYtoRGBA = ConvertMatrixCoeff_Default;
-#endif
-					if (ChromaFormat == CC_CHROMA_422)
-						pBlock->iMatrixCoeff_YUYtoRGBA = (size_t)(ColorCoefs.MC); // need for CC_CHROMA_422
-
 #if defined(__WIN32__)
 					if (m_pVideoDecD3D11)
 					{
@@ -902,7 +914,8 @@ HRESULT STDMETHODCALLTYPE DecodeDaniel2::DataReady(IUnknown *pDataProducer)
 				const char* filename = m_filename.c_str();
 
 #if defined(__WIN32__)
-				CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+				//CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+				_bstr_t file_name_str(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
 				CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
@@ -1260,14 +1273,14 @@ long DecodeDaniel2::ThreadProc()
 			frame_number = frame->frame_number; // number of display frame
 			coding_number = frame->coding_number; // number of coding frame
 
-			if (m_bDecode)
+			if (m_bDecode && frame->flags != 2)
 			{
 				CC_TIME pts = (frame_number * m_llTimeBase * m_FrameRate.denom) / m_FrameRate.num;
 				//printf("ProcessData: coding_num = %d frame_num = %d pts = %d\n", coding_number, frame_number, pts);
 				if (coding_number == 0 || frame->flags == 1) // seek
 				{
 					hr = m_pVideoDec->Break(CC_TRUE); __check_hr
-						if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
+					if (SUCCEEDED(hr)) hr = m_pVideoDec->ProcessData(coded_frame, static_cast<CC_UINT>(coded_frame_size), 0, pts); __check_hr
 				}
 				else
 				{

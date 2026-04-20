@@ -226,7 +226,8 @@ int AudioSource::OpenFile(const char* const filename)
 	if (FAILED(hr)) return hr;
 
 #if defined(__WIN32__)
-	CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	//CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	_bstr_t file_name_str(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
 	CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
