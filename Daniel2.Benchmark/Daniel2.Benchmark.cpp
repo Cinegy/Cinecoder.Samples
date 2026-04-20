@@ -825,7 +825,7 @@ int main_impl(int argc, char* argv[])
 
       com_ptr<ICC_OCL_ContextProp> pOclCtxProp;
       if(FAILED(hr = pEncoder->QueryInterface(IID_ICC_OCL_ContextProp, (void**)&pOclCtxProp)))
-        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+        return fprintf(stderr, "No ICC_OCL_ContextProp interface found"), hr;
 
       void *ocl_ctx;
       if(FAILED(hr = pOclCtxProp->get_OCL_Context(&ocl_ctx)))
@@ -1245,7 +1245,7 @@ int main_impl(int argc, char* argv[])
 
       com_ptr<ICC_OCL_ContextProp> pOclCtxProp;
       if(FAILED(hr = pDecoder->QueryInterface(IID_ICC_OCL_ContextProp, (void**)&pOclCtxProp)))
-        return fprintf(stderr, "No ICC_CudaContextProp interface found"), hr;
+        return fprintf(stderr, "No ICC_OCL_ContextProp interface found"), hr;
 
       void *ocl_ctx;
       if(FAILED(hr = pOclCtxProp->get_OCL_Context(&ocl_ctx)))
