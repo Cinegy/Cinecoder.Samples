@@ -33,8 +33,8 @@ environment:
 configuration: Release
 
 cache:
-  - /tmp/cinegy-cinecodersamples.tar
-  - /tmp/cinegy-cinecodersamples-arm64.tar
+  - /tmp/cinegy-cinecodersamples.tar -> dockerfile
+  - /tmp/cinegy-cinecodersamples-arm64.tar -> dockerfile.arm64
 
 install:
 - cmd: git submodule update --init --recursive

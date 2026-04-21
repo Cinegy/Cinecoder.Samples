@@ -47,3 +47,4 @@ RUN chmod +x /usr/bin/tini
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 CMD [ "/bin/bash" ]
 SHELL ["/bin/bash", "-c"]
+
