@@ -17,11 +17,14 @@ mkdir _build.tmp
 cd _build.tmp
 
 BUILDTYPE=${1:-Debug}
+JOBS=${2:-8}
 
-echo "Building Cinecoder Samples in mode:" $BUILDTYPE
+#echo "Building Cinecoder Samples in mode:" $BUILDTYPE
+echo "Building Cinecoder Samples in mode: $BUILDTYPE with $JOBS parallel jobs"
 
 cmake -DCMAKE_BUILD_TYPE=$BUILDTYPE ..
 
-make -j8
+#make -j8
+make -j$JOBS
 
 cd ..
