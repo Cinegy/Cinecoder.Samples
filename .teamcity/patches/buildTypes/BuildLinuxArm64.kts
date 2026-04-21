@@ -41,7 +41,7 @@ changeBuildType(RelativeId("BuildLinuxArm64")) {
     steps {
         update<ExecBuildStep>(2) {
             clearConditions()
-            arguments = "Release"
+            arguments = "Release 8"
         }
     }
 }
