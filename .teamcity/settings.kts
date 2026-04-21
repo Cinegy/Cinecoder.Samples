@@ -318,7 +318,7 @@ object BuildLinuxArm64 : BuildType({
             name = "(build) Samples Script"
             //enabled=false
             path = "./build_samples-linux-arm64.sh"
-            arguments = "Release --platform=linux/arm64"            
+            arguments = "Release"
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
             dockerPull = true
             dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
