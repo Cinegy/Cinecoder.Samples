@@ -945,8 +945,8 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"cinecoderVersion\"     : \"%d.%d.%d\",\n", version.VersionHi, version.VersionLo, version.EditionNo);
     fprintf(json_stats_file, "\t\t\"codecType\"            : \"%s\",\n", argv[1]);
     fprintf(json_stats_file, "\t\t\"codecDescr\"           : \"%s\",\n", strEncName);
-    fprintf(json_stats_file, "\t\t\"profileFilename\"      : \"%s\",\n", argv[2]);
-    fprintf(json_stats_file, "\t\t\"footageFilename\"      : \"%s\",\n", argv[4]);
+    fprintf(json_stats_file, "\t\t\"profileFilename\"      : \"%s\",\n", GetNormStr(argv[2]));
+    fprintf(json_stats_file, "\t\t\"footageFilename\"      : \"%s\",\n", GetNormStr(argv[4]));
     fprintf(json_stats_file, "\t\t\"colorFormat\"          : \"%s\",\n", argv[3]);
     fprintf(json_stats_file, "\t\t\"numFrames\"            : \"%d\",\n", (int)source_frames.size());
     fprintf(json_stats_file, "\t\t\"memType\"              : \"%s\",\n", g_mem_type == MEM_SYSTEM ? "SYSTEM" : 
