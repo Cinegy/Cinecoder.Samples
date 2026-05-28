@@ -21,6 +21,7 @@ changeBuildType(RelativeId("BuildAggregation")) {
         update(RelativeId("BuildMacOS")) {
             artifacts {
                 artifactRules = "CinecoderSamples-MacOS-%teamcity.build.branch%-%build.number%.zip"
+                enabled = false
             }
         }
 
