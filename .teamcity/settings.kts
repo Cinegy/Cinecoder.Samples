@@ -85,11 +85,11 @@ object SampleBinaries : Project({
     buildType(BuildWin)
     buildType(BuildLinux)
     buildType(BuildLinuxArm64)
-    buildType(BuildMacOS)
+    //buildType(BuildMacOS)
     buildType(BuildMacOSArm64)
     buildType(BuildAggregation)
 
-    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, BuildMacOS, BuildMacOSArm64, BuildAggregation)
+    buildTypesOrder = arrayListOf(Version, BuildWin, BuildLinux, BuildLinuxArm64, /*BuildMacOS,*/ BuildMacOSArm64, BuildAggregation)
 })
 
 object Version : BuildType({
@@ -318,7 +318,7 @@ object BuildLinuxArm64 : BuildType({
             name = "(build) Samples Script"
             //enabled=false
             path = "./build_samples-linux-arm64.sh"
-            arguments = "Release"
+            arguments = "Release --platform=linux/arm64"            
             dockerImage = "registry.cinegy.com/docker/docker-builds/ubuntu2004/devbasearm64:latest"
             dockerPull = true
             dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux			
@@ -509,7 +509,7 @@ object BuildAggregation : BuildType({
                 """.trimIndent()
             }
         }
-        dependency(BuildMacOS) {
+        /*dependency(BuildMacOS) {
             snapshot {
             }
 
@@ -518,7 +518,7 @@ object BuildAggregation : BuildType({
                     CinecoderSamples-MacOS-%teamcity.build.branch%-%build.number%.zip
                 """.trimIndent()
             }
-        }
+        }*/
         dependency(BuildMacOSArm64) {
             snapshot {
             }
