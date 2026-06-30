@@ -298,6 +298,7 @@ int main_impl(int argc, char* argv[])
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test");
     puts("\t'AV1_NV'       -- AV1  NVidia GPU codec test");
+    puts("\t'XAVC_NV'      -- XAVC NVidia GPU codec test");
     puts("\t'H264_AMF'     -- H264 AMD GPU codec test");
     puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test");
     puts("\t'AV1_AMF'      -- AV1  AMD GPU codec test");
@@ -506,6 +507,21 @@ int main_impl(int argc, char* argv[])
     g_mem_type = MEM_GPU;
     g_bUseCUDA = true;
   }
+  if(0 == strcmp(argv[1], "XAVC_NV"))
+  { 
+    clsidEnc = CLSID_CC_XAVCVideoEncoder_NV; 
+    clsidDec = CLSID_CC_H264VideoDecoder_NV; 
+    strEncName = "NVidia XAVC"; 
+  }
+  if(0 == strcmp(argv[1], "XAVC_NV_GPU"))
+  { 
+    clsidEnc = CLSID_CC_XAVCVideoEncoder_NV; 
+    clsidDec = CLSID_CC_H264VideoDecoder_NV; 
+    strEncName = "NVidia XAVC"; 
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
+  }
+
   if(0 == strcmp(argv[1], "H264_AMF"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_AMF; 
