@@ -3,6 +3,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <atlbase.h>
+#else
+typedef char *CComBSTR;
 #endif
 
 #include <stdio.h>
@@ -736,11 +738,9 @@ int main_impl(int argc, char* argv[])
   if(FAILED(hr))
     return fprintf(stderr, "Incorrect license"), hr;
 
-#ifdef _WIN32
   const char *gpu_plugin_name = "Cinecoder.Plugin.GpuCodecs.dll";
   if(bLoadGpuCodecsPlugin && FAILED(hr = pFactory->LoadPlugin(CComBSTR(gpu_plugin_name))))
     return fprintf(stderr, "Error loading '%s'", gpu_plugin_name), hr;
-#endif
   
   if(0 == strcmp(argv[1], "PRORES"))
   {
@@ -756,11 +756,7 @@ int main_impl(int argc, char* argv[])
       return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
   }
 
-#ifdef _WIN32
   CComBSTR pProfile = profile_text;
-#else
-  auto pProfile = profile_text;
-#endif
 
   com_ptr<ICC_VideoEncoder> pEncoder;
 
