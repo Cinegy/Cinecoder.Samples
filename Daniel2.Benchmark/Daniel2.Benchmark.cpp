@@ -41,6 +41,9 @@ using namespace std::chrono_literals;
 #include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs.h"
 #include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs_i.c"
 
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD.h"
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD_i.c"
+
 #ifdef __APPLE__
 
 #define BOOL BOOL2 /* it is needed to fix different BOOL typedef in objc.h */
@@ -297,6 +300,7 @@ int main_impl(int argc, char* argv[])
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
     puts("\t'PRORES        -- ProRes s/w codec (requires Cinecoder.Plugin.Codecs.dll)");
+    puts("\t'DNX           -- DNX s/w codec (requires Cinecoder.Plugin.Codecs.DNxHD.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
@@ -466,6 +470,12 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_ProRes_VideoEncoder; 
     clsidDec = CLSID_CC_ProRes_VideoDecoder; 
     strEncName = "ProRes"; 
+  }
+  if(0 == strcmp(argv[1], "DNX"))
+  { 
+    clsidEnc = CLSID_CC_DNX_VideoEncoder; 
+    clsidDec = CLSID_NULL; 
+    strEncName = "DNX"; 
   }
 
 //#ifdef _WIN32
@@ -735,6 +745,13 @@ int main_impl(int argc, char* argv[])
   if(0 == strcmp(argv[1], "PRORES"))
   {
     const char *plugin_name = "Cinecoder.Plugin.Codecs.dll";
+    if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
+      return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
+  }
+
+  if(0 == strcmp(argv[1], "DNX"))
+  {
+    const char *plugin_name = "Cinecoder.Plugin.Codecs.DNxHD.dll";
     if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
       return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
   }
@@ -1174,6 +1191,21 @@ int main_impl(int argc, char* argv[])
 
   // decoder test ==================================================================
   fprintf(stderr, "\n------------------------------------------------------------\nEntering decoder test loop...\n");
+
+  if(clsidDec == CLSID_NULL)
+  {
+    printf("coded sequence length = %zd\n", pFileWriter->GetCodedSequenceLength());
+    
+    for(int i = 0; i < pFileWriter->GetCodedSequenceLength(); i++)
+      printf(" %zd", pFileWriter->GetCodedFrame(i).second);
+    
+    puts("");
+
+    printf("\nNo decoder is available for codec '%s', exiting.\n", argv[1]);
+
+    return S_OK;
+  }
+
   com_ptr<ICC_VideoDecoder> pDecoder;
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
