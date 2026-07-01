@@ -38,6 +38,9 @@ using namespace std::chrono_literals;
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
 #include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs.h"
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs_i.c"
+
 #ifdef __APPLE__
 
 #define BOOL BOOL2 /* it is needed to fix different BOOL typedef in objc.h */
@@ -293,6 +296,7 @@ int main_impl(int argc, char* argv[])
 #endif
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
+    puts("\t'PRORES        -- ProRes s/w codec (requires Cinecoder.Plugin.Codecs.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
@@ -456,6 +460,12 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_XDCAMVideoEncoder; 
     clsidDec = CLSID_CC_MpegVideoDecoder; 
     strEncName = "XDCAM"; 
+  }
+  if(0 == strcmp(argv[1], "PRORES"))
+  { 
+    clsidEnc = CLSID_CC_ProRes_VideoEncoder; 
+    clsidDec = CLSID_CC_ProRes_VideoDecoder; 
+    strEncName = "ProRes"; 
   }
 
 //#ifdef _WIN32
@@ -722,6 +732,13 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "Error loading '%s'", gpu_plugin_name), hr;
 #endif
   
+  if(0 == strcmp(argv[1], "PRORES"))
+  {
+    const char *plugin_name = "Cinecoder.Plugin.Codecs.dll";
+    if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
+      return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
+  }
+
 #ifdef _WIN32
   CComBSTR pProfile = profile_text;
 #else
