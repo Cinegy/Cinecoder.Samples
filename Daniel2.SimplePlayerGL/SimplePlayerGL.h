@@ -834,6 +834,16 @@ int ocl_InitContextGL()
 
 	cl_platform_id platform = firstPlatformId;
 
+	char ext[4096] = {};
+	clGetPlatformInfo(platform, CL_PLATFORM_EXTENSIONS, sizeof(ext), ext, NULL);
+	//printf("CL_PLATFORM_EXTENSIONS:\n%s\n", ext);
+
+	if (!strstr(ext, "cl_khr_gl_sharing")) 
+	{
+		printf("ERROR: cl_khr_gl_sharing NOT supported\n");
+		return -1;
+	}
+
 	// Load extension function call
 	clGetGLContextInfoKHR_fn clGetGLContextInfoKHR = NULL;
 
@@ -1189,7 +1199,7 @@ int gpu_generateCUDAImage(C_Block* pBlock)
 
 		if (pBlock->DataGPUTmpPtr())
 		{
-			h_convert_P210_to_Y216_BtB(pBlock->DataGPUPtr(), pBlock->DataGPUTmpPtr(), pBlock->Width(), pBlock->Height(), pBlock->Pitch(), pBlock->Width() * 4, NULL);
+			h_convert_P210_to_Y216_BtB(pBlock->DataGPUPtr(), pBlock->DataGPUTmpPtr(), (int)pBlock->Width(), (int)pBlock->Height(), (int)pBlock->Pitch(), (int)pBlock->Width() * 4, NULL);
 
 			if (output_format == IMAGE_FORMAT_RGBA16BIT)
 			{

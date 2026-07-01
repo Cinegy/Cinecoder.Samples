@@ -226,7 +226,8 @@ int AudioSource::OpenFile(const char* const filename)
 	if (FAILED(hr)) return hr;
 
 #if defined(__WIN32__)
-	CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	//CC_STRING file_name_str = _com_util::ConvertStringToBSTR(filename);
+	_bstr_t file_name_str(filename);
 #elif defined(__APPLE__) || defined(__LINUX__)
 	CC_STRING file_name_str = const_cast<CC_STRING>(filename);
 #endif
@@ -491,7 +492,7 @@ HRESULT AudioSource::UpdateAudioChunk(size_t iFrame, ALvoid** data, ALsizei* siz
 	{
 		_assert(0);
 
-		printf("GetAudioSamples failed hr=0x%x startSample=%zu numSamples=%zu pbData = %p cbSize = %lu\n", hr, (iFrame * m_iSampleCount), m_iSampleCount, pb, cb);
+		printf("GetAudioSamples failed hr=0x%x startSample=%zu numSamples=%zu pbData = %p cbSize = %u\n", hr, (iFrame * m_iSampleCount), m_iSampleCount, pb, cb);
 	}
 
 	return hr;

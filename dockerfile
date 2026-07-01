@@ -14,10 +14,19 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update && apt-get upgrade -y && apt-get install -y \
         build-essential git nano gnupg apt-utils unzip sudo bzip2 \
         apt-transport-https curl wget ca-certificates cpio \
-        mono-complete libboost-dev uuid-dev libssl-dev software-properties-common \
+        libboost-dev uuid-dev libssl-dev software-properties-common \
         jq libopenal-dev freeglut3-dev libglew-dev ocl-icd-opencl-dev && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
+
+# Install fresh Mono from official repo (6.12+)
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get update && \
+    apt-get install -y mono-complete && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mono --version
 
 # Download latest `nuget.exe` to `/usr/local/bin` and alias
 RUN curl -o /usr/local/bin/nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe && \

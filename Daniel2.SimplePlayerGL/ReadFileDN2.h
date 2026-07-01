@@ -161,7 +161,7 @@ public:
 	{ 
 		CC_UINT frames = 0; 
 		m_fileMvx->get_Length(&frames); 
-		return (size_t)frames; 
+		return (size_t)frames;
 	}
 	void SeekFrame(size_t nFrame) 
 	{ 
@@ -190,6 +190,12 @@ public:
 	{
 		CC_ELEMENTARY_STREAM_TYPE type;
 		m_fileMvx->get_StreamType(&type);
+		return type;
+	}
+	CC_MULTIPLEXED_STREAM_TYPE GetContainerType()
+	{
+		CC_MULTIPLEXED_STREAM_TYPE type;
+		m_fileMvx->get_ContainerType(&type);
 		return type;
 	}
 	void SetReadFile(bool bReadFile) { m_bReadFile = bReadFile; }
