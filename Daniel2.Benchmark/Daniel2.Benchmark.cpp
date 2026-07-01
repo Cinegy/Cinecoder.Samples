@@ -38,6 +38,12 @@ using namespace std::chrono_literals;
 #include "../external/cuda_drvapi_dyn_load/src/cuda_drvapi_dyn_load.h"
 #include "../external/opencl_dyn_load/src/opencl_dyn_load.h"
 
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs.h"
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs/Cinecoder.Plugin.Codecs_i.c"
+
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD.h"
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD_i.c"
+
 #ifdef __APPLE__
 
 #define BOOL BOOL2 /* it is needed to fix different BOOL typedef in objc.h */
@@ -293,11 +299,14 @@ int main_impl(int argc, char* argv[])
 #endif
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
+    puts("\t'PRORES        -- ProRes s/w codec (requires Cinecoder.Plugin.Codecs.dll)");
+    puts("\t'DNX           -- DNX s/w codec (requires Cinecoder.Plugin.Codecs.DNxHD.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
     puts("\t'HEVC_NV'      -- HEVC NVidia GPU codec test");
     puts("\t'AV1_NV'       -- AV1  NVidia GPU codec test");
+    puts("\t'XAVC_NV'      -- XAVC NVidia GPU codec test");
     puts("\t'H264_AMF'     -- H264 AMD GPU codec test");
     puts("\t'HEVC_AMF'     -- HEVC AMD GPU codec test");
     puts("\t'AV1_AMF'      -- AV1  AMD GPU codec test");
@@ -456,6 +465,18 @@ int main_impl(int argc, char* argv[])
     clsidDec = CLSID_CC_MpegVideoDecoder; 
     strEncName = "XDCAM"; 
   }
+  if(0 == strcmp(argv[1], "PRORES"))
+  { 
+    clsidEnc = CLSID_CC_ProRes_VideoEncoder; 
+    clsidDec = CLSID_CC_ProRes_VideoDecoder; 
+    strEncName = "ProRes"; 
+  }
+  if(0 == strcmp(argv[1], "DNX"))
+  { 
+    clsidEnc = CLSID_CC_DNX_VideoEncoder; 
+    clsidDec = CLSID_NULL; 
+    strEncName = "DNX"; 
+  }
 
 //#ifdef _WIN32
   if(0 == strcmp(argv[1], "H264_NV"))
@@ -506,6 +527,21 @@ int main_impl(int argc, char* argv[])
     g_mem_type = MEM_GPU;
     g_bUseCUDA = true;
   }
+  if(0 == strcmp(argv[1], "XAVC_NV"))
+  { 
+    clsidEnc = CLSID_CC_XAVCVideoEncoder_NV; 
+    clsidDec = CLSID_CC_H264VideoDecoder_NV; 
+    strEncName = "NVidia XAVC"; 
+  }
+  if(0 == strcmp(argv[1], "XAVC_NV_GPU"))
+  { 
+    clsidEnc = CLSID_CC_XAVCVideoEncoder_NV; 
+    clsidDec = CLSID_CC_H264VideoDecoder_NV; 
+    strEncName = "NVidia XAVC"; 
+    g_mem_type = MEM_GPU;
+    g_bUseCUDA = true;
+  }
+
   if(0 == strcmp(argv[1], "H264_AMF"))
   { 
     clsidEnc = CLSID_CC_H264VideoEncoder_AMF; 
@@ -706,6 +742,20 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "Error loading '%s'", gpu_plugin_name), hr;
 #endif
   
+  if(0 == strcmp(argv[1], "PRORES"))
+  {
+    const char *plugin_name = "Cinecoder.Plugin.Codecs.dll";
+    if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
+      return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
+  }
+
+  if(0 == strcmp(argv[1], "DNX"))
+  {
+    const char *plugin_name = "Cinecoder.Plugin.Codecs.DNxHD.dll";
+    if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
+      return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
+  }
+
 #ifdef _WIN32
   CComBSTR pProfile = profile_text;
 #else
@@ -1141,6 +1191,21 @@ int main_impl(int argc, char* argv[])
 
   // decoder test ==================================================================
   fprintf(stderr, "\n------------------------------------------------------------\nEntering decoder test loop...\n");
+
+  if(clsidDec == CLSID_NULL)
+  {
+    printf("coded sequence length = %zd\n", pFileWriter->GetCodedSequenceLength());
+    
+    for(int i = 0; i < pFileWriter->GetCodedSequenceLength(); i++)
+      printf(" %zd", pFileWriter->GetCodedFrame(i).second);
+    
+    puts("");
+
+    printf("\nNo decoder is available for codec '%s', exiting.\n", argv[1]);
+
+    return S_OK;
+  }
+
   com_ptr<ICC_VideoDecoder> pDecoder;
   hr = pFactory->CreateInstance(clsidDec, IID_ICC_VideoDecoder, (IUnknown**)&pDecoder);
   if(FAILED(hr)) return hr;
