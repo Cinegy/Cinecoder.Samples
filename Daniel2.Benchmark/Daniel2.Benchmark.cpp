@@ -1045,7 +1045,7 @@ int main_impl(int argc, char* argv[])
     }
   }
 
-  CpuLoadMeter cpuLoadMeter;
+  CpuLoadMeter cpuLoadMeter, cpuLoadMeter0;
   
   printf("Performing encoding loop, press ESC to break\n");
 
@@ -1149,15 +1149,17 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "\npEncoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   auto t1 = system_clock::now();
+  auto avgCpuLoad = cpuLoadMeter0.GetLoad();
 
   //pEncoder = NULL;
 
   puts("\nDone.\n");
 
   auto dT = duration<double>(t1 - t00).count();
-  printf("Encoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+  printf("Encoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s, avg CPU load: %.1f%%\n", 
   		  dT, total_frame_count / dT, dT * 1000 / total_frame_count,
-          uncompressed_frame_size / 1E9 * total_frame_count / dT);
+          uncompressed_frame_size / 1E9 * total_frame_count / dT,
+          avgCpuLoad);
 
   auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_EncoderTimeFirstFrameOut - g_EncoderTimeFirstFrameIn);
   printf("Encoder latency = %d ms\n", (int)time_ms.count());
@@ -1178,6 +1180,7 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"encAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
     fprintf(json_stats_file, "\t\t\"encAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
     fprintf(json_stats_file, "\t\t\"encAvgDataRateInMbps\" : \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"encAvgCPULoad\"        : \"%.1f%%\" \n", avgCpuLoad);
     fprintf(json_stats_file, "\t\t\"encLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
     fprintf(json_stats_file, "\t},\n");
   }
@@ -1412,6 +1415,8 @@ int main_impl(int argc, char* argv[])
 
   int warm_up_frames = 4;
 
+  cpuLoadMeter0.GetLoad();
+
   coded_size0 = 0; long long coded_size = 0;
 
   if(int num_coded_frames = (int)pFileWriter->GetCodedSequenceLength())
@@ -1450,6 +1455,7 @@ int main_impl(int argc, char* argv[])
         continue;
 
       t00 = t0 = system_clock::now();
+      cpuLoadMeter0.GetLoad();
     }
 
     bool break_time_out = false;
@@ -1508,15 +1514,17 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "\npDecoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   t1 = system_clock::now();
+  avgCpuLoad = cpuLoadMeter0.GetLoad();
 
   //pDecoder = NULL;
 
   puts("\nDone.\n");
 
   dT = duration<double>(t1 - t00).count();
-  printf("Decoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+  printf("Decoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s, avg CPU load: %.1f%%\n", 
           dT, total_frame_count / dT, dT * 1000 / total_frame_count,
-          uncompressed_frame_size / 1E9 * total_frame_count / dT);
+          uncompressed_frame_size / 1E9 * total_frame_count / dT,
+          avgCpuLoad);
 
   time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_DecoderTimeFirstFrameOut - g_DecoderTimeFirstFrameIn);
   printf("Decoder latency = %d ms\n", (int)time_ms.count());
@@ -1537,6 +1545,7 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"decAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
     fprintf(json_stats_file, "\t\t\"decAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
     fprintf(json_stats_file, "\t\t\"decAvgDataRateOutMbps\": \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"decAvgCPULoad\"        : \"%.1f%%\" \n", avgCpuLoad);
     fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
     fprintf(json_stats_file, "\t}\n");
   }
