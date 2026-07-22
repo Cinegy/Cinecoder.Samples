@@ -476,7 +476,7 @@ int main_impl(int argc, char* argv[])
   if(0 == strcmp(argv[1], "DNX"))
   { 
     clsidEnc = CLSID_CC_DNX_VideoEncoder; 
-    clsidDec = CLSID_NULL; 
+    clsidDec = CLSID_CC_DNX_VideoDecoder; 
     strEncName = "DNX"; 
   }
 

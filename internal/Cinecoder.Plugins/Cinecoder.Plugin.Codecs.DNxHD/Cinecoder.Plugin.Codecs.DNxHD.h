@@ -3,12 +3,12 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Aug 01 07:10:52 2023
+ /* File created by MIDL compiler version 8.01.0628 */
+/* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for Cinecoder.Plugin.Codecs.DNxHD.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0628 
+    protocol : all , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -16,12 +16,11 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 #include "rpc.h"
@@ -29,7 +28,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"
@@ -41,6 +40,14 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
+#endif
+
+#ifndef DECLSPEC_XFGVIRT
+#if defined(_CONTROL_FLOW_GUARD_XFG)
+#define DECLSPEC_XFGVIRT(base, func) __declspec(xfg_virtual(base, func))
+#else
+#define DECLSPEC_XFGVIRT(base, func)
+#endif
 #endif
 
 /* Forward Declarations */ 
@@ -85,6 +92,13 @@ typedef interface ICC_DNX_VideoStreamInfo ICC_DNX_VideoStreamInfo;
 typedef interface ICC_DNX_VideoEncoder ICC_DNX_VideoEncoder;
 
 #endif 	/* __ICC_DNX_VideoEncoder_FWD_DEFINED__ */
+
+
+#ifndef __ICC_DNX_VideoDecoder_FWD_DEFINED__
+#define __ICC_DNX_VideoDecoder_FWD_DEFINED__
+typedef interface ICC_DNX_VideoDecoder ICC_DNX_VideoDecoder;
+
+#endif 	/* __ICC_DNX_VideoDecoder_FWD_DEFINED__ */
 
 
 #ifndef __CC_DNxHD_VideoEncoder_FWD_DEFINED__
@@ -133,6 +147,18 @@ typedef struct CC_DNX_VideoEncoder CC_DNX_VideoEncoder;
 #endif /* __cplusplus */
 
 #endif 	/* __CC_DNX_VideoEncoder_FWD_DEFINED__ */
+
+
+#ifndef __CC_DNX_VideoDecoder_FWD_DEFINED__
+#define __CC_DNX_VideoDecoder_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class CC_DNX_VideoDecoder CC_DNX_VideoDecoder;
+#else
+typedef struct CC_DNX_VideoDecoder CC_DNX_VideoDecoder;
+#endif /* __cplusplus */
+
+#endif 	/* __CC_DNX_VideoDecoder_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -236,77 +262,95 @@ EXTERN_C const IID IID_ICC_DNxHD_VideoEncoder;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNxHD_VideoEncoder * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNxHD_VideoEncoder * This);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Init)
         HRESULT ( STDMETHODCALLTYPE *Init )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [defaultvalue][in] */ ICC_Settings *pSettings);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, InitByXml)
         HRESULT ( STDMETHODCALLTYPE *InitByXml )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_STRING strXML);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Done)
         HRESULT ( STDMETHODCALLTYPE *Done )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_BOOL bFlush,
             /* [defaultvalue][retval][out] */ CC_BOOL *pbDone);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsActive)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsActive )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_StreamProcessor0000);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_TimeBase)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeBase )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ CC_TIMEBASE *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_TimeBase)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeBase )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_TIMEBASE p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_BitRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitRate )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ CC_BITRATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_StreamInfo)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StreamInfo )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ ICC_Settings **p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsDataReady)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsDataReady )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [defaultvalue][retval][out] */ CC_BOOL *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_DataInfo)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_DataInfo )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ ICC_Settings **s);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_OutputCallback)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_OutputCallback )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ IUnknown **p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_OutputCallback)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_OutputCallback )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ IUnknown *p);
         
+        DECLSPEC_XFGVIRT(ICC_Encoder, get_DataSize)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_DataSize )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ CC_UINT *__MIDL__ICC_Encoder0000);
         
+        DECLSPEC_XFGVIRT(ICC_Encoder, GetData)
         HRESULT ( STDMETHODCALLTYPE *GetData )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [size_is][out] */ CC_PBYTE pbData,
             /* [in] */ CC_UINT cbBufSize,
             /* [defaultvalue][retval][out] */ CC_UINT *pcbRetSize);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, AddFrame)
         HRESULT ( STDMETHODCALLTYPE *AddFrame )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT Format,
@@ -315,16 +359,19 @@ EXTERN_C const IID IID_ICC_DNxHD_VideoEncoder;
             /* [defaultvalue][in] */ INT stride,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetStride)
         HRESULT ( STDMETHODCALLTYPE *GetStride )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT fmt,
             /* [retval][out] */ DWORD *pNumBytes);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, IsFormatSupported)
         HRESULT ( STDMETHODCALLTYPE *IsFormatSupported )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT fmt,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, AddScaleFrame)
         HRESULT ( STDMETHODCALLTYPE *AddScaleFrame )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [size_is][in] */ const BYTE *pData,
@@ -332,15 +379,18 @@ EXTERN_C const IID IID_ICC_DNxHD_VideoEncoder;
             /* [in] */ CC_ADD_VIDEO_FRAME_PARAMS *pParams,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, IsScaleAvailable)
         HRESULT ( STDMETHODCALLTYPE *IsScaleAvailable )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [in] */ CC_ADD_VIDEO_FRAME_PARAMS *pParams,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_VideoEncoder0000);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetVideoStreamInfo)
         HRESULT ( STDMETHODCALLTYPE *GetVideoStreamInfo )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ ICC_VideoStreamInfo **pDescr);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetVideoFrameInfo)
         HRESULT ( STDMETHODCALLTYPE *GetVideoFrameInfo )( 
             ICC_DNxHD_VideoEncoder * This,
             /* [retval][out] */ ICC_VideoFrameInfo **pDescr);
@@ -469,55 +519,68 @@ EXTERN_C const IID IID_ICC_DNxHD_VideoStreamInfo;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNxHD_VideoStreamInfo * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNxHD_VideoStreamInfo * This);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Clear)
         HRESULT ( STDMETHODCALLTYPE *Clear )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [in] */ LPCSTR strVarName);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Assigned)
         HRESULT ( STDMETHODCALLTYPE *Assigned )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [in] */ LPCSTR strVarName,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_Settings0000);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, get_XML)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_XML )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_STRING *pstrXml);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, put_XML)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_XML )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [in] */ CC_STRING strXml);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_StreamType)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StreamType )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_ELEMENTARY_STREAM_TYPE *p);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_BitRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitRate )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_BITRATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_FrameRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameRate )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_FRAME_RATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_FrameSize)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameSize )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_SIZE *s);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_AspectRatio)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AspectRatio )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_RATIONAL *a);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_ProgressiveSequence)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ProgressiveSequence )( 
             ICC_DNxHD_VideoStreamInfo * This,
             /* [retval][out] */ CC_BOOL *x);
@@ -625,47 +688,58 @@ EXTERN_C const IID IID_ICC_DNxHD_VideoEncoderSettings;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNxHD_VideoEncoderSettings * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNxHD_VideoEncoderSettings * This);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Clear)
         HRESULT ( STDMETHODCALLTYPE *Clear )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ LPCSTR strVarName);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Assigned)
         HRESULT ( STDMETHODCALLTYPE *Assigned )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ LPCSTR strVarName,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_Settings0000);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, get_XML)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_XML )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [retval][out] */ CC_STRING *pstrXml);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, put_XML)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_XML )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ CC_STRING strXml);
         
+        DECLSPEC_XFGVIRT(ICC_DNxHD_VideoEncoderSettings, get_CompressionID)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CompressionID )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [retval][out] */ CC_DNxHD_CID *pCID);
         
+        DECLSPEC_XFGVIRT(ICC_DNxHD_VideoEncoderSettings, put_CompressionID)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_CompressionID )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ CC_DNxHD_CID CID);
         
+        DECLSPEC_XFGVIRT(ICC_DNxHD_VideoEncoderSettings, get_FrameRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameRate )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [retval][out] */ CC_RATIONAL *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNxHD_VideoEncoderSettings, put_FrameRate)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_FrameRate )( 
             ICC_DNxHD_VideoEncoderSettings * This,
             /* [in] */ CC_RATIONAL v);
@@ -819,119 +893,148 @@ EXTERN_C const IID IID_ICC_DNX_VideoEncoderSettings;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNX_VideoEncoderSettings * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNX_VideoEncoderSettings * This);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Clear)
         HRESULT ( STDMETHODCALLTYPE *Clear )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ LPCSTR strVarName);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Assigned)
         HRESULT ( STDMETHODCALLTYPE *Assigned )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ LPCSTR strVarName,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_Settings0000);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, get_XML)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_XML )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_STRING *pstrXml);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, put_XML)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_XML )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_STRING strXml);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_CompressionID)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CompressionID )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_DNX_COMPRESSION_ID *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_CompressionID)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_CompressionID )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_DNX_COMPRESSION_ID v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_FrameRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameRate )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_RATIONAL *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_FrameRate)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_FrameRate )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_RATIONAL v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_FrameSize)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameSize )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_SIZE *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_FrameSize)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_FrameSize )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_SIZE v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_ColorVolume)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ColorVolume )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_DNX_COLOR_VOLUME *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_ColorVolume)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ColorVolume )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_DNX_COLOR_VOLUME v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_ChromaFormat)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ChromaFormat )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_CHROMA_FORMAT *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_ChromaFormat)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ChromaFormat )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_CHROMA_FORMAT v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_BitDepth)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitDepth )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_UINT *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_BitDepth)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_BitDepth )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_UINT v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_PARC)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_PARC )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_UINT *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_PARC)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_PARC )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_UINT v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_PARN)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_PARN )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_UINT *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_PARN)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_PARN )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_UINT v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_CRCPresence)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CRCPresence )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_BOOL *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_CRCPresence)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_CRCPresence )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_BOOL v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_AlphaPresence)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AlphaPresence )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_BOOL *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_AlphaPresence)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_AlphaPresence )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_BOOL v);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, get_LosslessAlpha)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_LosslessAlpha )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [retval][out] */ CC_BOOL *p);
         
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoEncoderSettings, put_LosslessAlpha)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_LosslessAlpha )( 
             ICC_DNX_VideoEncoderSettings * This,
             /* [in] */ CC_BOOL v);
@@ -1064,6 +1167,33 @@ EXTERN_C const IID IID_ICC_DNX_VideoStreamInfo;
     ICC_DNX_VideoStreamInfo : public ICC_VideoStreamInfo
     {
     public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_CompressionID( 
+            /* [retval][out] */ CC_DNX_COMPRESSION_ID *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_ColorVolume( 
+            /* [retval][out] */ CC_DNX_COLOR_VOLUME *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_ChromaFormat( 
+            /* [retval][out] */ CC_CHROMA_FORMAT *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_BitDepth( 
+            /* [retval][out] */ CC_UINT *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_CRCPresence( 
+            /* [retval][out] */ CC_BOOL *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_RateMode( 
+            /* [retval][out] */ CC_BITRATE_MODE *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_AlphaPresence( 
+            /* [retval][out] */ CC_BOOL *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_LosslessAlpha( 
+            /* [retval][out] */ CC_BOOL *p) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_PremultAlpha( 
+            /* [retval][out] */ CC_BOOL *p) = 0;
+        
     };
     
     
@@ -1073,58 +1203,116 @@ EXTERN_C const IID IID_ICC_DNX_VideoStreamInfo;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNX_VideoStreamInfo * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNX_VideoStreamInfo * This);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Clear)
         HRESULT ( STDMETHODCALLTYPE *Clear )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [in] */ LPCSTR strVarName);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, Assigned)
         HRESULT ( STDMETHODCALLTYPE *Assigned )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [in] */ LPCSTR strVarName,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_Settings0000);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, get_XML)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_XML )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_STRING *pstrXml);
         
+        DECLSPEC_XFGVIRT(ICC_Settings, put_XML)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_XML )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [in] */ CC_STRING strXml);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_StreamType)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StreamType )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_ELEMENTARY_STREAM_TYPE *p);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_BitRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitRate )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_BITRATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_ElementaryStreamInfo, get_FrameRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameRate )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_FRAME_RATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_FrameSize)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_FrameSize )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_SIZE *s);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_AspectRatio)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AspectRatio )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_RATIONAL *a);
         
+        DECLSPEC_XFGVIRT(ICC_VideoStreamInfo, get_ProgressiveSequence)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ProgressiveSequence )( 
             ICC_DNX_VideoStreamInfo * This,
             /* [retval][out] */ CC_BOOL *x);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_CompressionID)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CompressionID )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_DNX_COMPRESSION_ID *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_ColorVolume)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ColorVolume )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_DNX_COLOR_VOLUME *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_ChromaFormat)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ChromaFormat )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_CHROMA_FORMAT *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_BitDepth)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitDepth )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_UINT *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_CRCPresence)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CRCPresence )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_BOOL *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_RateMode)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_RateMode )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_BITRATE_MODE *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_AlphaPresence)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_AlphaPresence )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_BOOL *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_LosslessAlpha)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_LosslessAlpha )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_BOOL *p);
+        
+        DECLSPEC_XFGVIRT(ICC_DNX_VideoStreamInfo, get_PremultAlpha)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_PremultAlpha )( 
+            ICC_DNX_VideoStreamInfo * This,
+            /* [retval][out] */ CC_BOOL *p);
         
         END_INTERFACE
     } ICC_DNX_VideoStreamInfoVtbl;
@@ -1182,6 +1370,33 @@ EXTERN_C const IID IID_ICC_DNX_VideoStreamInfo;
     ( (This)->lpVtbl -> get_ProgressiveSequence(This,x) ) 
 
 
+#define ICC_DNX_VideoStreamInfo_get_CompressionID(This,p)	\
+    ( (This)->lpVtbl -> get_CompressionID(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_ColorVolume(This,p)	\
+    ( (This)->lpVtbl -> get_ColorVolume(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_ChromaFormat(This,p)	\
+    ( (This)->lpVtbl -> get_ChromaFormat(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_BitDepth(This,p)	\
+    ( (This)->lpVtbl -> get_BitDepth(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_CRCPresence(This,p)	\
+    ( (This)->lpVtbl -> get_CRCPresence(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_RateMode(This,p)	\
+    ( (This)->lpVtbl -> get_RateMode(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_AlphaPresence(This,p)	\
+    ( (This)->lpVtbl -> get_AlphaPresence(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_LosslessAlpha(This,p)	\
+    ( (This)->lpVtbl -> get_LosslessAlpha(This,p) ) 
+
+#define ICC_DNX_VideoStreamInfo_get_PremultAlpha(This,p)	\
+    ( (This)->lpVtbl -> get_PremultAlpha(This,p) ) 
+
 #endif /* COBJMACROS */
 
 
@@ -1217,77 +1432,95 @@ EXTERN_C const IID IID_ICC_DNX_VideoEncoder;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ICC_DNX_VideoEncoder * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             ICC_DNX_VideoEncoder * This);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Init)
         HRESULT ( STDMETHODCALLTYPE *Init )( 
             ICC_DNX_VideoEncoder * This,
             /* [defaultvalue][in] */ ICC_Settings *pSettings);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, InitByXml)
         HRESULT ( STDMETHODCALLTYPE *InitByXml )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_STRING strXML);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Done)
         HRESULT ( STDMETHODCALLTYPE *Done )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_BOOL bFlush,
             /* [defaultvalue][retval][out] */ CC_BOOL *pbDone);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsActive)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsActive )( 
             ICC_DNX_VideoEncoder * This,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_StreamProcessor0000);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_TimeBase)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeBase )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ CC_TIMEBASE *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_TimeBase)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeBase )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_TIMEBASE p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_BitRate)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitRate )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ CC_BITRATE *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_StreamInfo)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StreamInfo )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ ICC_Settings **p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsDataReady)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsDataReady )( 
             ICC_DNX_VideoEncoder * This,
             /* [defaultvalue][retval][out] */ CC_BOOL *p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_DataInfo)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_DataInfo )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ ICC_Settings **s);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_OutputCallback)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_OutputCallback )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ IUnknown **p);
         
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_OutputCallback)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_OutputCallback )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ IUnknown *p);
         
+        DECLSPEC_XFGVIRT(ICC_Encoder, get_DataSize)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_DataSize )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ CC_UINT *__MIDL__ICC_Encoder0000);
         
+        DECLSPEC_XFGVIRT(ICC_Encoder, GetData)
         HRESULT ( STDMETHODCALLTYPE *GetData )( 
             ICC_DNX_VideoEncoder * This,
             /* [size_is][out] */ CC_PBYTE pbData,
             /* [in] */ CC_UINT cbBufSize,
             /* [defaultvalue][retval][out] */ CC_UINT *pcbRetSize);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, AddFrame)
         HRESULT ( STDMETHODCALLTYPE *AddFrame )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT Format,
@@ -1296,16 +1529,19 @@ EXTERN_C const IID IID_ICC_DNX_VideoEncoder;
             /* [defaultvalue][in] */ INT stride,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetStride)
         HRESULT ( STDMETHODCALLTYPE *GetStride )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT fmt,
             /* [retval][out] */ DWORD *pNumBytes);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, IsFormatSupported)
         HRESULT ( STDMETHODCALLTYPE *IsFormatSupported )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_COLOR_FMT fmt,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, AddScaleFrame)
         HRESULT ( STDMETHODCALLTYPE *AddScaleFrame )( 
             ICC_DNX_VideoEncoder * This,
             /* [size_is][in] */ const BYTE *pData,
@@ -1313,15 +1549,18 @@ EXTERN_C const IID IID_ICC_DNX_VideoEncoder;
             /* [in] */ CC_ADD_VIDEO_FRAME_PARAMS *pParams,
             /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, IsScaleAvailable)
         HRESULT ( STDMETHODCALLTYPE *IsScaleAvailable )( 
             ICC_DNX_VideoEncoder * This,
             /* [in] */ CC_ADD_VIDEO_FRAME_PARAMS *pParams,
             /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_VideoEncoder0000);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetVideoStreamInfo)
         HRESULT ( STDMETHODCALLTYPE *GetVideoStreamInfo )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ ICC_VideoStreamInfo **pDescr);
         
+        DECLSPEC_XFGVIRT(ICC_VideoEncoder, GetVideoFrameInfo)
         HRESULT ( STDMETHODCALLTYPE *GetVideoFrameInfo )( 
             ICC_DNX_VideoEncoder * This,
             /* [retval][out] */ ICC_VideoFrameInfo **pDescr);
@@ -1426,6 +1665,246 @@ EXTERN_C const IID IID_ICC_DNX_VideoEncoder;
 #endif 	/* __ICC_DNX_VideoEncoder_INTERFACE_DEFINED__ */
 
 
+#ifndef __ICC_DNX_VideoDecoder_INTERFACE_DEFINED__
+#define __ICC_DNX_VideoDecoder_INTERFACE_DEFINED__
+
+/* interface ICC_DNX_VideoDecoder */
+/* [local][unique][uuid][object] */ 
+
+
+EXTERN_C const IID IID_ICC_DNX_VideoDecoder;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("1ACFADE5-CCD1-4BCB-8EE5-B66CAFB39940")
+    ICC_DNX_VideoDecoder : public ICC_VideoDecoder
+    {
+    public:
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct ICC_DNX_VideoDecoderVtbl
+    {
+        BEGIN_INTERFACE
+        
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            ICC_DNX_VideoDecoder * This);
+        
+        DECLSPEC_XFGVIRT(IUnknown, Release)
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            ICC_DNX_VideoDecoder * This);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Init)
+        HRESULT ( STDMETHODCALLTYPE *Init )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [defaultvalue][in] */ ICC_Settings *pSettings);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, InitByXml)
+        HRESULT ( STDMETHODCALLTYPE *InitByXml )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_STRING strXML);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, Done)
+        HRESULT ( STDMETHODCALLTYPE *Done )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_BOOL bFlush,
+            /* [defaultvalue][retval][out] */ CC_BOOL *pbDone);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsActive)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsActive )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [defaultvalue][retval][out] */ CC_BOOL *__MIDL__ICC_StreamProcessor0000);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_TimeBase)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeBase )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ CC_TIMEBASE *p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_TimeBase)
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeBase )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_TIMEBASE p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_BitRate)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_BitRate )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ CC_BITRATE *p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_StreamInfo)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StreamInfo )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ ICC_Settings **p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_IsDataReady)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsDataReady )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [defaultvalue][retval][out] */ CC_BOOL *p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_DataInfo)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_DataInfo )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ ICC_Settings **s);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, get_OutputCallback)
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_OutputCallback )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ IUnknown **p);
+        
+        DECLSPEC_XFGVIRT(ICC_StreamProcessor, put_OutputCallback)
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_OutputCallback )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ IUnknown *p);
+        
+        DECLSPEC_XFGVIRT(ICC_Decoder, ProcessData)
+        HRESULT ( STDMETHODCALLTYPE *ProcessData )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [size_is][in] */ CC_PCBYTE pbData,
+            /* [in] */ CC_UINT cbSize,
+            /* [defaultvalue][in] */ CC_UINT cbOffset,
+            /* [defaultvalue][in] */ CC_TIME pts,
+            /* [defaultvalue][retval][out] */ CC_UINT *pcbProcessed);
+        
+        DECLSPEC_XFGVIRT(ICC_Decoder, Break)
+        HRESULT ( STDMETHODCALLTYPE *Break )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_BOOL bFlush,
+            /* [defaultvalue][retval][out] */ CC_BOOL *pbDone);
+        
+        DECLSPEC_XFGVIRT(ICC_VideoDecoder, GetFrame)
+        HRESULT ( STDMETHODCALLTYPE *GetFrame )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_COLOR_FMT Format,
+            /* [size_is][out] */ BYTE *pbVideoData,
+            /* [in] */ DWORD cbSize,
+            /* [defaultvalue][in] */ INT stride,
+            /* [defaultvalue][retval][out] */ DWORD *pcbRetSize);
+        
+        DECLSPEC_XFGVIRT(ICC_VideoDecoder, GetStride)
+        HRESULT ( STDMETHODCALLTYPE *GetStride )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_COLOR_FMT fmt,
+            /* [retval][out] */ DWORD *pNumBytes);
+        
+        DECLSPEC_XFGVIRT(ICC_VideoDecoder, IsFormatSupported)
+        HRESULT ( STDMETHODCALLTYPE *IsFormatSupported )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [in] */ CC_COLOR_FMT fmt,
+            /* [defaultvalue][retval][out] */ CC_BOOL *pResult);
+        
+        DECLSPEC_XFGVIRT(ICC_VideoDecoder, GetVideoStreamInfo)
+        HRESULT ( STDMETHODCALLTYPE *GetVideoStreamInfo )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ ICC_VideoStreamInfo **pDescr);
+        
+        DECLSPEC_XFGVIRT(ICC_VideoDecoder, GetVideoFrameInfo)
+        HRESULT ( STDMETHODCALLTYPE *GetVideoFrameInfo )( 
+            ICC_DNX_VideoDecoder * This,
+            /* [retval][out] */ ICC_VideoFrameInfo **pDescr);
+        
+        END_INTERFACE
+    } ICC_DNX_VideoDecoderVtbl;
+
+    interface ICC_DNX_VideoDecoder
+    {
+        CONST_VTBL struct ICC_DNX_VideoDecoderVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define ICC_DNX_VideoDecoder_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define ICC_DNX_VideoDecoder_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define ICC_DNX_VideoDecoder_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define ICC_DNX_VideoDecoder_Init(This,pSettings)	\
+    ( (This)->lpVtbl -> Init(This,pSettings) ) 
+
+#define ICC_DNX_VideoDecoder_InitByXml(This,strXML)	\
+    ( (This)->lpVtbl -> InitByXml(This,strXML) ) 
+
+#define ICC_DNX_VideoDecoder_Done(This,bFlush,pbDone)	\
+    ( (This)->lpVtbl -> Done(This,bFlush,pbDone) ) 
+
+#define ICC_DNX_VideoDecoder_get_IsActive(This,__MIDL__ICC_StreamProcessor0000)	\
+    ( (This)->lpVtbl -> get_IsActive(This,__MIDL__ICC_StreamProcessor0000) ) 
+
+#define ICC_DNX_VideoDecoder_get_TimeBase(This,p)	\
+    ( (This)->lpVtbl -> get_TimeBase(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_put_TimeBase(This,p)	\
+    ( (This)->lpVtbl -> put_TimeBase(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_get_BitRate(This,p)	\
+    ( (This)->lpVtbl -> get_BitRate(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_get_StreamInfo(This,p)	\
+    ( (This)->lpVtbl -> get_StreamInfo(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_get_IsDataReady(This,p)	\
+    ( (This)->lpVtbl -> get_IsDataReady(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_get_DataInfo(This,s)	\
+    ( (This)->lpVtbl -> get_DataInfo(This,s) ) 
+
+#define ICC_DNX_VideoDecoder_get_OutputCallback(This,p)	\
+    ( (This)->lpVtbl -> get_OutputCallback(This,p) ) 
+
+#define ICC_DNX_VideoDecoder_put_OutputCallback(This,p)	\
+    ( (This)->lpVtbl -> put_OutputCallback(This,p) ) 
+
+
+#define ICC_DNX_VideoDecoder_ProcessData(This,pbData,cbSize,cbOffset,pts,pcbProcessed)	\
+    ( (This)->lpVtbl -> ProcessData(This,pbData,cbSize,cbOffset,pts,pcbProcessed) ) 
+
+#define ICC_DNX_VideoDecoder_Break(This,bFlush,pbDone)	\
+    ( (This)->lpVtbl -> Break(This,bFlush,pbDone) ) 
+
+
+#define ICC_DNX_VideoDecoder_GetFrame(This,Format,pbVideoData,cbSize,stride,pcbRetSize)	\
+    ( (This)->lpVtbl -> GetFrame(This,Format,pbVideoData,cbSize,stride,pcbRetSize) ) 
+
+#define ICC_DNX_VideoDecoder_GetStride(This,fmt,pNumBytes)	\
+    ( (This)->lpVtbl -> GetStride(This,fmt,pNumBytes) ) 
+
+#define ICC_DNX_VideoDecoder_IsFormatSupported(This,fmt,pResult)	\
+    ( (This)->lpVtbl -> IsFormatSupported(This,fmt,pResult) ) 
+
+#define ICC_DNX_VideoDecoder_GetVideoStreamInfo(This,pDescr)	\
+    ( (This)->lpVtbl -> GetVideoStreamInfo(This,pDescr) ) 
+
+#define ICC_DNX_VideoDecoder_GetVideoFrameInfo(This,pDescr)	\
+    ( (This)->lpVtbl -> GetVideoFrameInfo(This,pDescr) ) 
+
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __ICC_DNX_VideoDecoder_INTERFACE_DEFINED__ */
+
+
 
 #ifndef __Cinecoder_Plugin_Codecs_DNxHD_LIBRARY_DEFINED__
 #define __Cinecoder_Plugin_Codecs_DNxHD_LIBRARY_DEFINED__
@@ -1466,6 +1945,14 @@ EXTERN_C const CLSID CLSID_CC_DNX_VideoEncoder;
 
 class DECLSPEC_UUID("0B53BDBD-5F4D-4E14-8B64-32CC1AC01861")
 CC_DNX_VideoEncoder;
+#endif
+
+EXTERN_C const CLSID CLSID_CC_DNX_VideoDecoder;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("D720AD6A-3CD5-4F38-A00C-D4069B632E4F")
+CC_DNX_VideoDecoder;
 #endif
 #endif /* __Cinecoder_Plugin_Codecs_DNxHD_LIBRARY_DEFINED__ */
 
