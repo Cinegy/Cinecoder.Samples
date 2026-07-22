@@ -133,7 +133,7 @@ public:
 		  }
 		}
 
-        CC_VIDEO_QUALITY_MEASUREMENT psnr = {};
+        CC_VIDEO_QUALITY_MEASUREMENT &psnr = g_psnr;
 
         if(SUCCEEDED(hr))
         {

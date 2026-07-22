@@ -91,6 +91,8 @@ char       g_metalDeviceName[128] = {};
 
 cl_command_queue g_clMemAllocQueue = nullptr;
 
+CC_VIDEO_QUALITY_MEASUREMENT g_psnr = {};
+
 //---------------------------------------------------------------------
 int SetCudaContext(CUcontext ctx)
 //---------------------------------------------------------------------
@@ -1545,8 +1547,13 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"decAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
     fprintf(json_stats_file, "\t\t\"decAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
     fprintf(json_stats_file, "\t\t\"decAvgDataRateOutMbps\": \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
-    fprintf(json_stats_file, "\t\t\"decAvgCPULoad\"        : \"%.1f%%\" \n", avgCpuLoad);
-    fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t\t\"decAvgCPULoad\"        : \"%.1f%%\",\n", avgCpuLoad);
+    fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\",\n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t\t\"decPSNRdB\"            : [");
+	for(int i = 0; i < g_psnr.NumVals; i++)
+	  fprintf(json_stats_file, " %.3f%s", g_psnr.QVal[i], i+1 < g_psnr.NumVals ? "," : "");
+    fprintf(json_stats_file, " ]\n");
+
     fprintf(json_stats_file, "\t}\n");
   }
 
