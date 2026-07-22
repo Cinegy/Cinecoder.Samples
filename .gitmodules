@@ -16,3 +16,6 @@
 [submodule "external/metal-cpp"]
 	path = external/metal-cpp
 	url = https://github.com/bkaradzic/metal-cpp.git
+[submodule "external/nvapi"]
+	path = external/nvapi
+	url = https://github.com/NVIDIA/nvapi.git
