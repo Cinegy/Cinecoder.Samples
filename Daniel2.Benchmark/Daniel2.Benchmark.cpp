@@ -332,6 +332,7 @@ int main_impl(int argc, char* argv[])
     puts("\t/duration=#[,#]         - the test duration(s) in seconds. -1 means continuous test.");
     puts("\t/stats=<filename.json>  - generates JSON statistics file");
     puts("\t/wait                   - waits for the keypress after the test ends");
+    puts("\t/$var=value             - passing parameters into encoder profile (\"$var\" in XML will be substituted by \"value\")");
     return 1;
   }
 
@@ -616,16 +617,13 @@ int main_impl(int argc, char* argv[])
 
   long fileSize = ftell(profile);
 
-  std::vector<char> profile_vec(fileSize + 1);
-  char* profile_text = profile_vec.data();
+  std::string profile_text(fileSize, ' ');
 
   if (fseek(profile, 0, SEEK_SET) != 0)
     return fprintf(stderr, "Profile seeking error"), -2;
 
-  if (fread(profile_text, 1, fileSize, profile) < 0)
+  if (fread(&profile_text[0], 1, fileSize, profile) < 0)
     return fprintf(stderr, "Profile reading error"), -2;
-
-  profile_text[fileSize] = 0;
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
@@ -651,7 +649,41 @@ int main_impl(int argc, char* argv[])
 
   for(int i = 5; i < argc; i++)
   {
-    if(0 == strncmp(argv[i], "/outfile=", 9))
+    if(argv[i][0] == '/' && argv[i][1] == '$')
+    {
+      const char *key = argv[i] + 2, *val = nullptr;
+
+      if(isalpha(*key)) for (auto s = key; *s; s++)
+      {
+        if(isalnum(*s)) continue;
+
+        if(*s == '=')
+          val = s+1;
+
+        break;
+      }
+
+      if(!val)
+        return fprintf(stderr, "variable syntax is not correct: '%s'", argv[i]), -i;
+
+      std::string _key_ = "\"$" + std::string(key, val-key-1) + "\"";
+      std::string _val_ = "\"" + std::string(val) + "\"";
+
+      if(profile_text.find(_key_) == std::string::npos)
+        return fprintf(stderr, "variable %s is not found in the profile", _key_.c_str()), -i;
+
+      while(true)
+      {
+        auto pos = profile_text.find(_key_);
+        
+        if(pos == std::string::npos)
+          break;
+
+        profile_text.replace(pos, _key_.length(), _val_);
+      }
+    }
+
+    else if(0 == strncmp(argv[i], "/outfile=", 9))
     {
       outf = fopen(argv[i] + 9, "wb");
 
@@ -758,7 +790,11 @@ int main_impl(int argc, char* argv[])
       return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
   }
 
-  CComBSTR pProfile = profile_text;
+  printf("Encoder: %s\n", strEncName);
+  printf("Footage: type=%s filename=%s\n", argv[3], argv[4]);
+  printf("Profile: %s\n%s\n", argv[2], profile_text.c_str());
+
+  CComBSTR pProfile = profile_text.c_str();
 
   com_ptr<ICC_VideoEncoder> pEncoder;
 
@@ -918,10 +954,6 @@ int main_impl(int argc, char* argv[])
   }
 
   CC_VIDEO_FRAME_DESCR vpar = { cFormat };
-
-  printf("Encoder: %s\n", strEncName);
-  printf("Footage: type=%s filename=%s\n", argv[3], argv[4]);
-  printf("Profile: %s\n%s\n", argv[2], profile_text);
 
   com_ptr<ICC_VideoStreamInfo> pVideoInfo;
   if(FAILED(hr = pEncoder->GetVideoStreamInfo(&pVideoInfo)))
