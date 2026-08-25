@@ -91,6 +91,8 @@ char       g_metalDeviceName[128] = {};
 
 cl_command_queue g_clMemAllocQueue = nullptr;
 
+CC_VIDEO_QUALITY_MEASUREMENT g_psnr = {};
+
 //---------------------------------------------------------------------
 int SetCudaContext(CUcontext ctx)
 //---------------------------------------------------------------------
@@ -302,6 +304,11 @@ int main_impl(int argc, char* argv[])
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
     puts("\t'PRORES        -- ProRes s/w codec (requires Cinecoder.Plugin.Codecs.dll)");
+#ifdef __APPLE__
+    puts("\t'PRORES_APPLE  -- ProRes Apple Silicon Accelerated codec test");
+    puts("\t'H264_APPLE'   -- H264 Apple accelerated codec test");
+    puts("\t'HEVC_APPLE'   -- HEVC Apple accelerated codec test");
+#endif
     puts("\t'DNX           -- DNX s/w codec (requires Cinecoder.Plugin.Codecs.DNxHD.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
@@ -330,6 +337,7 @@ int main_impl(int argc, char* argv[])
     puts("\t/duration=#[,#]         - the test duration(s) in seconds. -1 means continuous test.");
     puts("\t/stats=<filename.json>  - generates JSON statistics file");
     puts("\t/wait                   - waits for the keypress after the test ends");
+    puts("\t/$var=value             - passing parameters into encoder profile (\"$var\" in XML will be substituted by \"value\")");
     return 1;
   }
 
@@ -476,8 +484,27 @@ int main_impl(int argc, char* argv[])
   if(0 == strcmp(argv[1], "DNX"))
   { 
     clsidEnc = CLSID_CC_DNX_VideoEncoder; 
-    clsidDec = CLSID_NULL; 
+    clsidDec = CLSID_CC_DNX_VideoDecoder; 
     strEncName = "DNX"; 
+  }
+
+  if(0 == strcmp(argv[1], "PRORES_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_ProRes_VideoEncoder_Apple; 
+    clsidDec = CLSID_CC_ProRes_VideoDecoder_Apple;
+    strEncName = "ProRes (Apple silicon)"; 
+  }
+  if(0 == strcmp(argv[1], "H264_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder_Apple;
+    clsidDec = CLSID_CC_H264VideoDecoder_Apple;
+    strEncName = "H264 (Apple silicon)"; 
+  }
+  if(0 == strcmp(argv[1], "HEVC_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_HEVCVideoEncoder_Apple;
+    clsidDec = CLSID_CC_HEVCVideoDecoder_Apple;
+    strEncName = "HEVC (Apple silicon)"; 
   }
 
 //#ifdef _WIN32
@@ -614,16 +641,13 @@ int main_impl(int argc, char* argv[])
 
   long fileSize = ftell(profile);
 
-  std::vector<char> profile_vec(fileSize + 1);
-  char* profile_text = profile_vec.data();
+  std::string profile_text(fileSize, ' ');
 
   if (fseek(profile, 0, SEEK_SET) != 0)
     return fprintf(stderr, "Profile seeking error"), -2;
 
-  if (fread(profile_text, 1, fileSize, profile) < 0)
+  if (fread(&profile_text[0], 1, fileSize, profile) < 0)
     return fprintf(stderr, "Profile reading error"), -2;
-
-  profile_text[fileSize] = 0;
 
   const char *strInputFormat = argv[3], *strOutputFormat = argv[3];
   CC_COLOR_FMT cFormat = ParseColorFmt(strInputFormat);
@@ -649,7 +673,41 @@ int main_impl(int argc, char* argv[])
 
   for(int i = 5; i < argc; i++)
   {
-    if(0 == strncmp(argv[i], "/outfile=", 9))
+    if(argv[i][0] == '/' && argv[i][1] == '$')
+    {
+      const char *key = argv[i] + 2, *val = nullptr;
+
+      if(isalpha(*key)) for (auto s = key; *s; s++)
+      {
+        if(isalnum(*s)) continue;
+
+        if(*s == '=')
+          val = s+1;
+
+        break;
+      }
+
+      if(!val)
+        return fprintf(stderr, "variable syntax is not correct: '%s'", argv[i]), -i;
+
+      std::string _key_ = "\"$" + std::string(key, val-key-1) + "\"";
+      std::string _val_ = "\"" + std::string(val) + "\"";
+
+      if(profile_text.find(_key_) == std::string::npos)
+        return fprintf(stderr, "variable %s is not found in the profile", _key_.c_str()), -i;
+
+      while(true)
+      {
+        auto pos = profile_text.find(_key_);
+        
+        if(pos == std::string::npos)
+          break;
+
+        profile_text.replace(pos, _key_.length(), _val_);
+      }
+    }
+
+    else if(0 == strncmp(argv[i], "/outfile=", 9))
     {
       outf = fopen(argv[i] + 9, "wb");
 
@@ -756,7 +814,11 @@ int main_impl(int argc, char* argv[])
       return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
   }
 
-  CComBSTR pProfile = profile_text;
+  printf("Encoder: %s\n", strEncName);
+  printf("Footage: type=%s filename=%s\n", argv[3], argv[4]);
+  printf("Profile: %s\n%s\n", argv[2], profile_text.c_str());
+
+  CComBSTR pProfile = profile_text.c_str();
 
   com_ptr<ICC_VideoEncoder> pEncoder;
 
@@ -917,10 +979,6 @@ int main_impl(int argc, char* argv[])
 
   CC_VIDEO_FRAME_DESCR vpar = { cFormat };
 
-  printf("Encoder: %s\n", strEncName);
-  printf("Footage: type=%s filename=%s\n", argv[3], argv[4]);
-  printf("Profile: %s\n%s\n", argv[2], profile_text);
-
   com_ptr<ICC_VideoStreamInfo> pVideoInfo;
   if(FAILED(hr = pEncoder->GetVideoStreamInfo(&pVideoInfo)))
     return fprintf(stderr, "Failed to get video stream info the encoder: code=%08x", hr), hr;
@@ -1045,7 +1103,7 @@ int main_impl(int argc, char* argv[])
     }
   }
 
-  CpuLoadMeter cpuLoadMeter;
+  CpuLoadMeter cpuLoadMeter, cpuLoadMeter0;
   
   printf("Performing encoding loop, press ESC to break\n");
 
@@ -1149,15 +1207,17 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "\npEncoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   auto t1 = system_clock::now();
+  auto avgCpuLoad = cpuLoadMeter0.GetLoad();
 
   //pEncoder = NULL;
 
   puts("\nDone.\n");
 
   auto dT = duration<double>(t1 - t00).count();
-  printf("Encoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+  printf("Encoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s, avg CPU load: %.1f%%\n", 
   		  dT, total_frame_count / dT, dT * 1000 / total_frame_count,
-          uncompressed_frame_size / 1E9 * total_frame_count / dT);
+          uncompressed_frame_size / 1E9 * total_frame_count / dT,
+          avgCpuLoad);
 
   auto time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_EncoderTimeFirstFrameOut - g_EncoderTimeFirstFrameIn);
   printf("Encoder latency = %d ms\n", (int)time_ms.count());
@@ -1178,6 +1238,7 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"encAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
     fprintf(json_stats_file, "\t\t\"encAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
     fprintf(json_stats_file, "\t\t\"encAvgDataRateInMbps\" : \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
+    fprintf(json_stats_file, "\t\t\"encAvgCPULoad\"        : \"%.1f%%\" \n", avgCpuLoad);
     fprintf(json_stats_file, "\t\t\"encLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
     fprintf(json_stats_file, "\t},\n");
   }
@@ -1412,6 +1473,8 @@ int main_impl(int argc, char* argv[])
 
   int warm_up_frames = 4;
 
+  cpuLoadMeter0.GetLoad();
+
   coded_size0 = 0; long long coded_size = 0;
 
   if(int num_coded_frames = (int)pFileWriter->GetCodedSequenceLength())
@@ -1450,6 +1513,7 @@ int main_impl(int argc, char* argv[])
         continue;
 
       t00 = t0 = system_clock::now();
+      cpuLoadMeter0.GetLoad();
     }
 
     bool break_time_out = false;
@@ -1508,15 +1572,17 @@ int main_impl(int argc, char* argv[])
     return fprintf(stderr, "\npDecoder->Done() failed with code 0x%08x (%s)", hr, Cinecoder_GetErrorString(hr)), hr;
 
   t1 = system_clock::now();
+  avgCpuLoad = cpuLoadMeter0.GetLoad();
 
   //pDecoder = NULL;
 
   puts("\nDone.\n");
 
   dT = duration<double>(t1 - t00).count();
-  printf("Decoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s\n", 
+  printf("Decoder test duration = %.1fs, average performance = %.3f fps (%.1f ms/f), avg data rate = %.3f GB/s, avg CPU load: %.1f%%\n", 
           dT, total_frame_count / dT, dT * 1000 / total_frame_count,
-          uncompressed_frame_size / 1E9 * total_frame_count / dT);
+          uncompressed_frame_size / 1E9 * total_frame_count / dT,
+          avgCpuLoad);
 
   time_ms = std::chrono::duration_cast<std::chrono::milliseconds>(g_DecoderTimeFirstFrameOut - g_DecoderTimeFirstFrameIn);
   printf("Decoder latency = %d ms\n", (int)time_ms.count());
@@ -1537,7 +1603,13 @@ int main_impl(int argc, char* argv[])
     fprintf(json_stats_file, "\t\t\"decAvgFPS\"            : \"%.3f\",\n", total_frame_count / dT);
     fprintf(json_stats_file, "\t\t\"decAvgMsPerFrame\"     : \"%.3f\",\n", dT * 1000 / total_frame_count);
     fprintf(json_stats_file, "\t\t\"decAvgDataRateOutMbps\": \"%.3f\",\n", uncompressed_frame_size / 1e6 * total_frame_count / dT);
-    fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\" \n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t\t\"decAvgCPULoad\"        : \"%.1f%%\",\n", avgCpuLoad);
+    fprintf(json_stats_file, "\t\t\"decLatencyMs\"         : \"%d\",\n", (int)time_ms.count());
+    fprintf(json_stats_file, "\t\t\"decPSNRdB\"            : [");
+	for(int i = 0; i < g_psnr.NumVals; i++)
+	  fprintf(json_stats_file, " %.3f%s", g_psnr.QVal[i], i+1 < g_psnr.NumVals ? "," : "");
+    fprintf(json_stats_file, " ]\n");
+
     fprintf(json_stats_file, "\t}\n");
   }
 

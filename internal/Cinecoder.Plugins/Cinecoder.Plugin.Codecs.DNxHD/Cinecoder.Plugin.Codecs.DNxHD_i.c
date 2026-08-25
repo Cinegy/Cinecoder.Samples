@@ -5,12 +5,12 @@
 /* link this file in with the server and any clients */
 
 
- /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Aug 01 07:10:52 2023
+ /* File created by MIDL compiler version 8.01.0628 */
+/* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for Cinecoder.Plugin.Codecs.DNxHD.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0628 
+    protocol : all , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -18,7 +18,6 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 #ifdef __cplusplus
@@ -63,9 +62,9 @@ typedef IID CLSID;
 #endif // CLSID_DEFINED
 
 #define MIDL_DEFINE_GUID(type,name,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) \
-        const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
+        EXTERN_C __declspec(selectany) const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 
-#endif !_MIDL_USE_GUIDDEF_
+#endif // !_MIDL_USE_GUIDDEF_
 
 MIDL_DEFINE_GUID(IID, IID_ICC_DNxHD_VideoEncoder,0x495AE5F1,0xC244,0x42F5,0xB4,0x1C,0x9C,0x2F,0xB8,0x6F,0x97,0xDE);
 
@@ -85,6 +84,9 @@ MIDL_DEFINE_GUID(IID, IID_ICC_DNX_VideoStreamInfo,0x34B25A9C,0x5F78,0x43CF,0x84,
 MIDL_DEFINE_GUID(IID, IID_ICC_DNX_VideoEncoder,0x83A4BEC2,0x19C4,0x493E,0xA8,0xDB,0x07,0xBF,0x62,0xCA,0x62,0xF8);
 
 
+MIDL_DEFINE_GUID(IID, IID_ICC_DNX_VideoDecoder,0x1ACFADE5,0xCCD1,0x4BCB,0x8E,0xE5,0xB6,0x6C,0xAF,0xB3,0x99,0x40);
+
+
 MIDL_DEFINE_GUID(IID, LIBID_Cinecoder_Plugin_Codecs_DNxHD,0x2e4df2d6,0xa698,0x47fe,0xb5,0x9e,0x05,0x20,0xb1,0x90,0x70,0x2b);
 
 
@@ -98,6 +100,9 @@ MIDL_DEFINE_GUID(CLSID, CLSID_CC_DNX_VideoEncoderSettings,0x5FFC519A,0xD567,0x41
 
 
 MIDL_DEFINE_GUID(CLSID, CLSID_CC_DNX_VideoEncoder,0x0B53BDBD,0x5F4D,0x4E14,0x8B,0x64,0x32,0xCC,0x1A,0xC0,0x18,0x61);
+
+
+MIDL_DEFINE_GUID(CLSID, CLSID_CC_DNX_VideoDecoder,0xD720AD6A,0x3CD5,0x4F38,0xA0,0x0C,0xD4,0x06,0x9B,0x63,0x2E,0x4F);
 
 #undef MIDL_DEFINE_GUID
 
