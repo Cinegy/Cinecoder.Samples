@@ -304,6 +304,11 @@ int main_impl(int argc, char* argv[])
     puts("\t'MPEG'         -- MPEG s/w encoder");
     puts("\t'XDCAM'        -- XDCAM s/w encoder");
     puts("\t'PRORES        -- ProRes s/w codec (requires Cinecoder.Plugin.Codecs.dll)");
+#ifdef __APPLE__
+    puts("\t'PRORES_APPLE  -- ProRes Apple Silicon Accelerated codec test");
+    puts("\t'H264_APPLE'   -- H264 Apple accelerated codec test");
+    puts("\t'HEVC_APPLE'   -- HEVC Apple accelerated codec test");
+#endif
     puts("\t'DNX           -- DNX s/w codec (requires Cinecoder.Plugin.Codecs.DNxHD.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
@@ -481,6 +486,25 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_DNX_VideoEncoder; 
     clsidDec = CLSID_CC_DNX_VideoDecoder; 
     strEncName = "DNX"; 
+  }
+
+  if(0 == strcmp(argv[1], "PRORES_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_ProRes_VideoEncoder_Apple; 
+    clsidDec = CLSID_CC_ProRes_VideoDecoder_Apple;
+    strEncName = "ProRes (Apple silicon)"; 
+  }
+  if(0 == strcmp(argv[1], "H264_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_H264VideoEncoder_Apple;
+    clsidDec = CLSID_CC_H264VideoDecoder_Apple;
+    strEncName = "H264 (Apple silicon)"; 
+  }
+  if(0 == strcmp(argv[1], "HEVC_APPLE"))
+  { 
+    clsidEnc = CLSID_CC_HEVCVideoEncoder_Apple;
+    clsidDec = CLSID_CC_HEVCVideoDecoder_Apple;
+    strEncName = "HEVC (Apple silicon)"; 
   }
 
 //#ifdef _WIN32
