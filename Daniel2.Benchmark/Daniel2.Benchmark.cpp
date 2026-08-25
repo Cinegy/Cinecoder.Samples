@@ -818,7 +818,7 @@ int main_impl(int argc, char* argv[])
   printf("Footage: type=%s filename=%s\n", argv[3], argv[4]);
   printf("Profile: %s\n%s\n", argv[2], profile_text.c_str());
 
-  CComBSTR pProfile = profile_text.c_str();
+  CComBSTR pProfile = (char*)profile_text.c_str();
 
   com_ptr<ICC_VideoEncoder> pEncoder;
 
