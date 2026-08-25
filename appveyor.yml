@@ -19,10 +19,10 @@ environment:
       platform: ARM
       job_name: Build Linux ARM64
       LINUX_PLATFORM: LinuxARM64
-    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
-      platform: MAC
-      job_name: Build MacOS x64
-      LINUX_PLATFORM: MacOS
+#    - APPVEYOR_BUILD_WORKER_IMAGE: macOS
+#      platform: MAC
+#      job_name: Build MacOS x64
+#      LINUX_PLATFORM: MacOS
     - APPVEYOR_BUILD_WORKER_IMAGE: macOS
       platform: MACARM
       job_name: Build MacOS ARM64

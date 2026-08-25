@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y \
 	mono-complete libboost-dev uuid-dev libssl-dev software-properties-common \
 	jq libopenal-dev freeglut3-dev libglew-dev ocl-icd-opencl-dev && \
 	apt-get clean && \
-	rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/* && \
+	cert-sync /etc/ssl/certs/ca-certificates.crt
 
 # Make gcc-11 default
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 && \	
