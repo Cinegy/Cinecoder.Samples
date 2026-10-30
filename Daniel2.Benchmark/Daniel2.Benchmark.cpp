@@ -46,6 +46,9 @@ using namespace std::chrono_literals;
 #include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD.h"
 #include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.Codecs.DNxHD/Cinecoder.Plugin.Codecs.DNxHD_i.c"
 
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.JpegXS_SVT/Cinecoder.Plugin.JpegXS_SVT_h.h"
+#include "../internal/Cinecoder.Plugins/Cinecoder.Plugin.JpegXS_SVT/Cinecoder.Plugin.JpegXS_SVT_i.c"
+
 #ifdef __APPLE__
 
 #define BOOL BOOL2 /* it is needed to fix different BOOL typedef in objc.h */
@@ -310,6 +313,7 @@ int main_impl(int argc, char* argv[])
     puts("\t'HEVC_APPLE'   -- HEVC Apple accelerated codec test");
 #endif
     puts("\t'DNX           -- DNX s/w codec (requires Cinecoder.Plugin.Codecs.DNxHD.dll)");
+    puts("\t'JPEGXS_SVT    -- Jpeg SX s/w codec from SVT (requires Cinecoder.Plugin.JpegXS_SVT.dll)");
 //#ifdef _WIN32
     puts("\t'H264'         -- H264 s/w encoder");
     puts("\t'H264_NV'      -- H264 NVidia GPU codec test");
@@ -486,6 +490,12 @@ int main_impl(int argc, char* argv[])
     clsidEnc = CLSID_CC_DNX_VideoEncoder; 
     clsidDec = CLSID_CC_DNX_VideoDecoder; 
     strEncName = "DNX"; 
+  }
+  if(0 == strcmp(argv[1], "JPEGXS_SVT"))
+  { 
+    clsidEnc = CLSID_CC_JpegXS_VideoEncoder_SVT; 
+    clsidDec = CLSID_CC_JpegXS_VideoDecoder_SVT; 
+    strEncName = "JpegXS (SVT)"; 
   }
 
   if(0 == strcmp(argv[1], "PRORES_APPLE"))
@@ -810,6 +820,13 @@ int main_impl(int argc, char* argv[])
   if(0 == strcmp(argv[1], "DNX"))
   {
     const char *plugin_name = "Cinecoder.Plugin.Codecs.DNxHD.dll";
+    if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
+      return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
+  }
+
+  if(0 == strcmp(argv[1], "JPEGXS_SVT"))
+  {
+    const char *plugin_name = "Cinecoder.Plugin.JpegXS_SVT.dll";
     if(FAILED(hr = pFactory->LoadPlugin(CComBSTR(plugin_name))))
       return fprintf(stderr, "Error loading '%s'", plugin_name), hr;
   }
